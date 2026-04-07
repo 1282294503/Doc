@@ -1,0 +1,523 @@
+===== 表紙 =====
+管理No.	UT-DAC2009
+顧客ID	HOKUREN
+顧客名	ホクレン農業協同組合連合会
+システムID	DAC
+システム名	統合会計システム
+サブシステムID	DAC20
+サブシステム名	部門提供
+機能ID	8.3.1
+機能名	収益入力
+プログラムID	DAC2009
+プログラム名	収益入力（RevenueEntry）
+作成日付	2026-04-03
+作成者	
+最終変更日付	2026-04-03
+最終変更者	
+
+===== 改訂履歴 =====
+No.	版	変更箇所	変更内容	管理番号	変更者・日付	確認者・日付	承認者・日付
+1	1.0	-	新規作成	-		
+
+===== テスト仕様（一覧） =====
+No.	テスト観点	テストケース内容	確認項目	想定結果	エビデンス	確認結果
+1	DAO+Mapper getResults	更新者指定あり・更新日From指定あり・更新日To指定あり・勘定科目指定あり・予算組織指定あり・業種指定あり・伝票番号指定あり・承認状況指定あり	全条件指定時のWHERE句組み立て	全条件がAND結合されたSQLが実行され、合致するデータのみ返却される	SQL実行結果
+2	DAO+Mapper getResults	更新者のみ指定・他条件NULL	更新者のみ指定時のWHERE句	LIKE条件で更新者名が部分一致するデータが返却される	SQL実行結果
+3	DAO+Mapper getResults	勘定科目のみ指定・他条件NULL	勘定科目のみ指定時のWHERE句	項科目コード上6桁・目節科目コード下2桁で分割されて検索される	SQL実行結果
+4	DAO+Mapper getResults	予算組織のみ指定・他条件NULL	予算組織のみ指定時のWHERE句	予算組織コード完全一致で検索される	SQL実行結果
+5	DAO+Mapper getResults	業種のみ指定・他条件NULL	業種のみ指定時のWHERE句	業種コード完全一致で検索される	SQL実行結果
+6	DAO+Mapper getResults	承認状況複数指定	承認状況IN句	IN句に複数承認状況が含まれたSQLが実行される	SQL実行結果
+7	DAO+Mapper getResults	予算組織未指定・選択可能予算組織リストあり	権限フィルタリング（予算組織）	選択可能予算組織リストでIN句フィルタリングされる	SQL実行結果
+8	DAO+Mapper getResults	業種未指定・選択可能業種リストあり	権限フィルタリング（業種）	選択可能業種リストでIN句フィルタリングされる	SQL実行結果
+9	DAO+Mapper getResults	勘定科目未指定・選択可能勘定科目リストあり	権限フィルタリング（勘定科目）	選択可能勘定科目リストでIN句フィルタリングされる	SQL実行結果
+10	DAO+Mapper getResults	選択可能科目摘要リストあり	権限フィルタリング（科目摘要）	選択可能科目摘要リストでIN句フィルタリングされる	SQL実行結果
+11	DAO+Mapper getResults	全条件NULL・権限リストNULL	条件なし検索	削除区分=有効のみの全件検索が実行される	SQL実行結果
+12	DAO+Mapper getResults	ソート順確認	ORDER BY句	承認状況昇順→更新日昇順→経理日昇順→更新者名昇順→項科目コード昇順→目節科目コード昇順→伝票番号昇順	SQL実行結果
+13	DAO+Mapper getResults	結合条件確認（LEFT JOIN）	JOINの結合/非結合	ユーザー情報・ 目節科目マスタ・承認状況マスタがLEFT JOINで結合される。該当なしの場合NULLとなる	SQL実行結果
+14	DAO+Mapper getResults	結合条件確認（INNER JOIN）	申請承認INNER JOIN	申請承認テーブルに存在しないデータは除外される	SQL実行結果
+15	DAO+Mapper getResults	SELECT句確認	添付数の計算	添付ファイル名称1-3のNULL/非NULLにより添付数が0-3で正しく算出される	SQL実行結果
+16	DAO+Mapper getRevenueEntryHeaderInfo	伝票番号指定で取得	ヘッダ情報取得	収益入力ヘッダ情報（伝票番号・承認状況・取引日・予算組織・業種・入金方法・添付ファイル・勘定科目・科目摘要・合計金額）が返却される	SQL実行結果
+17	DAO+Mapper getRevenueEntryHeaderInfo	予算組織コード先頭1桁によるCASE分岐	予算組織名称取得	事業所/事業本部/部/課/施設に応じた名称が返却される	SQL実行結果
+18	DAO+Mapper getRevenueEntryDetailInfo	伝票番号指定で取得	明細情報取得	収益入力明細情報（番号・相手先・本体額・消費税額・消費税取引区分・明細計・入金予定日・諸口取引先名称）が返却される	SQL実行結果
+19	DAO+Mapper getRevenueEntryCsvInfo	複数伝票番号指定で取得	CSV情報取得	CSV出力用データが全明細分返却される	SQL実行結果
+20	Logic initMain	userId/shozokuCd正常値	初期処理正常	運用管理日・権限・選択可能リスト4種が返却される	戻り値確認
+21	Logic searchMain	searchDto正常値（全条件指定）	照会ボタン正常系	単項目チェックOK→関連チェックOK→名称取得→一覧取得の順で処理される	戻り値確認
+22	Logic searchMain	searchDto（予算組織コードマスタ不在）	予算組織マスタ存在チェックエラー	validateSingleSearchでDAC00007Eがスローされる	例外確認
+23	Logic searchMain	searchDto（業種コードマスタ不在）	業種マスタ存在チェックエラー	validateSingleSearchでE000008がスローされる	例外確認
+24	Logic searchMain	searchDto（予算組織と所属不一致）	予算組織vs所属関連チェックエラー	validateRelatedSearchでDAC00024Eがスローされる	例外確認
+25	Logic searchMain	searchDto（業種と予算組織不一致）	業種vs予算組織関連チェックエラー	validateRelatedSearchでDAC00024Eがスローされる	例外確認
+26	Logic searchMain	searchDto（更新日To < 更新日From）	更新日大小関係エラー	validateRelatedSearchでDAC00024Eがスローされる	例外確認
+27	Logic searchMain	searchDto（検索結果0件）	0件エラー	getListResultDataでDAC00008Eがスローされる	例外確認
+28	Logic searchMain	searchDto（検索結果上限超過）	上限件数オーバーエラー	getListResultDataでDAC00009Eがスローされる	例外確認
+29	Logic listShowMain	searchDto正常値	表示ボタン正常系	勘定科目名称・予算組織名称・業種名称が返却される	戻り値確認
+30	Logic getListResultData	検索結果1件	正常取得（1件）	リストが返却される	戻り値確認
+31	Logic getListResultData	検索結果0件	0件エラー	DAC00008Eがスローされる	例外確認
+32	Logic getListResultData	検索結果が上限件数超過	上限件数オーバーエラー	DAC00009Eがスローされる	例外確認
+33	Logic getListResultData	検索結果が上限件数ちょうど	境界値（上限件数）	リストが返却される（エラーにならない）	戻り値確認
+34	Logic validateSingleSearch	予算組織コードNULL	予算組織チェックスキップ	エラーなし	例外なし確認
+35	Logic validateSingleSearch	予算組織コード空文字	予算組織チェックスキップ	エラーなし	例外なし確認
+36	Logic validateSingleSearch	予算組織コード正常値（マスタ存在）	予算組織マスタ存在	エラーなし	例外なし確認
+37	Logic validateSingleSearch	予算組織コード指定（マスタ不存在）	予算組織マスタ不存在	DAC00007Eがスローされる	例外確認
+38	Logic validateSingleSearch	業種コードNULL	業種チェックスキップ	エラーなし	例外なし確認
+39	Logic validateSingleSearch	業種コード空文字	業種チェックスキップ	エラーなし	例外なし確認
+40	Logic validateSingleSearch	業種コード正常値（マスタ存在）	業種マスタ存在	エラーなし	例外なし確認
+41	Logic validateSingleSearch	業種コード指定（マスタ不存在）	業種マスタ不存在	E000008がスローされる	例外確認
+42	Logic validateRelatedSearch	予算組織指定・所属一致	予算組織vs所属チェックOK	エラーなし	例外なし確認
+43	Logic validateRelatedSearch	予算組織指定・所属不一致	予算組織vs所属チェックNG	DAC00024Eがスローされる	例外確認
+44	Logic validateRelatedSearch	予算組織NULL	予算組織vs所属チェックスキップ	エラーなし	例外なし確認
+45	Logic validateRelatedSearch	業種・予算組織両方指定・一致	業種vs予算組織チェックOK	エラーなし	例外なし確認
+46	Logic validateRelatedSearch	業種・予算組織両方指定・不一致	業種vs予算組織チェックNG	DAC00024Eがスローされる	例外確認
+47	Logic validateRelatedSearch	業種NULL	業種vs予算組織チェックスキップ	エラーなし	例外なし確認
+48	Logic validateRelatedSearch	更新日From/To両方指定・To >= From	更新日大小チェックOK	エラーなし	例外なし確認
+49	Logic validateRelatedSearch	更新日From/To両方指定・To < From	更新日大小チェックNG	DAC00024Eがスローされる	例外確認
+50	Logic validateRelatedSearch	更新日FromのみNULL	更新日大小チェックスキップ	エラーなし	例外なし確認
+51	Logic getReferenceDispName	勘定科目コード8桁正常値	勘定科目名称取得	勘定科目名称が返却される	戻り値確認
+52	Logic getReferenceDispName	勘定科目コードNULL	勘定科目名称スキップ	空文字が返却される	戻り値確認
+53	Logic getReferenceDispName	勘定科目コード8桁（マスタ不存在）	勘定科目マスタ不存在	空文字が返却される	戻り値確認
+54	Logic getReferenceDispName	勘定科目コード8桁未満	勘定科目名称スキップ	空文字が返却される	戻り値確認
+55	Logic getReferenceDispName	予算組織コード正常値	予算組織名称取得	予算組織名称が返却される	戻り値確認
+56	Logic getReferenceDispName	予算組織コードNULL	予算組織名称スキップ	空文字が返却される	戻り値確認
+57	Logic getReferenceDispName	予算組織コード（マスタ不存在）	予算組織マスタ不存在	空文字が返却される	戻り値確認
+58	Logic getReferenceDispName	業種コード正常値	業種名称取得	業種名称が返却される	戻り値確認
+59	Logic getReferenceDispName	業種コードNULL	業種名称スキップ	空文字が返却される	戻り値確認
+60	Logic getReferenceDispName	業種コード（マスタ不存在）	業種マスタ不存在	空文字が返却される	戻り値確認
+61	Logic csvOutputMain	正常値・選択行あり	CSV出力正常系	CSV出力データが返却される	戻り値確認
+62	Logic csvOutputMain	CSV出力結果0件	CSV0件エラー	getCsvOutputDataでDAC00008Eがスローされる	例外確認
+63	Logic csvOutputMain	CSVダウンロード例外	CSV出力例外	DAA20004Eがスローされる	例外確認
+64	Logic modifyMain	承認状況=差戻	修正ボタン正常系（差戻）	inputDto・approvalInfoDtoが返却される	戻り値確認
+65	Logic modifyMain	承認状況=下書保存	修正ボタン正常系（下書保存）	inputDto・approvalInfoDtoが返却される	戻り値確認
+66	Logic modifyMain	承認状況=承認依頼中	修正不可エラー	DAC00027Eがスローされる	例外確認
+67	Logic modifyMain	承認状況=承認済	修正不可エラー	DAC00027Eがスローされる	例外確認
+68	Logic deleteMain	承認状況=差戻	削除ボタン正常系（差戻）	inputDto・approvalInfoDto・journalEntryInfoDtoListが返却される	戻り値確認
+69	Logic deleteMain	承認状況=下書保存	削除ボタン正常系（下書保存）	inputDto・approvalInfoDto・journalEntryInfoDtoListが返却される	戻り値確認
+70	Logic deleteMain	承認状況=承認依頼中	削除不可エラー	DAC00026Eがスローされる	例外確認
+71	Logic copyMain	正常な選択行	複写ボタン正常系	inputDtoがコピーされ、伝票番号/承認状況/取引日/添付ファイルがNULLクリアされる	戻り値確認
+72	Logic copyMain	明細行の複写設定	複写明細クリア処理	明細計・入金予定日・諸口取引先名称がNULLクリアされる	戻り値確認
+73	Logic copyMain	明細行NULL	複写明細NULL	明細のNULL安全処理が行われる	戻り値確認
+74	Logic inquiryMain	正常な選択行	個別照会正常系	inputDto・approvalInfoDto・journalEntryInfoDtoListが返却される	戻り値確認
+75	Logic withdrawMain	承認状況=承認依頼中・1件	承認依頼取下正常系（1件）	取下結果リスト（1件）が返却される	戻り値確認
+76	Logic withdrawMain	承認状況=承認依頼中・複数件	承認依頼取下正常系（複数件）	取下結果リスト（複数件）が返却される	戻り値確認
+77	Logic withdrawMain	承認状況≠承認依頼中	取下不可エラー	DAC00133Eがスローされる	例外確認
+78	Logic validateRelatedList	processMode=MODIFY・承認状況=差戻	修正時関連チェック正常（差戻）	エラーなし	例外なし確認
+79	Logic validateRelatedList	processMode=MODIFY・承認状況=下書保存	修正時関連チェック正常（下書保存）	エラーなし	例外なし確認
+80	Logic validateRelatedList	processMode=MODIFY・承認状況=承認依頼中	修正時関連チェックエラー	DAC00027Eがスローされる	例外確認
+81	Logic validateRelatedList	processMode=DELETE・承認状況=差戻	削除時関連チェック正常（差戻）	エラーなし	例外なし確認
+82	Logic validateRelatedList	processMode=DELETE・承認状況=下書保存	削除時関連チェック正常（下書保存）	エラーなし	例外なし確認
+83	Logic validateRelatedList	processMode=DELETE・承認状況=承認依頼中	削除時関連チェックエラー	DAC00026Eがスローされる	例外確認
+84	Logic validateRelatedList	processMode=WITHDRAW・承認状況=承認依頼中	取下時関連チェック正常	エラーなし	例外なし確認
+85	Logic validateRelatedList	processMode=WITHDRAW・承認状況≠承認依頼中	取下時関連チェックエラー	DAC00133Eがスローされる	例外確認
+86	Logic getSelectDetailedData	正常取得・processMode=INQUIRY	照会モードの明細取得	ヘッダ・明細・仕訳情報・承認情報が返却される。排他チェックスキップ	戻り値確認
+87	Logic getSelectDetailedData	正常取得・processMode=MODIFY	修正モードの明細取得	ヘッダ・明細・承認情報が返却される。排他チェック実行	戻り値確認
+88	Logic getSelectDetailedData	ヘッダ情報0件（NULL）	ヘッダ0件エラー	DAC00008Eがスローされる	例外確認
+89	Logic getSelectDetailedData	排他カウンタ不一致（MODIFY）	排他エラー	DAC00025Eがスローされる	例外確認
+90	Logic getSelectDetailedData	排他カウンタ一致（MODIFY）	排他チェックOK	エラーなし	戻り値確認
+91	Logic getSelectDetailedData	processMode=DELETE	仕訳情報取得あり	仕訳明細行3行（勘定科目/仮受消費税/売掛金）が返却される	戻り値確認
+92	Logic getSelectDetailedData	processMode=WITHDRAW	仕訳情報取得あり	仕訳明細行3行が返却される	戻り値確認
+93	Logic getSelectDetailedData	processMode=COPY	仕訳情報取得なし	仕訳情報リストが空	戻り値確認
+94	Logic getSelectDetailedData	申請番号あり・ワークフロー取得正常	承認情報取得	承認情報Dtoが設定される	戻り値確認
+95	Logic getSelectDetailedData	申請番号NULL	承認情報スキップ	空の承認情報Dtoが返却される	戻り値確認
+96	Logic getSelectDetailedData	申請番号あり・ワークフロー取得例外	承認情報取得例外	例外は握り潰され空の承認情報Dtoが返却される	戻り値確認
+97	Logic getEntryDispName	全コード正常値（勘定科目8桁・予算組織・業種・科目摘要・相手先8桁以上）	入力画面名称全取得	5項目の名称がすべて返却される	戻り値確認
+98	Logic getEntryDispName	科目摘要コードNULL	科目摘要名称スキップ	科目摘要名称が空文字	戻り値確認
+99	Logic getEntryDispName	相手先コードNULL	相手先名称スキップ	相手先名称が空文字	戻り値確認
+100	Logic getEntryDispName	相手先コード8桁未満	相手先名称スキップ	相手先名称が空文字	戻り値確認
+101	Logic getEntryDispName	勘定科目コード8桁未満で科目摘要コードあり	科目摘要名称スキップ	科目摘要名称が空文字	戻り値確認
+102	Logic appendRowMain	明細リストNULL	行追加（リストNULL）	新規リストが作成され1行追加される。番号=1	戻り値確認
+103	Logic appendRowMain	明細リスト既存3件	行追加（既存あり）	4行目が追加される。番号=4	戻り値確認
+104	Logic copyRowMain	選択行あり	行複写正常系	選択行がコピーされ末尾に追加される。明細計/入金予定日/諸口取引先名称はNULL	戻り値確認
+105	Logic copyRowMain	選択行なし	行複写（未選択）	NULLが返却される	戻り値確認
+106	Logic validateSingleInput	取引日NULL	取引日必須チェックエラー	DAC00031Eがスローされる	例外確認
+107	Logic validateSingleInput	予算組織コード正常（マスタ存在）	予算組織マスタ存在	エラーなし	例外なし確認
+108	Logic validateSingleInput	予算組織コード指定（マスタ不存在）	予算組織マスタ不存在	DAC00007Eがスローされる	例外確認
+109	Logic validateSingleInput	業種コード正常（マスタ存在）	業種マスタ存在	エラーなし	例外なし確認
+110	Logic validateSingleInput	業種コード指定（マスタ不存在）	業種マスタ不存在	DAC00007Eがスローされる	例外確認
+111	Logic validateSingleInput	勘定科目コード8桁（マスタ存在・収益科目=true）	勘定科目マスタ存在＆収益科目OK	エラーなし	例外なし確認
+112	Logic validateSingleInput	勘定科目コード8桁（マスタ不存在）	勘定科目マスタ不存在	DAC00007Eがスローされる	例外確認
+113	Logic validateSingleInput	勘定科目コード8桁（マスタ存在・収益科目=false）	収益科目チェックNG	DAC00038Eがスローされる	例外確認
+114	Logic validateSingleInput	科目摘要コード指定・勘定科目8桁（マスタ存在）	科目摘要マスタ存在	エラーなし	例外なし確認
+115	Logic validateSingleInput	科目摘要コード指定・勘定科目8桁（マスタ不存在）	科目摘要マスタ不存在	DAC00007Eがスローされる	例外確認
+116	Logic validateSingleInput	相手先コード8桁以上（マスタ存在）	相手先マスタ存在	エラーなし	例外なし確認
+117	Logic validateSingleInput	相手先コード8桁以上（マスタ不存在）	相手先マスタ不存在	DAC00007Eがスローされる	例外確認
+118	Logic validateSingleInput	相手先コードNULL	相手先チェックスキップ	エラーなし	例外なし確認
+119	Logic validateRelatedInput	予算組織vs所属一致	予算組織関連チェックOK	エラーなし	例外なし確認
+120	Logic validateRelatedInput	予算組織vs所属不一致	予算組織関連チェックNG	DAC00024Eがスローされる	例外確認
+121	Logic validateRelatedInput	業種vs予算組織一致	業種関連チェックOK	エラーなし	例外なし確認
+122	Logic validateRelatedInput	業種vs予算組織不一致	業種関連チェックNG	DAC00024Eがスローされる	例外確認
+123	Logic validateRelatedInput	権限チェックOK	権限チェック正常	エラーなし	例外なし確認
+124	Logic validateRelatedInput	権限チェックNG	権限チェック不正	DAC00059Wがスローされる	例外確認
+125	Logic validateRelatedInput	明細合計額が0以外	明細合計額チェックOK	エラーなし	例外なし確認
+126	Logic validateRelatedInput	明細合計額が0	明細合計額チェックNG	DAC00135Eがスローされる	例外確認
+127	Logic validateRelatedInput	消費税額≠0かつ本体額≠0	消費税チェックOK	エラーなし	例外なし確認
+128	Logic validateRelatedInput	消費税額≠0かつ本体額=0	消費税チェックNG	DAC00137Eがスローされる	例外確認
+129	Logic validateRelatedInput	科目摘要必須（該当勘定科目）・科目摘要コードあり	科目摘要必須チェックOK	エラーなし	例外なし確認
+130	Logic validateRelatedInput	科目摘要必須（該当勘定科目）・科目摘要コードNULL	科目摘要必須チェックNG	DAC00000Eがスローされる	例外確認
+131	Logic validateRelatedInput	不課税取引・消費税取引区分正常	不課税チェックOK	エラーなし	例外なし確認
+132	Logic validateRelatedInput	不課税取引・消費税取引区分不正	不課税チェックNG	DAC00024Eがスローされる	例外確認
+133	Logic validateRelatedInput	非課税取引・消費税取引区分正常	非課税チェックOK	エラーなし	例外なし確認
+134	Logic validateRelatedInput	非課税取引・消費税取引区分不正	非課税チェックNG	DAC00024Eがスローされる	例外確認
+135	Logic validateRelatedInput	諸口相手先・諸口取引先名称あり	諸口チェックOK	エラーなし	例外なし確認
+136	Logic validateRelatedInput	諸口相手先・諸口取引先名称NULL	諸口チェックNG（名称なし）	DAC00055Eがスローされる	例外確認
+137	Logic validateRelatedInput	非諸口相手先・諸口取引先名称あり	諸口チェックNG（名称あり不正）	DAC00060Eがスローされる	例外確認
+138	Logic validateRelatedInput	非諸口相手先・諸口取引先名称NULL	非諸口チェックOK	エラーなし	例外なし確認
+139	Logic deleteRowMain	選択行1件あり・残り2件	行削除正常系	選択行が除外され、番号が再採番される	戻り値確認
+140	Logic deleteRowMain	選択行なし	行削除（未選択）	全行が返却される	戻り値確認
+141	Logic saveDraftMain	新規（伝票番号NULL）	下書保存新規登録	伝票番号採番→添付ファイルアップロード→ヘッダINSERT→明細INSERT→一覧再取得	DB確認
+142	Logic saveDraftMain	修正（伝票番号あり）	下書保存修正	添付ファイル差分処理→ヘッダUPDATE→明細論理削除/INSERT/UPDATE→一覧再取得	DB確認
+143	Logic saveDraftMain	新規・明細リストNULL	新規登録（明細なし）	ヘッダのみINSERTされる	DB確認
+144	Logic saveDraftMain	修正・既存明細が削除された場合	明細論理削除	既存明細の削除区分が無効に更新される	DB確認
+145	Logic saveDraftMain	修正・新規明細が追加された場合	明細新規追加	新規明細がINSERTされる	DB確認
+146	Logic inputShowMain	正常値	表示ボタン正常系	名称取得＋明細計計算が実行される	戻り値確認
+147	Logic inputShowMain	明細の本体額NULLかつ消費税額NULL	明細計NULL安全	明細計=0+0=0が設定される	戻り値確認
+148	Logic confirmScreenMain	正常値	確認画面遷移正常系	単項目チェック→関連チェック→名称取得が実行される	戻り値確認
+149	Logic applyMain	processMode=NEW	新規申請	伝票番号採番→添付ファイルアップロード→WF申請→ヘッダINSERT→明細INSERT→一覧再取得	DB確認
+150	Logic applyMain	processMode=MODIFY	修正申請	論理削除→WF取下→WF再申請→ヘッダUPDATE→明細INSERT→一覧再取得	DB確認
+151	Logic applyMain	processMode=DELETE	削除申請	論理削除→WF申請→一覧再取得	DB確認
+152	Logic applyMain	processMode=NEW・WF申請例外	WF申請エラー（新規）	DAA20006Eがスローされる	例外確認
+153	Logic applyMain	processMode=MODIFY・WF申請例外	WF申請エラー（修正）	DAA20006Eがスローされる	例外確認
+154	Logic applyMain	processMode=DELETE・WF申請例外	WF申請エラー（削除）	DAA20006Eがスローされる	例外確認
+155	Logic applyMain	トランザクション確認	@TransactionAttribute(REQUIRED)	正常時コミット・例外時ロールバック	DB確認
+156	Logic confirmWithdrawMain	正常値・kekkaSaishutokuFlg=true	承認依頼取下正常（再取得あり）	承認状況更新→WF取下→一覧再取得	DB確認
+157	Logic confirmWithdrawMain	正常値・kekkaSaishutokuFlg=false	承認依頼取下正常（再取得なし）	承認状況更新→WF取下→NULLが返却される	DB確認
+158	Logic confirmWithdrawMain	WF取下例外	WF取下エラー	DAA20006Eがスローされる	例外確認
+159	Logic confirmWithdrawMain	トランザクション確認	@TransactionAttribute(REQUIRED)	正常時コミット・例外時ロールバック	DB確認
+
+===== テスト仕様（ディシジョンテーブル） =====
+
+--- DT-01: DAO+Mapper getResults（動的WHERE句の分岐網羅） ---
+分類	メソッド / 条件	取りうる値	No.1	No.2	No.3	No.4	No.5	No.6	No.7	No.8	No.9	No.10	No.11	No.12	No.13	No.14	No.15
+【条件】	getResults 動的SQL条件								
+	更新者(koshinsha)	値あり	Y	-	-	-	-	-	-	-	-	-	-	Y	-	-	-
+		NULL/空	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y
+	更新日From(koshimbiFrom)	値あり	Y	-	-	-	-	-	-	-	-	-	-	Y	-	-	-
+		NULL/空	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y
+	更新日To(koshimbiTo)	値あり	Y	-	-	-	-	-	-	-	-	-	-	Y	-	-	-
+		NULL/空	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y
+	勘定科目(kanjoKamoku)	値あり	Y	-	Y	-	-	-	-	-	-	-	-	Y	-	-	-
+		NULL/空	-	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y
+	予算組織(yosanSoshiki)	値あり	Y	-	-	Y	-	-	-	-	-	-	-	Y	-	-	-
+		NULL/空	-	Y	Y	-	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y
+	業種(gyoshu)	値あり	Y	-	-	-	Y	-	-	-	-	-	-	Y	-	-	-
+		NULL/空	-	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	-	Y	Y	Y
+	伝票番号(denpyoBango)	値あり	Y	-	-	-	-	Y	-	-	-	-	-	Y	-	-	-
+		NULL/空	-	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	-	Y	Y	Y
+	承認状況リスト(shoninJokyoList)	1件以上	Y	-	-	-	-	-	Y	-	-	-	-	Y	-	-	-
+		NULL/0件	-	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	-	Y	Y	Y
+	権限:予算組織未指定かつ選択可能予算組織リスト	リストあり	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-
+		リストなし/予算組織指定済	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y	Y
+	権限:業種未指定かつ選択可能業種リスト	リストあり	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-
+		リストなし/業種指定済	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y	Y
+	権限:勘定科目未指定かつ選択可能勘定科目リスト	リストあり	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-
+		リストなし/勘定科目指定済	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y	Y
+	権限:選択可能科目摘要リスト	リストあり	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-
+		リストなし	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y	Y
+	JOIN:申請承認INNER JOIN	結合あり	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	-
+		結合なし（申請承認データなし）	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-
+	JOIN:V_ユーザー情報LEFT JOIN	結合あり	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y
+		結合なし（NULL）	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-
+【結果】	検索結果	該当データあり	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y
+		該当データなし（0件）	-	-	-	-	-	-	-	-	-	-	-	-	Y	Y	-
+	WHERE句:更新者条件	付加される	Y	-	-	-	-	-	-	-	-	-	-	Y	-	-	-
+		付加されない	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y
+	WHERE句:勘定科目条件	付加される	Y	-	Y	-	-	-	-	-	-	-	-	Y	-	-	-
+		付加されない	-	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	-	Y	Y	Y
+	WHERE句:権限フィルタ	付加される	-	-	-	-	-	-	-	Y	Y	Y	Y	-	-	-	-
+		付加されない	Y	Y	Y	Y	Y	Y	Y	-	-	-	-	Y	Y	Y	Y
+	添付数算出	0-3の値が返却	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y
+	ソート順	設計書通りの7項目昇順	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	-	-	Y
+
+--- DT-02: Logic searchMain / listShowMain / getListResultData ---
+分類	メソッド / 条件	取りうる値	No.1	No.2	No.3	No.4	No.5	No.6	No.7	No.8	No.9
+【条件】	public: searchMain								
+	validateSingleSearch結果	エラー（予算組織マスタ不存在）	Y	-	-	-	-	-	-	-	-
+		エラー（業種マスタ不存在）	-	Y	-	-	-	-	-	-	-
+		正常	-	-	Y	Y	Y	Y	Y	Y	Y
+	validateRelatedSearch結果	エラー（予算組織vs所属不一致）	-	-	Y	-	-	-	-	-	-
+		エラー（業種vs予算組織不一致）	-	-	-	Y	-	-	-	-	-
+		エラー（更新日To<From）	-	-	-	-	Y	-	-	-	-
+		正常	-	-	-	-	-	Y	Y	Y	Y
+	getListResultData結果	0件	-	-	-	-	-	Y	-	-	-
+		上限件数超過	-	-	-	-	-	-	Y	-	-
+		正常	-	-	-	-	-	-	-	Y	Y
+	public: listShowMain								
+	getReferenceDispName	正常	-	-	-	-	-	-	-	-	Y
+【結果】	処理結果	DAC00007E（予算組織マスタ不存在）	Y	-	-	-	-	-	-	-	-
+		E000008（業種マスタ不存在）	-	Y	-	-	-	-	-	-	-
+		DAC00024E（予算組織vs所属不一致）	-	-	Y	-	-	-	-	-	-
+		DAC00024E（業種vs予算組織不一致）	-	-	-	Y	-	-	-	-	-
+		DAC00024E（更新日大小関係）	-	-	-	-	Y	-	-	-	-
+		DAC00008E（0件）	-	-	-	-	-	Y	-	-	-
+		DAC00009E（上限超過）	-	-	-	-	-	-	Y	-	-
+		正常終了（一覧+名称返却）	-	-	-	-	-	-	-	Y	-
+		正常終了（名称のみ返却）	-	-	-	-	-	-	-	-	Y
+
+--- DT-03: Logic getReferenceDispName ---
+分類	メソッド / 条件	取りうる値	No.1	No.2	No.3	No.4	No.5	No.6	No.7	No.8
+【条件】	private: getReferenceDispName								
+	勘定科目コード(kanjoCd)	NULL	Y	-	-	-	-	-	-	-
+		空文字	-	Y	-	-	-	-	-	-
+		8桁未満	-	-	Y	-	-	-	-	-
+		8桁（マスタ存在）	-	-	-	Y	-	-	Y	Y
+		8桁（マスタ不存在）	-	-	-	-	Y	-	-	-
+	予算組織コード(shozokuCd)	NULL	Y	Y	-	-	-	-	-	-
+		値あり（マスタ存在）	-	-	Y	Y	Y	-	Y	-
+		値あり（マスタ不存在）	-	-	-	-	-	Y	-	-
+	業種コード(gyoshuCd)	NULL	Y	-	Y	-	-	-	-	-
+		値あり（マスタ存在）	-	Y	-	Y	-	Y	-	Y
+		値あり（マスタ不存在）	-	-	-	-	Y	-	-	-
+【結果】	勘定科目名称	空文字	Y	Y	Y	-	Y	-	-	-
+		名称あり	-	-	-	Y	-	-	Y	Y
+	予算組織名称	空文字	Y	Y	-	-	-	Y	-	-
+		名称あり	-	-	Y	Y	Y	-	Y	-
+	業種名称	空文字	Y	-	Y	-	Y	-	-	-
+		名称あり	-	Y	-	Y	-	Y	-	Y
+
+--- DT-04: Logic validateRelatedList ---
+分類	メソッド / 条件	取りうる値	No.1	No.2	No.3	No.4	No.5	No.6	No.7	No.8	No.9	No.10
+【条件】	public: validateRelatedList								
+	processMode	MODIFY	Y	Y	Y	-	-	-	-	-	-	-
+		DELETE	-	-	-	Y	Y	Y	-	-	-	-
+		WITHDRAW	-	-	-	-	-	-	Y	Y	-	-
+		COPY	-	-	-	-	-	-	-	-	Y	-
+		その他	-	-	-	-	-	-	-	-	-	Y
+	承認状況	差戻	Y	-	-	Y	-	-	-	-	-	-
+		下書保存	-	Y	-	-	Y	-	-	-	-	-
+		承認依頼中	-	-	Y	-	-	Y	Y	-	Y	Y
+		承認済	-	-	-	-	-	-	-	Y	-	-
+【結果】	処理結果	エラーなし	Y	Y	-	Y	Y	-	Y	-	Y	Y
+		DAC00027E（修正不可）	-	-	Y	-	-	-	-	-	-	-
+		DAC00026E（削除不可）	-	-	-	-	-	Y	-	-	-	-
+		DAC00133E（取下不可）	-	-	-	-	-	-	-	Y	-	-
+
+--- DT-05: Logic getSelectDetailedData ---
+分類	メソッド / 条件	取りうる値	No.1	No.2	No.3	No.4	No.5	No.6	No.7	No.8	No.9
+【条件】	public: getSelectDetailedData								
+	ヘッダ情報取得結果	NULL（0件）	Y	-	-	-	-	-	-	-	-
+		値あり	-	Y	Y	Y	Y	Y	Y	Y	Y
+	processMode	INQUIRY	-	Y	-	-	-	-	-	-	-
+		MODIFY	-	-	Y	Y	-	-	-	-	-
+		DELETE	-	-	-	-	Y	-	-	-	-
+		WITHDRAW	-	-	-	-	-	Y	-	-	-
+		COPY	-	-	-	-	-	-	Y	-	-
+	排他カウンタ(MODIFY時)	一致	-	-	Y	-	-	-	-	-	-
+		不一致	-	-	-	Y	-	-	-	-	-
+	申請番号	NULL	-	-	-	-	-	-	-	Y	-
+		値あり（WF取得正常）	-	Y	Y	-	Y	Y	Y	-	-
+		値あり（WF取得例外）	-	-	-	-	-	-	-	-	Y
+【結果】	処理結果	DAC00008E（0件）	Y	-	-	-	-	-	-	-	-
+		正常（仕訳情報あり）	-	Y	-	-	Y	Y	-	-	-
+		正常（仕訳情報なし）	-	-	Y	-	-	-	Y	Y	Y
+		DAC00025E（排他エラー）	-	-	-	Y	-	-	-	-	-
+	仕訳情報リスト	3行（勘定科目/仮受消費税/売掛金）	-	Y	-	-	Y	Y	-	-	-
+		空	-	-	Y	-	-	-	Y	Y	Y
+	承認情報	設定あり	-	Y	Y	-	Y	Y	Y	-	-
+		空	-	-	-	-	-	-	-	Y	Y
+
+--- DT-06: Logic validateSingleInput ---
+分類	メソッド / 条件	取りうる値	No.1	No.2	No.3	No.4	No.5	No.6	No.7	No.8	No.9	No.10	No.11	No.12	No.13
+【条件】	public: validateSingleInput								
+	取引日	NULL	Y	-	-	-	-	-	-	-	-	-	-	-	-
+		値あり	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
+	予算組織コード	NULL/空	-	Y	-	-	-	-	-	-	-	-	-	-	-
+		値あり（マスタ存在）	-	-	Y	-	-	-	-	-	-	-	-	Y	Y
+		値あり（マスタ不存在）	-	-	-	Y	-	-	-	-	-	-	-	-	-
+	業種コード	NULL/空	-	-	Y	-	Y	-	-	-	-	-	-	-	-
+		値あり（マスタ存在）	-	-	-	-	-	Y	-	-	-	-	-	Y	Y
+		値あり（マスタ不存在）	-	-	-	-	-	-	Y	-	-	-	-	-	-
+	勘定科目コード	NULL/空/8桁未満	-	-	-	-	-	Y	-	Y	-	-	-	-	-
+		8桁（マスタ存在・収益科目=true）	-	-	-	-	-	-	-	-	Y	-	-	Y	Y
+		8桁（マスタ不存在）	-	-	-	-	-	-	-	-	-	Y	-	-	-
+		8桁（マスタ存在・収益科目=false）	-	-	-	-	-	-	-	-	-	-	Y	-	-
+	科目摘要コード	NULL/空	-	-	-	-	-	-	-	-	Y	-	-	Y	-
+		値あり（マスタ存在）	-	-	-	-	-	-	-	-	-	-	-	-	Y
+		値あり（マスタ不存在）	-	-	-	-	-	-	-	Y	-	-	-	-	-
+	相手先コード（明細行）	NULL/空/8桁未満	-	-	-	-	-	-	-	-	-	-	-	Y	-
+		8桁以上（マスタ存在）	-	-	-	-	-	-	-	-	-	-	-	-	Y
+		8桁以上（マスタ不存在）	-	Y	-	-	-	-	-	-	-	-	-	-	-
+【結果】	処理結果	DAC00031E（取引日必須）	Y	-	-	-	-	-	-	-	-	-	-	-	-
+		DAC00007E（予算組織マスタ不存在）	-	-	-	Y	-	-	-	-	-	-	-	-	-
+		DAC00007E（業種マスタ不存在）	-	-	-	-	-	-	Y	-	-	-	-	-	-
+		DAC00007E（勘定科目マスタ不存在）	-	-	-	-	-	-	-	-	-	Y	-	-	-
+		DAC00038E（収益科目チェックNG）	-	-	-	-	-	-	-	-	-	-	Y	-	-
+		DAC00007E（科目摘要マスタ不存在）	-	-	-	-	-	-	-	Y	-	-	-	-	-
+		DAC00007E（相手先マスタ不存在）	-	Y	-	-	-	-	-	-	-	-	-	-	-
+		正常終了	-	-	Y	-	Y	Y	-	-	Y	-	-	Y	Y
+
+--- DT-07: Logic validateRelatedInput ---
+分類	メソッド / 条件	取りうる値	No.1	No.2	No.3	No.4	No.5	No.6	No.7	No.8	No.9	No.10	No.11	No.12	No.13	No.14	No.15	No.16	No.17	No.18	No.19	No.20
+【条件】	public: validateRelatedInput								
+	予算組織vs所属	NULL（スキップ）	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		一致	-	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
+		不一致	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+	業種vs予算組織	NULL（スキップ）	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		一致	-	Y	-	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
+		不一致	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+	権限チェック	OK	Y	Y	-	Y	-	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
+		NG	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+	明細合計額	0以外	Y	Y	-	Y	-	-	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
+		0	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-
+	消費税額≠0かつ本体額	≠0	Y	Y	-	Y	-	-	-	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
+		=0	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-
+	科目摘要必須判定	必須かつコードあり	-	-	-	-	-	-	-	-	Y	-	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
+		必須かつコードNULL	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-
+		非必須	Y	Y	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+	不課税取引判定	不課税かつ消費税取引区分正常	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-
+		不課税かつ消費税取引区分不正	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-
+		非不課税	Y	Y	-	Y	-	-	-	-	Y	Y	-	-	Y	Y	Y	Y	Y	Y	Y	Y
+	非課税取引判定	非課税かつ消費税取引区分正常	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-
+		非課税かつ消費税取引区分不正	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-
+		非非課税	Y	Y	-	Y	-	-	-	-	Y	Y	Y	Y	-	-	Y	Y	Y	Y	Y	Y
+	諸口判定	諸口かつ諸口取引先名称あり	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-
+		諸口かつ諸口取引先名称NULL	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-
+		非諸口かつ諸口取引先名称NULL	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	Y	Y
+		非諸口かつ諸口取引先名称あり	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-
+【結果】	処理結果	エラーなし	Y	Y	-	Y	-	-	-	-	Y	-	Y	-	Y	-	Y	-	Y	-	Y	Y
+		DAC00024E（予算組織vs所属不一致）	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		DAC00024E（業種vs予算組織不一致）	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		DAC00059W（権限チェックNG）	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-
+		DAC00135E（明細合計額0）	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-	-
+		DAC00137E（消費税/本体額不整合）	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-	-	-
+		DAC00000E（科目摘要必須）	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-	-	-
+		DAC00024E（不課税vs消費税取引区分）	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-	-	-
+		DAC00024E（非課税vs消費税取引区分）	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-	-	-
+		DAC00055E（諸口取引先名称なし）	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-	-	-
+		DAC00060E（非諸口に諸口名称あり）	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	-	Y	-	-
+
+--- DT-08: Logic saveDraftMain ---
+分類	メソッド / 条件	取りうる値	No.1	No.2	No.3	No.4	No.5	No.6
+【条件】	public: saveDraftMain								
+	伝票番号	NULL（新規）	Y	Y	-	-	-	-
+		値あり（修正）	-	-	Y	Y	Y	Y
+	明細リスト	NULL	-	Y	-	-	-	-
+		1件以上	Y	-	Y	Y	Y	Y
+	修正時:既存明細削除あり	あり	-	-	-	Y	-	-
+		なし	-	-	Y	-	Y	Y
+	修正時:新規明細追加あり	あり	-	-	-	-	Y	-
+		なし	-	-	Y	Y	-	Y
+	修正時:既存明細更新あり	あり	-	-	Y	Y	Y	Y
+		なし	Y	Y	-	-	-	-
+【結果】	ヘッダ処理	INSERT	Y	Y	-	-	-	-
+		UPDATE	-	-	Y	Y	Y	Y
+	明細処理	INSERT（全件）	Y	-	-	-	Y	-
+		INSERT＋UPDATE＋論理削除	-	-	-	Y	-	-
+		UPDATE（全件）	-	-	Y	-	-	Y
+		処理なし	-	Y	-	-	-	-
+	承認状況	下書保存	Y	Y	Y	Y	Y	Y
+
+--- DT-09: Logic applyMain ---
+分類	メソッド / 条件	取りうる値	No.1	No.2	No.3	No.4	No.5	No.6	No.7
+【条件】	public: applyMain								
+	processMode	NEW	Y	Y	-	-	-	-	-
+		MODIFY	-	-	Y	Y	-	-	-
+		DELETE	-	-	-	-	Y	Y	-
+	WF申請結果	正常	Y	-	Y	-	Y	-	-
+		例外	-	Y	-	Y	-	Y	-
+	修正時:既存申請番号	あり	-	-	Y	Y	-	-	-
+		なし	Y	Y	-	-	-	-	-
+	トランザクション	正常コミット	Y	-	Y	-	Y	-	Y
+		例外ロールバック	-	Y	-	Y	-	Y	-
+【結果】	処理結果	新規INSERT→WF申請→一覧再取得	Y	-	-	-	-	-	-
+		DAA20006E（WF申請エラー・新規）	-	Y	-	-	-	-	-
+		論理削除→WF取下→WF再申請→INSERT→一覧再取得	-	-	Y	-	-	-	-
+		DAA20006E（WF申請エラー・修正）	-	-	-	Y	-	-	-
+		論理削除→WF申請→一覧再取得	-	-	-	-	Y	-	-
+		DAA20006E（WF申請エラー・削除）	-	-	-	-	-	Y	-
+	DB状態	コミット	Y	-	Y	-	Y	-	Y
+		ロールバック	-	Y	-	Y	-	Y	-
+	承認状況	承認依頼中	Y	-	Y	-	-	-	-
+
+--- DT-10: Logic confirmWithdrawMain ---
+分類	メソッド / 条件	取りうる値	No.1	No.2	No.3	No.4
+【条件】	public: confirmWithdrawMain								
+	WF取下結果	正常	Y	Y	-	-
+		例外	-	-	Y	Y
+	kekkaSaishutokuFlg	true	Y	-	-	Y
+		false	-	Y	Y	-
+【結果】	処理結果	承認状況更新→WF取下→一覧再取得	Y	-	-	-
+		承認状況更新→WF取下→NULL返却	-	Y	-	-
+		DAA20006E（WF取下エラー）	-	-	Y	Y
+	DB状態	コミット	Y	Y	-	-
+		ロールバック	-	-	Y	Y
+
+===== テストデータセット =====
+
+--- TDS-01: DAO+Mapper getResults テストデータDB ---
+
+テーブル: DAC209_SHUEKI_NYURYOKU（収益入力）
+データ項目	TDS-01	TDS-02	TDS-03	TDS-04	TDS-05	TDS-06	TDS-07	TDS-08	TDS-09	TDS-10
+データの意図	全条件合致	更新者のみ合致	勘定科目のみ合致	予算組織のみ合致	業種のみ合致	承認状況=差戻	承認状況=下書保存	承認状況=承認依頼中	承認状況=承認済	抽出されないデータ（削除区分=無効）
+SAKZYO_KBN(削除区分)	0(有効)	0(有効)	0(有効)	0(有効)	0(有効)	0(有効)	0(有効)	0(有効)	0(有効)	1(無効)
+DENPYO_BANGO(伝票番号)	26000001	26000002	26000003	26000004	26000005	26000006	26000007	26000008	26000009	26000010
+SHONIN_JOKYO(承認状況)	01(差戻)	02(下書保存)	03(承認依頼中)	04(承認済)	01(差戻)	01(差戻)	02(下書保存)	03(承認依頼中)	04(承認済)	01(差戻)
+SAISHUU_KOSHIMSHA_USER_ID	USER001	USER002	USER001	USER003	USER001	USER001	USER002	USER003	USER001	USER001
+SAISHUU_KOSHIM_NICHIJI	2026-03-01 10:00:00	2026-03-05 11:00:00	2026-03-10 09:00:00	2026-03-15 14:00:00	2026-03-20 08:00:00	2026-03-01 10:00:00	2026-03-05 11:00:00	2026-03-10 09:00:00	2026-03-15 14:00:00	2026-03-20 08:00:00
+TORIHIKIBI(取引日)	2026-03-01	2026-03-05	2026-03-10	2026-03-15	2026-03-20	2026-03-01	2026-03-05	2026-03-10	2026-03-15	2026-03-20
+KEIRIBI(経理日)	2026-03-01	2026-03-05	2026-03-10	2026-03-15	2026-03-20	2026-03-01	2026-03-05	2026-03-10	2026-03-15	2026-03-20
+KO_KAMOKU_CD(項科目コード)	101000	101000	102000	103000	101000	101000	102000	103000	101000	101000
+MOKUSETSU_KAMOKU_CD(目節科目コード)	01	02	01	01	01	01	01	01	01	01
+YOSAN_SOSHIKI_CD(予算組織コード)	10001	10002	10001	20001	30001	10001	10002	20001	30001	10001
+GYOSHU_CD(業種コード)	001	002	001	003	004	001	002	003	001	001
+GOKEI_KINGAKU(合計金額)	500000	350000	120000	750000	600000	450000	300000	200000	850000	100000
+TENPU_FILE_MEISHO_1	file1.pdf	NULL	file1.pdf	NULL	file1.pdf	NULL	file1.pdf	NULL	file1.pdf	NULL
+TENPU_FILE_MEISHO_2	file2.pdf	NULL	NULL	NULL	file2.pdf	NULL	NULL	NULL	file2.pdf	NULL
+TENPU_FILE_MEISHO_3	file3.pdf	NULL	NULL	NULL	NULL	NULL	NULL	file3.pdf	NULL	NULL
+SHINSEI_BANGO(申請番号)	SH001	SH002	SH003	SH004	SH005	SH006	SH007	SH008	SH009	SH010
+HAITA_COUNTER(排他カウンタ)	1	1	1	1	1	1	1	1	1	1
+KAMOKU_TEKIYO_CD(科目摘要コード)	TK01	TK02	TK01	NULL	TK03	TK01	TK02	NULL	TK01	TK01
+
+テーブル: DAC210_SHUEKI_NYURYOKU_MEISAI（収益入力明細）
+データ項目	TDS-M01	TDS-M02	TDS-M03	TDS-M04	TDS-M05
+データの意図	TDS-01の明細1行目	TDS-01の明細2行目	TDS-02の明細1行目	TDS-04の明細1行目	TDS-08の明細1行目
+DENPYO_BANGO	26000001	26000001	26000002	26000004	26000008
+MEISAI_BANGO	1	2	1	1	1
+AITESAKI_CD	T00010001	T00020001	T00010001	T00030001	T00040001
+HONTAI_KINGAKU	300000	200000	350000	750000	200000
+SHOHIZEI_GAKU	30000	20000	35000	75000	20000
+SHOHIZEI_TORIHIKI_KUBUN	01(課税)	01(課税)	02(非課税)	01(課税)	03(不課税)
+NYUKIN_YOTEIBI	2026-04-01	2026-04-15	2026-04-05	2026-04-20	2026-04-10
+SHOKUCHI_TORIHIKISAKI_MEISHO	NULL	NULL	NULL	NULL	NULL
+HAITA_COUNTER	1	1	1	1	1
+
+テーブル: V_AQA011_USER_JOHO（V_ユーザー情報（会内））
+データ項目	TDS-U01	TDS-U02	TDS-U03	TDS-U04
+データの意図	結合されるユーザー	結合されるユーザー	結合されるユーザー	結合されないユーザー（適用期間外）
+ACCOUNT	USER001	USER002	USER003	USER004
+HYOJI_MEI_KANJI	田中太郎	鈴木花子	佐藤次郎	存在しない
+TEKIYO_KAISHI_NENGAPPI	20260101	20260101	20260101	20250101
+TEKIYO_SHURYO_NENGAPPI	20261231	20261231	20261231	20251231
+
+テーブル: AQA_SHINSEI_SHONIN（申請承認）
+データ項目	TDS-SS01	TDS-SS02	TDS-SS03
+データの意図	INNER JOIN結合される	INNER JOIN結合される	INNER JOIN結合されない（削除区分=無効）
+SHINSEI_BANGO	SH001	SH002	SH010
+SHINSEI_SHOZOKU_CD	10001	10001	10001
+SHINSEI_USER_ID	USER001	USER001	USER001
+SAKZYO_KBN	0(有効)	0(有効)	1(無効)
+
+--- TDS-02: テストデータ期待値（getResults 全条件指定時） ---
+検索条件パラメータ:
+koshinsha=田中	koshimbiFrom=20260301	koshimbiTo=20260320	kanjoKamoku=10100001	yosanSoshiki=10001	gyoshu=001	denpyoBango=26000001	shoninJokyoList=[01]
+
+期待結果:
+SHONIN_JOKYO	KOSHIMBI	KEIRIBI	KOSHINSHA	KANJO_KAMOKU	GOKEIGAKU	TENPUSU	DENPYO_BANGO	HAITA_COUNTER
+差戻	20260301	20260301	田中太郎	（目節科目名称）	500000	3	26000001	1
+
+--- TDS-03: テストデータ期待値（getResults 全条件NULL時） ---
+検索条件パラメータ: 全てNULL/空
+期待結果: TDS-01～TDS-09のうち申請承認テーブルで結合される全件（削除区分=有効のもの）がソート順で返却
+
+--- TDS-04: Logic テストデータ ---
+テスト対象メソッド	テストデータ概要
+validateSingleSearch	予算組織コード=10001（マスタ存在）/ 99999（マスタ不存在）/ NULL
+validateSingleSearch	業種コード=001（マスタ存在）/ 999（マスタ不存在）/ NULL
+validateRelatedSearch	予算組織=10001,所属コード=10001（一致）/ 10001,20001（不一致）
+validateRelatedSearch	業種=001,予算組織=10001（一致）/ 001,20001（不一致）
+validateRelatedSearch	更新日From=20260301,To=20260331（正常）/ From=20260331,To=20260301（逆転）
+getListResultData	検索結果0件 / 検索結果1件 / 検索結果=上限件数 / 検索結果=上限件数+1
+validateSingleInput	取引日=2026-03-01（正常）/ NULL
+validateSingleInput	勘定科目コード=10100001（収益科目=true）/ 10200001（収益科目=false）/ 99990001（不存在）
+validateRelatedInput	合計額=500000（正常）/ 0
+validateRelatedInput	明細: 本体額=300000,消費税額=30000（正常）/ 本体額=0,消費税額=30000（不整合）
+validateRelatedInput	諸口相手先コード+諸口取引先名称あり（正常）/ 諸口取引先名称NULL（エラー）
+saveDraftMain	伝票番号=NULL（新規）/ 26000001（修正）
+applyMain	processMode=NEW / MODIFY / DELETE
+confirmWithdrawMain	kekkaSaishutokuFlg=true / false
