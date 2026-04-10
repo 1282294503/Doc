@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="jakarta.faces.core"
+  xmlns:h="jakarta.faces.html"
+  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:aw="http://hokuren.or.jp/awa"
+  xmlns:da="http://hokuren.or.jp/daa">
+<ui:composition template="/AWA_layoutTemplate.xhtml">
+  <ui:param name="enctype" value="multipart/form-data" />
+  <f:metadata>
+    <!-- TODO: 必要な定数クラスを定義 -->
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns" var="MessageNo" />
+    <!-- 初期化アクション -->
+    <aw:InitAction action="#{ {{controllerBean}}.init}"
+      initialized="#{ {{controllerBean}}.initialized}" />
+  </f:metadata>
+
+  <ui:define name="title">{{画面タイトル}}</ui:define>
+
+  <ui:define name="body">
+    <div id="entDiv" data-my-attribute="1" />
+    <div id="focusDiv" data-my-attribute="1" />
+    <!--
+      検索子画面再表示スクリプト（conditional-validation.xhtml 準拠）
+      - 子画面側 hidden のクラス名は「{{子画面WidgetVar}}_hidden」を合わせる
+      - WidgetVar は include 先の dialog 定義に合わせる
+    -->
+    <h:outputScript target="body">
+      $(function() {
+        if (PF('{{子画面WidgetVar}}')) {
+          var hidden = $('.{{子画面WidgetVar}}_hidden').first();
+          if (hidden.length &amp;&amp; hidden.val() === "true") {
+            PF('{{子画面WidgetVar}}').show();
+          }
+        }
+      });
+    </h:outputScript>
+
+    <!-- パンくずリスト -->
+    <p:breadCrumb homeDisplay="path">
+      <p:menuitem value="{{一覧画面名}}" style="background-color: yellow" />
+      <p:menuitem value="{{入力画面名}}" />
+      <p:menuitem value="{{確認画面名}}" />
+    </p:breadCrumb>
+
+    <!-- エラーメッセージパネル -->
+    <p:panel
+      id="errorMessagePanel"
+      header="エラー情報"
+      styleClass="error left"
+      rendered="#{fn:length(facesContext.messageList) > 0}">
+      <p:messages id="errorMessages" closable="false" showIcon="false" styleClass="bullet" />
+    </p:panel>
+
+    <!-- ヘッダーボタン群 -->
+    <p:outputPanel styleClass="group">
+      <p:commandButton value="登録" id="regist" action="#{ {{controllerBean}}.regist}" ajax="false" styleClass="left" />
+      <p:commandButton value="クリア" id="clear" action="#{ {{controllerBean}}.clear}" immediate="true" ajax="false" styleClass="right" />
+      <p:commandButton value="表示" id="listShow" action="#{ {{controllerBean}}.listShow}" ajax="false" styleClass="right" />
+      <p:commandButton value="照会" id="search" action="#{ {{controllerBean}}.search}" ajax="false" styleClass="right" />
+    </p:outputPanel>
+
+    <p:outputPanel styleClass="box center">
+      <p>検索条件を入力し、一覧表示する場合は照会ボタンを押下してください。<br />
+      ※未承認のデータは申請者と承認者のみ照会できます</p>
+    </p:outputPanel>
+
+    <!-- 検索条件パネル -->
+    <p:panel header="検索条件" toggleable="true" styleClass="fit" collapsed="#{ {{controllerBean}}.conditionPanelClosed}">
+      <p:focus for="{{初期フォーカス項目ID}}" />
+      <p:panelGrid styleClass="group">
+        <!--
+          入力方式選定ルール（設計書 項目説明シート基準）
+          - 属性=文字      : p:inputText + aw:InputValidator inputType="11"
+          - 属性=文字(全角): p:inputText + aw:InputValidator inputType="1"
+          - 属性=数字      : p:inputNumber（整数は decimalPlaces="0"）
+          - size/maxlength : 半角=size=maxlength、全角=size=maxlength*2
+          - 注意: aw:InputValidator inputType="11" は半角英数系。半角カナが必要な場合は aw:KanaHalfValidator を選定する。
+          - トレース欄: [項目説明No] [単体チェックNo] [適用タグ]
+        -->
+        <p:row>
+          <p:column style="width:130px; text-align: left;" styleClass="label">{{検索項目ラベル1}}</p:column>
+          <p:column layout="grid" styleClass="left">
+            <!-- 例: 属性=文字（半角） [項目説明No: ] [単体No: ] -->
+            <p:inputText id="{{項目ID1}}" value="#{ {{controllerBean}}.{{searchDto}}.{{プロパティ1}} }" autocomplete="on" maxlength="4" size="4">
+              <aw:InputValidator inputType="11" length="4" />
+              <aw:StringDigitsValidator length="4" msgKnrNum="#{MessageNo.DAA00010E}" msgEmbedStr1="{{検索項目ラベル1}}" msgEmbedStr2="4" msgEmbedStr3="" />
+            </p:inputText>
+          </p:column>
+          <p:column style="width:130px; text-align: left;" styleClass="label">{{検索項目ラベル2}}</p:column>
+          <p:column layout="grid" styleClass="left">
+            <!-- 例: 属性=数字（整数） -->
+            <p:inputNumber id="{{項目ID2}}" value="#{ {{controllerBean}}.{{searchDto}}.{{プロパティ2}} }" decimalPlaces="0" thousandSeparator="" autocomplete="on">
+              <aw:SeirekiYmdValidator enabledMaxDate="FALSE" msgKnrNum="#{MessageNo.DAA00017E}" msgEmbedStr1="{{検索項目ラベル2}}" />
+            </p:inputNumber>
+          </p:column>
+        </p:row>
+        
+        <!-- 検索ボタン付き項目の例 -->
+        <p:row>
+          <p:column>{{検索項目ラベル3}}</p:column>
+          <p:column>
+            <!-- 例: 属性=文字(全角) -->
+            <p:inputText id="{{項目ID3}}" value="#{ {{controllerBean}}.{{searchDto}}.{{プロパティ3}} }" autocomplete="on" maxlength="20" size="40">
+              <aw:InputValidator inputType="1" length="20" />
+            </p:inputText>
+            <p:commandButton value="検索" action="#{ {{controllerBean}}.{{検索アクション}} }" />
+            <p:outputLabel value="#{ {{controllerBean}}.{{searchDto}}.{{名称プロパティ}} }" />
+          </p:column>
+        </p:row>
+
+        <!-- 検索子画面呼び出しの例（コード入力 + 検索ボタン + 名称表示） -->
+        <p:row>
+          <p:column>{{検索項目ラベル(検索子画面)}}</p:column>
+          <p:column>
+            <p:inputText id="{{項目ID_子画面コード}}" value="#{ {{controllerBean}}.{{searchDto}}.{{子画面コードプロパティ}} }" autocomplete="on" maxlength="4" size="4">
+              <aw:InputValidator inputType="11" length="4" />
+            </p:inputText>
+            <p:commandButton value="検索" id="{{項目ID_子画面検索}}" action="#{ {{controllerBean}}.open{{子画面Ctl名}} }"
+              immediate="true"
+              process="@this"
+              update="@all"
+              oncomplete="if (PF('{{子画面WidgetVar}}')) { PF('{{子画面WidgetVar}}').show(); }" />
+            <p:outputLabel value="#{ {{controllerBean}}.{{searchDto}}.{{子画面名称プロパティ}} }" />
+            <!-- 戻り受け口メソッド例: #{ {{controllerBean}}.selected} -->
+          </p:column>
+        </p:row>
+
+        <!-- 小数入力の例: 設計書欄外の範囲に合わせて decimalPlaces を設定 -->
+        <p:row>
+          <p:column>{{検索項目ラベル(小数)}}</p:column>
+          <p:column>
+            <p:inputNumber id="{{項目ID_小数}}" value="#{ {{controllerBean}}.{{searchDto}}.{{小数プロパティ}} }" decimalPlaces="3" />
+          </p:column>
+        </p:row>
+
+        <!-- チェックボックスの例（DTOがboolean複数項目の場合） -->
+        <p:row>
+          <p:column>{{検索項目ラベル4}}</p:column>
+          <p:column>
+            <p:selectBooleanCheckbox id="{{項目ID4A}}" itemLabel="選択肢A" value="#{ {{controllerBean}}.{{searchDto}}.{{booleanプロパティA}} }" />
+            <p:selectBooleanCheckbox id="{{項目ID4B}}" itemLabel="選択肢B" value="#{ {{controllerBean}}.{{searchDto}}.{{booleanプロパティB}} }" />
+          </p:column>
+        </p:row>
+
+        <!-- チェックボックスの例（コード値複数選択 + AWA_ListItem の場合） -->
+        <p:row>
+          <p:column>{{検索項目ラベル(コード複数)}}</p:column>
+          <p:column>
+            <p:selectManyCheckbox id="{{項目ID_コード複数}}" value="#{ {{controllerBean}}.{{選択値リストプロパティ}} }" layout="pageDirection">
+              <f:selectItems value="#{ {{controllerBean}}.{{リストプロパティ}} }" var="item" itemLabel="#{item.label}" itemValue="#{item.value}" />
+            </p:selectManyCheckbox>
+          </p:column>
+        </p:row>
+
+        <!-- ラジオボタンの例 -->
+        <p:row>
+          <p:column>{{検索項目ラベル(ラジオ)}}</p:column>
+          <p:column>
+            <p:selectOneRadio id="{{項目ID_ラジオ}}" value="#{ {{controllerBean}}.{{searchDto}}.{{ラジオプロパティ}} }">
+              <f:selectItem itemLabel="選択肢1" itemValue="1" />
+              <f:selectItem itemLabel="選択肢2" itemValue="0" />
+            </p:selectOneRadio>
+          </p:column>
+        </p:row>
+      </p:panelGrid>
+    </p:panel>
+
+    <!-- 検索結果一覧 -->
+    <p:dataTable id="resultList" value="#{ {{controllerBean}}.{{一覧リストDto}} }" var="item"
+      rows="15" paginator="true"
+      paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+      rowsPerPageTemplate="15,30,50" sortMode="multiple"
+      selection="#{ {{controllerBean}}.selection}" selectionMode="single" rowKey="#{item.{{主キー項目}} }"
+      rendered="#{not empty {{controllerBean}}.{{一覧リストDto}} }"
+      scrollable="true" scrollWidth="100%">
+      
+      <p:columnGroup type="header">
+        <p:row>
+          <p:column style="width:4%" headerText="選択" />
+          <p:column style="width:6%" headerText="承認状況" />
+          <!-- TODO: ヘッダー項目を定義 -->
+          <p:column headerText="{{一覧ヘッダー項目1}}" />
+          <p:column headerText="{{一覧ヘッダー項目2}}" />
+        </p:row>
+      </p:columnGroup>
+      
+      <p:column selectionMode="single" styleClass="center" />
+      <p:column><h:outputText value="#{item.shoninJokyoKbnMeisho}" /></p:column>
+      <!-- TODO: 一覧表示項目を定義 -->
+      <p:column><h:outputText value="#{item.{{プロパティ1}} }" /></p:column>
+      <p:column><h:outputText value="#{item.{{プロパティ2}} }" /></p:column>
+    </p:dataTable>
+
+    <!-- フッターボタン群 -->
+    <p:outputPanel styleClass="group" rendered="#{not empty {{controllerBean}}.{{一覧リストDto}} }">
+      <p:commandButton value="ＣＳＶ出力" id="csvOutput" action="#{ {{controllerBean}}.csvOutput}" ajax="false" styleClass="left" />
+      <p:commandButton value="承認依頼取下" id="withdraw" action="#{ {{controllerBean}}.withdraw}" ajax="false" styleClass="right" />
+      <p:commandButton value="削除" id="delete" action="#{ {{controllerBean}}.delete}" ajax="false" styleClass="right" />
+      <p:commandButton value="修正" id="modify" action="#{ {{controllerBean}}.modify}" ajax="false" styleClass="right" />
+      <p:commandButton value="個別照会" id="inquiry" action="#{ {{controllerBean}}.inquiry}" ajax="false" styleClass="right" />
+    </p:outputPanel>
+
+    <!--
+      実装チェックリスト（4画面横断）
+      [ ] title / パンくず文言が設計書と一致
+      [ ] ボタンid/actionが controller のメソッド名と一致
+      [ ] ProcessMode / ApprovalStatus の rendered 条件が4画面で整合
+      [ ] DTO参照名（searchDto/inputDto/listDto）が4画面で整合
+      [ ] 項目説明シートNo / 単体チェックNo / バリデータタグの対応を確認
+      [ ] プルダウン: listプロパティ/初期値/必須の整合
+      [ ] チェックボックス: 複数選択/単独選択の要件を設計書に合わせる
+      [ ] AWA_ListItem 使用時は f:selectItems に var/itemLabel/itemValue を明示
+      [ ] ラジオ: itemValueがコード定義と一致
+      [ ] 検索子画面: openアクション / selected受け口 / 名称反映の導線を確認
+    -->
+  </ui:define>
+
+  <!--
+    検索子画面includeのパターン（必要時のみ有効化）
+    - action="#{ {{controllerBean}}.open{{子画面Ctl名}} }" + oncomplete で表示
+    - 子画面側の「選択」から parentController.selected を呼び戻す
+    - conditional-validation.xhtml の実装例:
+      <ui:param name="parentController" value="#{conditionalValidationBean}" />
+      <ui:param name="daa1111ctl" value="#{conditionalValidationBean.officeSearchCtl}" />
+  -->
+  <ui:define name="dialog">
+    <ui:include src="/view/{{子画面フォルダ}}/{{子画面Xhtml}}.xhtml">
+      <ui:param name="parentController" value="#{ {{controllerBean}} }" />
+      <ui:param name="{{子画面Ctl名}}" value="#{ {{controllerBean}}.{{子画面Ctlプロパティ}} }" />
+    </ui:include>
+  </ui:define>
+</ui:composition>
+</html>

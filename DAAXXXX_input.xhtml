@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="jakarta.faces.core"
+  xmlns:h="jakarta.faces.html"
+  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:aw="http://hokuren.or.jp/awa"
+  xmlns:da="http://hokuren.or.jp/daa">
+<ui:composition template="/AWA_layoutTemplate.xhtml">
+  <ui:param name="enctype" value="multipart/form-data" />
+  <f:metadata>
+    <!-- TODO: 必要な定数クラスを定義 -->
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns" var="MessageNo" />
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_ProcessModeCns" var="ProcessMode" />
+  </f:metadata>
+
+  <ui:define name="title">{{画面タイトル}}</ui:define>
+
+  <ui:define name="body">
+    <div id="entDiv" data-my-attribute="1" />
+    <div id="focusDiv" data-my-attribute="1" />
+    <!--
+      検索子画面再表示スクリプト（conditional-validation.xhtml 準拠）
+      - 子画面側 hidden のクラス名は「{{子画面WidgetVar}}_hidden」を合わせる
+      - WidgetVar は include 先の dialog 定義に合わせる
+    -->
+    <h:outputScript target="body">
+      $(function() {
+        if (PF('{{子画面WidgetVar}}')) {
+          var hidden = $('.{{子画面WidgetVar}}_hidden').first();
+          if (hidden.length &amp;&amp; hidden.val() === "true") {
+            PF('{{子画面WidgetVar}}').show();
+          }
+        }
+      });
+    </h:outputScript>
+
+    <!-- パンくずリスト -->
+    <p:breadCrumb homeDisplay="text">
+      <p:menuitem value="{{一覧画面名}}" />
+      <p:menuitem value="{{入力画面名}}" style="background-color: yellow" />
+      <p:menuitem value="{{確認画面名}}" />
+    </p:breadCrumb>
+
+    <!-- エラーメッセージパネル -->
+    <p:panel
+      id="errorMessagePanel"
+      header="エラー情報"
+      styleClass="error left"
+      rendered="#{fn:length(facesContext.messageList) > 0}">
+      <p:messages id="errorMessages" closable="false" showIcon="false" styleClass="bullet" />
+    </p:panel>
+
+    <p:outputPanel styleClass="box center">
+      確認画面へ遷移する場合、確認画面ボタンを押下してください。
+    </p:outputPanel>
+
+    <!-- フォーカス制御: 削除モード以外は入力項目、削除モードは日付など特定の項目へ -->
+    <p:focus for="{{初期フォーカス項目ID}}" rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}" />
+    <p:focus for="{{削除時フォーカス項目ID}}" rendered="#{ {{controllerBean}}.processMode eq ProcessMode.DELETE}" />
+
+    <p:panel header="{{パネルタイトル}}">
+      <p:panelGrid>
+        <!--
+          入力方式選定ルール（設計書 項目説明シート基準）
+          - 属性=文字      : p:inputText + aw:InputValidator inputType="11"
+          - 属性=文字(全角): p:inputText + aw:InputValidator inputType="1"
+          - 属性=数字      : p:inputNumber（整数は decimalPlaces="0"）
+          - size/maxlength : 半角=size=maxlength、全角=size=maxlength*2
+          - 注意: aw:InputValidator inputType="11" は半角英数系。半角カナが必要な場合は aw:KanaHalfValidator を選定する。
+          - トレース欄: [項目説明No] [単体チェックNo] [適用タグ]
+        -->
+        <!-- パターン: 通常/修正時はInputText、削除時はOutputText -->
+        <p:row>
+          <p:column>{{項目ラベル}}<span class="required">(*)</span></p:column>
+          <p:column>
+            <!-- 例: 属性=文字（半角） [項目説明No: ] [単体No: ] -->
+            <p:inputText id="{{項目ID}}" value="#{ {{controllerBean}}.{{inputDto}}.{{プロパティ}} }" autocomplete="on" maxlength="4" size="4"
+              rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}">
+              <aw:InputValidator inputType="11" length="4" />
+              <aw:RequiredValidator msgKnrNum="#{MessageNo.DAA00000E}" msgEmbedStr1="{{項目ラベル}}" />
+              <aw:StringDigitsValidator length="4" msgKnrNum="#{MessageNo.DAA00010E}" msgEmbedStr1="{{項目ラベル}}" msgEmbedStr2="4" msgEmbedStr3="" />
+            </p:inputText>
+            <h:outputText value="#{ {{controllerBean}}.{{inputDto}}.{{プロパティ}} }" rendered="#{ {{controllerBean}}.processMode eq ProcessMode.DELETE}" />
+          </p:column>
+        </p:row>
+        
+        <!-- 検索ボタン付き項目のパターン -->
+        <p:row>
+          <p:column>{{項目ラベル(検索)}}<span class="required">(*)</span></p:column>
+          <p:column>
+            <p:inputText id="{{検索項目ID}}" value="#{ {{controllerBean}}.{{inputDto}}.{{コードプロパティ}} }" autocomplete="on" maxlength="4" size="4"
+              rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}">
+              <aw:InputValidator inputType="11" length="4" />
+              <aw:RequiredValidator msgKnrNum="#{MessageNo.DAA00000E}" msgEmbedStr1="{{項目ラベル(検索)}}" />
+            </p:inputText>
+            <p:commandButton value="検索" action="#{ {{controllerBean}}.{{検索アクション}} }" rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}" />
+            <h:outputText value="#{ {{controllerBean}}.{{inputDto}}.{{コードプロパティ}} }" rendered="#{ {{controllerBean}}.processMode eq ProcessMode.DELETE}" />
+            <h:outputText value=" #{ {{controllerBean}}.{{inputDto}}.{{名称プロパティ}} }" />
+          </p:column>
+        </p:row>
+
+        <!-- セレクトボックスのパターン -->
+        <p:row>
+          <p:column>{{項目ラベル(選択)}}<span class="required">(*)</span></p:column>
+          <p:column>
+            <p:selectOneMenu value="#{ {{controllerBean}}.{{inputDto}}.{{プロパティ}} }" rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}">
+              <f:selectItems value="#{ {{controllerBean}}.{{リストプロパティ}} }" var="item" itemLabel="#{item.label}" itemValue="#{item.value}" />
+              <aw:RequiredValidator msgKnrNum="#{MessageNo.DAA00000E}" msgEmbedStr1="{{項目ラベル(選択)}}" />
+            </p:selectOneMenu>
+            <h:outputText value="#{ {{controllerBean}}.{{inputDto}}.{{名称プロパティ}} }" rendered="#{ {{controllerBean}}.processMode eq ProcessMode.DELETE}" />
+          </p:column>
+        </p:row>
+
+        <!-- ラジオボタンのパターン -->
+        <p:row>
+          <p:column>{{項目ラベル(ラジオ)}}<span class="required">(*)</span></p:column>
+          <p:column>
+            <p:selectOneRadio id="{{項目ID_ラジオ}}" value="#{ {{controllerBean}}.{{inputDto}}.{{ラジオプロパティ}} }"
+              rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}">
+              <f:selectItems value="#{ {{controllerBean}}.{{ラジオリストプロパティ}} }" var="item" itemLabel="#{item.label}" itemValue="#{item.value}" />
+              <aw:RequiredValidator msgKnrNum="#{MessageNo.DAA00000E}" msgEmbedStr1="{{項目ラベル(ラジオ)}}" />
+            </p:selectOneRadio>
+            <h:outputText value="#{ {{controllerBean}}.{{inputDto}}.{{ラジオ名称プロパティ}} }" rendered="#{ {{controllerBean}}.processMode eq ProcessMode.DELETE}" />
+          </p:column>
+        </p:row>
+
+        <!-- 複数チェックボックス（真偽値プロパティ複数）のパターン -->
+        <p:row>
+          <p:column>{{項目ラベル(複数チェック)}}</p:column>
+          <p:column>
+            <p:panelGrid columns="4" rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}">
+              <p:selectBooleanCheckbox itemLabel="{{選択肢名1}}" value="#{ {{controllerBean}}.{{inputDto}}.{{チェックプロパティ1}} }" />
+              <p:selectBooleanCheckbox itemLabel="{{選択肢名2}}" value="#{ {{controllerBean}}.{{inputDto}}.{{チェックプロパティ2}} }" />
+              <p:selectBooleanCheckbox itemLabel="{{選択肢名3}}" value="#{ {{controllerBean}}.{{inputDto}}.{{チェックプロパティ3}} }" />
+              <p:selectBooleanCheckbox itemLabel="{{選択肢名4}}" value="#{ {{controllerBean}}.{{inputDto}}.{{チェックプロパティ4}} }" />
+            </p:panelGrid>
+            <h:outputText value="#{ {{controllerBean}}.{{inputDto}}.{{複数チェック表示プロパティ}} }" rendered="#{ {{controllerBean}}.processMode eq ProcessMode.DELETE}" />
+          </p:column>
+        </p:row>
+
+        <!-- 検索子画面呼び出し（コード入力 + 検索ボタン + 名称表示）のパターン -->
+        <p:row>
+          <p:column>{{項目ラベル(検索子画面)}}<span class="required">(*)</span></p:column>
+          <p:column>
+            <p:inputText id="{{項目ID_子画面コード}}" value="#{ {{controllerBean}}.{{inputDto}}.{{子画面コードプロパティ}} }" autocomplete="on" maxlength="4" size="4"
+              rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}">
+              <aw:InputValidator inputType="11" length="4" />
+            </p:inputText>
+            <p:commandButton value="検索" id="{{項目ID_子画面検索}}" action="#{ {{controllerBean}}.open{{子画面Ctl名}} }"
+              immediate="true"
+              process="@this"
+              update="@all"
+              oncomplete="if (PF('{{子画面WidgetVar}}')) { PF('{{子画面WidgetVar}}').show(); }"
+              rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}" />
+            <h:outputText value="#{ {{controllerBean}}.{{inputDto}}.{{子画面コードプロパティ}} }" rendered="#{ {{controllerBean}}.processMode eq ProcessMode.DELETE}" />
+            <h:outputText value=" #{ {{controllerBean}}.{{inputDto}}.{{子画面名称プロパティ}} }" />
+            <!-- 戻り受け口メソッド例: #{ {{controllerBean}}.selected} -->
+          </p:column>
+        </p:row>
+
+        <!-- 例: 属性=文字（全角） -->
+        <p:row>
+          <p:column>{{項目ラベル(全角)}}</p:column>
+          <p:column>
+            <p:inputText id="{{項目ID_全角}}" value="#{ {{controllerBean}}.{{inputDto}}.{{全角プロパティ}} }" autocomplete="on" maxlength="20" size="40"
+              rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}">
+              <aw:InputValidator inputType="1" length="20" />
+            </p:inputText>
+          </p:column>
+        </p:row>
+
+        <!-- 例: 半角カナ -->
+        <p:row>
+          <p:column>{{項目ラベル(半角カナ)}}</p:column>
+          <p:column>
+            <p:inputText id="{{項目ID_半角カナ}}" value="#{ {{controllerBean}}.{{inputDto}}.{{半角カナプロパティ}} }" autocomplete="on" maxlength="30" size="30"
+              rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}">
+              <aw:KanaHalfValidator />
+            </p:inputText>
+          </p:column>
+        </p:row>
+
+        <!-- 例: 属性=数字（整数 / 小数） -->
+        <p:row>
+          <p:column>{{項目ラベル(数値)}}</p:column>
+          <p:column>
+            <p:inputNumber id="{{項目ID_整数}}" value="#{ {{controllerBean}}.{{inputDto}}.{{整数プロパティ}} }" decimalPlaces="0" thousandSeparator="" autocomplete="on"
+              rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}" />
+            <p:inputNumber id="{{項目ID_小数}}" value="#{ {{controllerBean}}.{{inputDto}}.{{小数プロパティ}} }" decimalPlaces="3"
+              rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}" />
+          </p:column>
+        </p:row>
+        
+        <!-- 削除モード時のみ表示する項目があれば -->
+        <p:row rendered="#{ {{controllerBean}}.processMode eq ProcessMode.DELETE}">
+          <p:column>{{項目ラベル}}</p:column>
+          <p:column>
+            <p:inputNumber id="{{項目ID}}" value="#{ {{controllerBean}}.{{inputDto}}.{{プロパティ}} }" decimalPlaces="0" thousandSeparator="" autocomplete="on" />
+          </p:column>
+        </p:row>
+      </p:panelGrid>
+    </p:panel>
+
+    <!-- 承認情報パネル（固定） -->
+    <p:panel header="承認情報">
+      <p:panelGrid columns="4">
+        <h:outputLabel value="更新者" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.shinseiJohoDtoList[0].shinseiDateTime}" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.shinseiJohoDtoList[0].shinseishaJoiShozokuMeisho} #{ {{controllerBean}}.{{approvalInfoDto}}.shinseiJohoDtoList[0].shinseishaShozokuMeisho}" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.shinseiJohoDtoList[0].shinseishaUserMeisho}" />
+
+        <h:outputLabel value="承認/差戻者" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.rirekiJohoDtoList[0].sosaDateTime}" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.rirekiJohoDtoList[0].sosashaJoiShozokuMeisho} #{ {{controllerBean}}.{{approvalInfoDto}}.rirekiJohoDtoList[0].sosashaShozokuMeisho}" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.rirekiJohoDtoList[0].sosashaUserMeisho}" />
+
+        <h:outputLabel value="差戻コメント" />
+        <p:column colspan="3">
+          <h:outputText value="#{ {{controllerBean}}.{{approvalInfoDto}}.rirekiJohoDtoList[0].sosaComment}" />
+        </p:column>
+      </p:panelGrid>
+    </p:panel>
+
+    <p:outputPanel styleClass="group">
+      <p:commandButton value="キャンセル" id="inputCancel" action="#{ {{controllerBean}}.inputCancel}" ajax="false" styleClass="center" immediate="true" />
+      <p:commandButton value="表示" id="inputShow" action="#{ {{controllerBean}}.inputShow}" ajax="false" styleClass="center" rendered="#{ {{controllerBean}}.processMode ne ProcessMode.DELETE}" />
+      <p:commandButton value="確認画面" id="confirmScreen" action="#{ {{controllerBean}}.confirmScreen}" ajax="false" styleClass="center" />
+    </p:outputPanel>
+
+    <!--
+      実装チェックリスト（4画面横断）
+      [ ] title / パンくず文言が設計書と一致
+      [ ] ボタンid/actionが controller のメソッド名と一致
+      [ ] ProcessMode / ApprovalStatus の rendered 条件が4画面で整合
+      [ ] DTO参照名（searchDto/inputDto/listDto）が4画面で整合
+      [ ] 項目説明シートNo / 単体チェックNo / バリデータタグの対応を確認
+      [ ] プルダウン: listプロパティ/初期値/必須の整合
+      [ ] チェックボックス: 最低1件選択の要否を設計書に合わせる
+      [ ] ラジオ: itemValueがコード定義と一致
+      [ ] AWA_ListItem 使用時は f:selectItems に var/itemLabel/itemValue を明示
+      [ ] 検索子画面: openアクション / selected受け口 / 名称反映の導線を確認
+    -->
+  </ui:define>
+
+  <!--
+    検索子画面includeのパターン（必要時のみ有効化）
+    - controller側に子画面制御プロパティを保持する
+    - action="#{ {{controllerBean}}.open{{子画面Ctl名}} }" + oncomplete で表示
+    - 子画面側の「選択」から parentController.selected を呼び戻す
+    - conditional-validation.xhtml の実装例:
+      <ui:param name="parentController" value="#{conditionalValidationBean}" />
+      <ui:param name="daa1111ctl" value="#{conditionalValidationBean.officeSearchCtl}" />
+  -->
+  <ui:define name="dialog">
+    <ui:include src="/view/{{子画面フォルダ}}/{{子画面Xhtml}}.xhtml">
+      <ui:param name="parentController" value="#{ {{controllerBean}} }" />
+      <ui:param name="{{子画面Ctl名}}" value="#{ {{controllerBean}}.{{子画面Ctlプロパティ}} }" />
+    </ui:include>
+  </ui:define>
+</ui:composition>
+</html>

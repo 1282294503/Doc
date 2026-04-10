@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="jakarta.faces.core"
+  xmlns:h="jakarta.faces.html"
+  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:aw="http://hokuren.or.jp/awa"
+  xmlns:da="http://hokuren.or.jp/daa">
+<ui:composition template="/AWA_layoutTemplate.xhtml">
+  <ui:param name="enctype" value="multipart/form-data" />
+  <f:metadata>
+    <!-- TODO: 必要な定数クラスを定義 -->
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns" var="MessageNo" />
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_ProcessModeCns" var="ProcessMode" />
+  </f:metadata>
+
+  <ui:define name="title">{{画面タイトル}}</ui:define>
+
+  <ui:define name="body">
+    <div id="entDiv" data-my-attribute="1" />
+
+    <!-- パンくずリスト -->
+    <p:breadCrumb homeDisplay="text">
+      <p:menuitem value="{{一覧画面名}}" />
+      <p:menuitem value="{{入力画面名}}" />
+      <p:menuitem value="{{確認画面名}}" style="background-color: yellow" />
+    </p:breadCrumb>
+
+    <!-- エラーメッセージパネル -->
+    <p:panel
+      id="errorMessagePanel"
+      header="エラー情報"
+      styleClass="error left"
+      rendered="#{fn:length(facesContext.messageList) > 0}">
+      <p:messages id="errorMessages" closable="false" showIcon="false" styleClass="bullet" />
+    </p:panel>
+
+    <!-- モードに応じた案内メッセージ -->
+    <p:outputPanel styleClass="box center">
+      <h:outputText value="内容を確認して申請ボタンを押してください。" rendered="#{ {{controllerBean}}.processMode ne ProcessMode.CANCEL_REQUEST and {{controllerBean}}.processMode ne ProcessMode.WITHDRAW}" />
+      <h:outputText value="内容を確認して確認ボタンを押してください。" rendered="#{ {{controllerBean}}.processMode eq ProcessMode.CANCEL_REQUEST}" />
+      <h:outputText value="内容を確認して承認依頼取下ボタンを押してください。" rendered="#{ {{controllerBean}}.processMode eq ProcessMode.WITHDRAW}" />
+    </p:outputPanel>
+
+    <p:panel header="{{パネルタイトル}}">
+      <p:panelGrid>
+        <!--
+          確認項目の作り方
+          - Input画面と同順・同ラベルで作成し、原則すべて OutputText
+          - 連結表示（コード + 名称）や rendered 条件は Input と揃える
+          - トレース欄: [項目説明No] [単体チェックNo] [元Input項目ID]
+        -->
+        <p:row>
+          <p:column style="width:25%">{{項目ラベル}}</p:column>
+          <p:column><h:outputText value="#{ {{controllerBean}}.{{inputDto}}.{{プロパティ}} }" /></p:column>
+        </p:row>
+
+        <p:row>
+          <p:column>{{項目ラベル(連結表示)}}</p:column>
+          <p:column><h:outputText value="#{ {{controllerBean}}.{{inputDto}}.{{コードプロパティ}} } #{ {{controllerBean}}.{{inputDto}}.{{名称プロパティ}} }" /></p:column>
+        </p:row>
+      </p:panelGrid>
+    </p:panel>
+
+    <!-- フッターボタン群 (モードによる出し分け) -->
+    <p:outputPanel styleClass="group">
+      <!-- 通常・訂正モード -->
+      <p:commandButton value="訂正" id="correct" action="#{ {{controllerBean}}.correct}" ajax="false" styleClass="center"
+        rendered="#{ {{controllerBean}}.processMode ne ProcessMode.CANCEL_REQUEST and {{controllerBean}}.processMode ne ProcessMode.WITHDRAW}" />
+      
+      <!-- キャンセル要求モード -->
+      <p:commandButton value="キャンセル" id="confirmCancel" action="#{ {{controllerBean}}.confirmCancel}" ajax="false" styleClass="center"
+        rendered="#{ {{controllerBean}}.processMode eq ProcessMode.CANCEL_REQUEST}" />
+      
+      <p:commandButton value="承認ルート表示" id="approvalRoute" action="#{ {{controllerBean}}.approvalRoute}" styleClass="center" />
+      
+      <!-- 申請ボタン (通常時) -->
+      <p:commandButton value="申請" id="apply" action="#{ {{controllerBean}}.apply}" ajax="false" styleClass="center"
+        rendered="#{ {{controllerBean}}.processMode ne ProcessMode.CANCEL_REQUEST and {{controllerBean}}.processMode ne ProcessMode.WITHDRAW}" />
+      
+      <!-- 確認ボタン (キャンセル要求時) -->
+      <p:commandButton value="確認" id="confirm" action="#{ {{controllerBean}}.confirm}" ajax="false" styleClass="center"
+        rendered="#{ {{controllerBean}}.processMode eq ProcessMode.CANCEL_REQUEST}" />
+      
+      <!-- 取下ボタン (取下モード時) -->
+      <p:commandButton value="承認依頼取下" id="confirmWithdraw" action="#{ {{controllerBean}}.confirmWithdraw}" ajax="false" styleClass="center"
+        rendered="#{ {{controllerBean}}.processMode eq ProcessMode.WITHDRAW}" />
+    </p:outputPanel>
+
+    <!--
+      実装チェックリスト（4画面横断）
+      [ ] title / パンくず文言が設計書と一致
+      [ ] ボタンid/actionが controller のメソッド名と一致
+      [ ] ProcessMode / ApprovalStatus の rendered 条件が4画面で整合
+      [ ] DTO参照名（searchDto/inputDto/listDto）が4画面で整合
+      [ ] 確認画面の表示順が入力画面と一致
+    -->
+  </ui:define>
+</ui:composition>
+</html>

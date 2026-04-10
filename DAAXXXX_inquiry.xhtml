@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="jakarta.faces.core"
+  xmlns:h="jakarta.faces.html"
+  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:aw="http://hokuren.or.jp/awa"
+  xmlns:da="http://hokuren.or.jp/daa">
+<ui:composition template="/AWA_layoutTemplate.xhtml">
+  <ui:param name="enctype" value="multipart/form-data" />
+  <f:metadata>
+    <!-- TODO: 必要な定数クラスを定義 -->
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns" var="MessageNo" />
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_ApprovalStatusCns" var="ApprovalStatus" />
+  </f:metadata>
+
+  <ui:define name="title">{{画面タイトル}}</ui:define>
+
+  <ui:define name="body">
+    <div id="entDiv" data-my-attribute="1" />
+    <p:focus for="previous" />
+
+    <!-- パンくずリスト -->
+    <p:breadCrumb homeDisplay="text">
+      <p:menuitem value="{{一覧画面名}}" />
+      <p:menuitem value="{{照会画面名}}" style="background-color: yellow" />
+    </p:breadCrumb>
+
+    <p:outputPanel styleClass="box center">
+      照会情報を確認してください。
+    </p:outputPanel>
+
+    <p:panel header="{{パネルタイトル}}">
+      <p:panelGrid>
+        <!--
+          照会項目の作り方
+          - 照会は原則すべて OutputText
+          - 承認状況などの条件表示は設計書の表示・非表示条件を転記
+          - トレース欄: [項目説明No] [単体チェックNo] [表示条件]
+        -->
+        <!-- 申請内容の表示条件（承認済み以外の場合のみ表示など） -->
+        <p:row rendered="#{ {{controllerBean}}.approvalStatus ne ApprovalStatus.APPROVED}">
+          <p:column style="width:25%">申請内容</p:column>
+          <p:column><h:outputText value="#{ {{controllerBean}}.{{inputDto}}.shinseiNaiyoMeisho}" /></p:column>
+        </p:row>
+        
+        <!-- TODO: 照会項目を定義 (すべてOutputText) -->
+        <p:row>
+          <p:column style="width:25%">{{項目ラベル}}</p:column>
+          <p:column><h:outputText value="#{ {{controllerBean}}.{{inputDto}}.{{プロパティ}} }" /></p:column>
+        </p:row>
+
+        <p:row>
+          <p:column>{{項目ラベル(連結表示)}}</p:column>
+          <p:column><h:outputText value="#{ {{controllerBean}}.{{inputDto}}.{{コードプロパティ}} } #{ {{controllerBean}}.{{inputDto}}.{{名称プロパティ}} }" /></p:column>
+        </p:row>
+      </p:panelGrid>
+    </p:panel>
+
+    <!-- 承認情報パネル -->
+    <p:panel header="承認情報">
+      <p:panelGrid columns="4">
+        <h:outputLabel value="更新者" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.shinseiJohoDtoList[0].shinseiDateTime}" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.shinseiJohoDtoList[0].shinseishaJoiShozokuMeisho} #{ {{controllerBean}}.{{approvalInfoDto}}.shinseiJohoDtoList[0].shinseishaShozokuMeisho}" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.shinseiJohoDtoList[0].shinseishaUserMeisho}" />
+
+        <h:outputLabel value="承認/差戻者" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.rirekiJohoDtoList[0].sosaDateTime}" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.rirekiJohoDtoList[0].sosashaJoiShozokuMeisho} #{ {{controllerBean}}.{{approvalInfoDto}}.rirekiJohoDtoList[0].sosashaShozokuMeisho}" />
+        <h:outputLabel value="#{ {{controllerBean}}.{{approvalInfoDto}}.rirekiJohoDtoList[0].sosashaUserMeisho}" />
+
+        <h:outputLabel value="差戻コメント" />
+        <p:column colspan="3">
+          <h:outputText value="#{ {{controllerBean}}.{{approvalInfoDto}}.rirekiJohoDtoList[0].sosaComment}" />
+        </p:column>
+      </p:panelGrid>
+    </p:panel>
+
+    <p:outputPanel styleClass="group">
+      <p:commandButton value="前画面" id="previous" action="#{ {{controllerBean}}.preview}" ajax="false" styleClass="center" />
+    </p:outputPanel>
+
+    <!--
+      実装チェックリスト（4画面横断）
+      [ ] title / パンくず文言が設計書と一致
+      [ ] ボタンid/actionが controller のメソッド名と一致
+      [ ] ProcessMode / ApprovalStatus の rendered 条件が4画面で整合
+      [ ] DTO参照名（searchDto/inputDto/listDto）が4画面で整合
+      [ ] 申請内容行の表示条件が設計書と一致
+    -->
+  </ui:define>
+</ui:composition>
+</html>
