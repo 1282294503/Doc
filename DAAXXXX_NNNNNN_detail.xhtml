@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="jakarta.faces.core"
+  xmlns:h="jakarta.faces.html"
+  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:aw="http://hokuren.or.jp/awa"
+  xmlns:da="http://hokuren.or.jp/daa">
+<ui:composition template="/AWA_layoutTemplate.xhtml">
+  <ui:param name="enctype" value="multipart/form-data" />
+  <f:metadata>
+    <!-- TODO: 必要な定数クラスを定義 -->
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns" var="MessageNo" />
+  </f:metadata>
+
+  <ui:define name="title">{{画面タイトル}}</ui:define>
+
+  <ui:define name="body">
+    <div id="entDiv" data-my-attribute="1" />
+
+    <!-- パンくずリスト -->
+    <p:breadCrumb homeDisplay="text">
+      <p:menuitem value="{{一覧画面名}}" />
+      <p:menuitem value="{{詳細照会画面名}}" style="background-color: yellow" />
+    </p:breadCrumb>
+
+    <!-- エラーメッセージパネル -->
+    <p:panel
+      id="errorMessagePanel"
+      header="エラー情報"
+      styleClass="error left"
+      rendered="#{fn:length(facesContext.messageList) > 0}">
+      <p:messages id="errorMessages" closable="false" showIcon="false" styleClass="bullet" />
+    </p:panel>
+
+    <!-- 案内メッセージ -->
+    <p:outputPanel styleClass="box center">
+      表示内容を照会してください。必要に応じて印刷や出力ボタンを押下してください。
+    </p:outputPanel>
+
+    <!-- ヘッダ情報パネル -->
+    <p:panel header="{{メイン情報タイトル}}" styleClass="fit">
+      <p:panelGrid styleClass="group">
+        <p:row>
+          <p:column styleClass="label">{{ラベル1}}</p:column>
+          <p:column>
+            <h:outputText value="#{ {{controllerBean}}.{{confirmationDto}}.{{プロパティ1}} }" />
+          </p:column>
+          <p:column styleClass="label">{{ラベル2}}</p:column>
+          <p:column>
+            <h:outputText value="#{ {{controllerBean}}.{{confirmationDto}}.{{プロパティ2}} }" />
+          </p:column>
+        </p:row>
+        <p:row>
+          <p:column styleClass="label">{{日付ラベル}}</p:column>
+          <p:column>
+            <h:outputText value="#{ {{controllerBean}}.{{confirmationDto}}.{{日付プロパティ}} }">
+              <nu:SlashSeparatedDateFormatConverter />
+            </h:outputText>
+          </p:column>
+          <p:column styleClass="label">{{ファイル件数ラベル}}</p:column>
+          <p:column>
+            <h:outputText value="#{ {{controllerBean}}.{{confirmationDto}}.{{ファイル数}} }" />
+            <p:commandButton value="参照" action="#{ {{controllerBean}}.showFile}" process="@this" styleClass="ml-10" />
+          </p:column>
+        </p:row>
+        <p:row>
+          <p:column styleClass="label">{{備考・摘要ラベル}}</p:column>
+          <p:column colspan="3">
+            <h:outputText value="#{ {{controllerBean}}.{{confirmationDto}}.{{長いテキスト}} }" />
+          </p:column>
+        </p:row>
+      </p:panelGrid>
+    </p:panel>
+
+    <!-- 明細一覧テーブル -->
+    <h:outputText value="{{明細セクションタイトル}}" styleClass="sub-header mt-10" />
+    <p:dataTable id="detailList" value="#{ {{controllerBean}}.{{confirmationDto}}.{{明細リスト}} }" var="detail"
+      scrollable="true" scrollWidth="100%" styleClass="fit">
+      <p:column headerText="No" style="width:60px; text-align:center">
+        <h:outputText value="#{detail.no}" />
+      </p:column>
+      <p:column headerText="{{明細項目A}}">
+        <h:outputText value="#{detail.{{プロパティA}} }" />
+      </p:column>
+      <p:column headerText="{{金額}}" style="width:120px; text-align:right">
+        <h:outputText value="#{detail.{{金額}} }">
+          <f:convertNumber pattern="#,###" />
+        </h:outputText>
+      </p:column>
+      <!-- TODO: 必要なカラムを適宜追加 -->
+    </p:dataTable>
+
+    <!-- 合計金額などのサマリ表示 -->
+    <p:panelGrid styleClass="group no-border" style="width:100%">
+      <p:row>
+        <p:column style="text-align:right">
+          <h:outputText value="合計金額：" />
+          <h:outputText value="#{ {{controllerBean}}.{{confirmationDto}}.{{合計プロパティ}} }" styleClass="bold">
+            <f:convertNumber pattern="#,###" />
+          </h:outputText>
+        </p:column>
+      </p:row>
+    </p:panelGrid>
+
+    <!-- フッターボタン群 -->
+    <p:outputPanel styleClass="group mt-10">
+      <p:commandButton value="前画面" action="#{ {{controllerBean}}.previous}" ajax="false" styleClass="left" />
+      <p:commandButton value="修正" action="#{ {{controllerBean}}.modify}" ajax="false" />
+      <p:commandButton value="複写" action="#{ {{controllerBean}}.copy}" ajax="false" />
+      <p:commandButton value="ＣＳＶ出力" action="#{ {{controllerBean}}.outputCsv}" ajax="false" />
+      <p:commandButton value="印刷" ajax="false" disabled="true" />
+    </p:outputPanel>
+  </ui:define>
+</ui:composition>
+</html>

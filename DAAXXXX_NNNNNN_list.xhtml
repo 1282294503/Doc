@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="jakarta.faces.core"
+  xmlns:h="jakarta.faces.html"
+  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:aw="http://hokuren.or.jp/awa"
+  xmlns:da="http://hokuren.or.jp/daa">
+<ui:composition template="/AWA_layoutTemplate.xhtml">
+  <ui:param name="enctype" value="multipart/form-data" />
+  <f:metadata>
+    <!-- TODO: 必要な定数クラスを定義 -->
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns" var="MessageNo" />
+    <!-- 初期化アクション -->
+    <aw:wnitAction action="#{ {{controllerBean}}.init}"
+      initialized="#{ {{controllerBean}}.initialized}" />
+  </f:metadata>
+
+  <ui:define name="title">{{画面タイトル}}</ui:define>
+
+  <ui:define name="body">
+    <div id="entDiv" data-my-attribute="1" />
+
+    <!-- パンくずリスト -->
+    <p:breadCrumb homeDisplay="text">
+      <p:menuitem value="{{一覧画面名}}" style="background-color: yellow" />
+    </p:breadCrumb>
+
+    <!-- エラーメッセージパネル -->
+    <p:panel
+      id="errorMessagePanel"
+      header="エラー情報"
+      styleClass="error left"
+      rendered="#{fn:length(facesContext.messageList) > 0}">
+      <p:messages id="errorMessages" closable="false" showIcon="false" styleClass="bullet" />
+    </p:panel>
+
+    <!-- 案内メッセージ -->
+    <p:outputPanel styleClass="box center">
+      <p>検索条件を入力し、一覧表示する場合は照会ボタンを押下してください。<br />
+         {{補足説明メッセージ}}</p>
+    </p:outputPanel>
+
+    <!-- 検索条件パネル -->
+    <p:panel header="検索条件" toggleable="true" styleClass="fit"
+      collapsed="#{ {{controllerBean}}.conditionPanelClosed}">
+      <p:focus for="{{初期フォーカスID}}" />
+      <p:panelGrid styleClass="group">
+        <!-- TODO: 検索項目を定義 (以下はサンプル構造) -->
+        <p:row>
+          <p:column styleClass="label">{{項目ラベル1}}</p:column>
+          <p:column>
+            <p:inputText id="{{項目ID1_From}}" value="#{ {{controllerBean}}.{{searchDto}}.{{プロパティ1_From}} }" maxlength="11" size="11">
+              <az:TrimConverter />
+            </p:inputText>
+            <h:outputText value=" ～ " />
+            <p:inputText id="{{項目ID1_To}}" value="#{ {{controllerBean}}.{{searchDto}}.{{プロパティ1_To}} }" maxlength="11" size="11">
+              <az:TrimConverter />
+            </p:inputText>
+          </p:column>
+          <p:column styleClass="label">{{日付項目ラベル}}</p:column>
+          <p:column>
+            <p:inputText value="#{ {{controllerBean}}.{{searchDto}}.{{日付From}} }" maxlength="8" size="10">
+              <nu:SlashSeparatedDateFormatConverter />
+            </p:inputText>
+            <h:outputText value=" ～ " />
+            <p:inputText value="#{ {{controllerBean}}.{{searchDto}}.{{日付To}} }" maxlength="8" size="10">
+              <nu:SlashSeparatedDateFormatConverter />
+            </p:inputText>
+          </p:column>
+        </p:row>
+        
+        <!-- チェックボックス/セレクト系 -->
+        <p:row>
+          <p:column styleClass="label">{{選択項目ラベル}}</p:column>
+          <p:column colspan="3">
+            <p:selectManyCheckbox value="#{ {{controllerBean}}.{{searchDto}}.{{選択リスト}} }">
+              <f:selectItems value="#{ {{controllerBean}}.{{マスタ用マップ}}.entrySet()}" var="entry"
+                itemLabel="#{entry.value}" itemValue="#{entry.key}" />
+            </p:selectManyCheckbox>
+          </p:column>
+        </p:row>
+      </p:panelGrid>
+
+      <!-- 検索パネル内ボタン -->
+      <p:outputPanel id="footer" styleClass="footer">
+        <p:commandButton value="照会" action="#{ {{controllerBean}}.search}" ajax="false" />
+        <p:commandButton value="クリア" action="#{ {{controllerBean}}.clear}" ajax="false" immediate="true" />
+        <p:commandButton value="表示" action="#{ {{controllerBean}}.showName}" ajax="false" />
+        <p:commandButton value="ＣＳＶ出力" action="#{ {{controllerBean}}.csvOutput}" ajax="false" />
+      </p:outputPanel>
+    </p:panel>
+
+    <!-- 検索結果データテーブル -->
+    <p:dataTable id="results" value="#{ {{controllerBean}}.{{結果リスト}} }" var="item"
+      selection="#{ {{controllerBean}}.{{選択行オブジェクト}} }" rowKey="#{item.{{ユニークキー}} }"
+      rows="15" paginator="true" paginatorPosition="bottom"
+      rendered="#{ {{controllerBean}}.resultsPanelDisplayed}"
+      styleClass="fit mt-10" scrollable="true" scrollWidth="100%">
+      
+      <p:column selectionMode="multiple" style="width:40px;text-align:center" />
+
+      <!-- 詳細画面へのリンク付きカラム -->
+      <p:column headerText="{{リンク項目ラベル}}" style="width:120px" sortBy="#{item.{{ユニークキー}} }">
+        <p:commandLink value="#{item.{{ユニークキー}} }" action="#{ {{controllerBean}}.inquiry}" ajax="false">
+          <f:setPropertyActionListener value="#{item}" target="#{ {{controllerBean}}.{{選択行オブジェクト}} }" />
+        </p:commandLink>
+      </p:column>
+      
+      <p:column headerText="{{項目ラベルA}}" sortBy="#{item.{{プロパティA}} }">
+        <h:outputText value="#{item.{{プロパティA}} }" />
+      </p:column>
+
+      <p:column headerText="{{金額項目}}" style="text-align:right" sortBy="#{item.{{金額プロパティ}} }">
+        <h:outputText value="#{item.{{金額プロパティ}} }">
+          <f:convertNumber pattern="#,###" />
+        </h:outputText>
+      </p:column>
+    </p:dataTable>
+
+    <!-- 下部アクションボタン群 -->
+    <p:outputPanel styleClass="group mt-10" rendered="#{ {{controllerBean}}.resultsPanelDisplayed}">
+      <p:commandButton value="修正" action="#{ {{controllerBean}}.modify}" ajax="false" />
+      <p:commandButton value="削除" action="#{ {{controllerBean}}.delete}" ajax="false" />
+      <p:commandButton value="複写" action="#{ {{controllerBean}}.copy}" ajax="false" />
+      <p:commandButton value="承認依頼取下" action="#{ {{controllerBean}}.withdraw}" ajax="false" />
+    </p:outputPanel>
+  </ui:define>
+</ui:composition>
+</html>
