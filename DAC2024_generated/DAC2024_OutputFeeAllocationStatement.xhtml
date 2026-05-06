@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="jakarta.faces.core"
+  xmlns:h="jakarta.faces.html"
+  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:aw="http://hokuren.or.jp/awa"
+  template="/AWA_layoutTemplate.xhtml">
+
+  <ui:param name="ctl" value="#{dac2024ctl}" />
+
+  <f:metadata>
+    <aw:InitAction
+      action="#{dac2024ctl.init}"
+      initialized="#{dac2024ctl.initialized}" />
+  </f:metadata>
+
+  <ui:define name="title">手数料配分計算書出力</ui:define>
+
+  <ui:define name="body">
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns"     var="MessageNo" />
+    <p:importConstants type="jp.or.hokuren.daa.def.DAC_MessageNoCns"     var="DacMessageNo" />
+    <p:importConstants type="jp.or.hokuren.dac.view.dac2024.DAC2024_LocalCns" var="Dac2024Cns" />
+
+    <h:form id="dac2024Form">
+
+      <!-- エラーメッセージパネル -->
+      <p:panel
+        id="errorMessagePanel"
+        header="エラー情報"
+        styleClass="error left"
+        rendered="#{fn:length(facesContext.messageList) > 0}">
+        <p:messages
+          id="errorMessages"
+          closable="false"
+          showIcon="false"
+          styleClass="bullet" />
+      </p:panel>
+
+      <!-- 操作メッセージ -->
+      <p:outputPanel
+        id="operationMessagePanel"
+        styleClass="box center"
+        rendered="#{not empty dac2024ctl.exportOperationMessage}">
+        <p>#{dac2024ctl.exportOperationMessage}</p>
+      </p:outputPanel>
+
+      <!-- 検索条件入力パネル -->
+      <p:panel
+        id="conditionPanel"
+        header="手数料配分計算書出力条件"
+        toggleable="true"
+        toggleSpeed="100"
+        styleClass="fit">
+
+        <p:panelGrid columns="0" layout="tabular">
+
+          <!-- 基準年月 -->
+          <p:row>
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel for="kijunNengetsu" value="基準年月">
+                <span class="required">*</span>
+              </p:outputLabel>
+            </p:column>
+            <p:column style="width: 80%">
+              <p:inputMask
+                id="kijunNengetsu"
+                value="#{dac2024ctl.searchConditionDto.kijunNengetsu}"
+                mask="9999/99"
+                placeholder="YYYY/MM"
+                autocomplete="off"
+                size="10">
+                <aw:RequiredValidator
+                  msgKnrNum="#{MessageNo.DAA00000E}"
+                  msgEmbedStr1="基準年月" />
+              </p:inputMask>
+            </p:column>
+          </p:row>
+
+          <!-- 業種（業種ラベル表示フラグ=true の場合はラベルのみ） -->
+          <p:row rendered="#{dac2024ctl.industryLabelDisplayFlag}">
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel value="業種名称" />
+            </p:column>
+            <p:column style="width: 80%">
+              <p:outputLabel value="#{dac2024ctl.searchConditionDto.gyoshuMei}" />
+              <h:inputHidden value="#{dac2024ctl.searchConditionDto.gyoshuCd}" />
+            </p:column>
+          </p:row>
+
+          <!-- 業種（業種ラベル表示フラグ=false の場合は入力 + 検索ボタン） -->
+          <p:row rendered="#{not dac2024ctl.industryLabelDisplayFlag}">
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel for="gyoshuCd" value="業種コード" />
+            </p:column>
+            <p:column style="width: 80%">
+              <p:inputText
+                id="gyoshuCd"
+                value="#{dac2024ctl.searchConditionDto.gyoshuCd}"
+                autocomplete="off"
+                maxlength="3"
+                size="5"
+                styleClass="singleByte">
+                <aw:TrimConverter />
+                <p:ajax
+                  event="change"
+                  listener="#{dac2024ctl.show}"
+                  update="gyoshuMei gyoshuCd" />
+              </p:inputText>
+              <p:outputLabel
+                id="gyoshuMei"
+                value="　#{dac2024ctl.searchConditionDto.gyoshuMei}" />
+              <!-- 経理部以外の場合のみ業種検索ボタンを表示する -->
+              <p:commandButton
+                id="industrySearchButton"
+                value="業種検索"
+                icon="pi pi-search"
+                styleClass="ui-button-secondary"
+                rendered="#{dac2024ctl.searchConditionDto.sanshoKengen == Dac2024Cns.SANSHO_KENGEN_NOT_KEIRIBU}"
+                actionListener="#{dac2024ctl.showIndustrySearch('industrySearchButton')}"
+                update="@form"
+                process="@this kijunNengetsu"
+                style="margin-left: 5px">
+              </p:commandButton>
+            </p:column>
+          </p:row>
+
+          <!-- 出力帳票選択 -->
+          <p:row>
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel value="出力帳票">
+                <span class="required">*</span>
+              </p:outputLabel>
+            </p:column>
+            <p:column style="width: 80%">
+              <p:selectOneRadio
+                id="outputChohyoId"
+                value="#{dac2024ctl.searchConditionDto.outputChohyoId}"
+                layout="lineDirection">
+                <f:selectItem
+                  itemValue="#{Dac2024Cns.OUTPUT_CHOHYO_ID_ZENDO_KYOKEI_TESURYO_HAIBUN_KEISANSHO}"
+                  itemLabel="全道共計手数料配分計算書" />
+                <f:selectItem
+                  itemValue="#{Dac2024Cns.OUTPUT_CHOHYO_ID_KOBAI_TESURYO_HAIBUN_KEISANSHO}"
+                  itemLabel="購買手数料配分計算書" />
+                <aw:RequiredValidator
+                  msgKnrNum="#{MessageNo.DAA00000E}"
+                  msgEmbedStr1="出力帳票" />
+              </p:selectOneRadio>
+            </p:column>
+          </p:row>
+
+        </p:panelGrid>
+
+        <!-- ボタンエリア -->
+        <f:facet name="footer">
+          <!-- クリアボタン -->
+          <p:commandButton
+            id="clearButton"
+            value="クリア"
+            icon="pi pi-refresh"
+            styleClass="ui-button-secondary"
+            action="#{dac2024ctl.clear}"
+            update="conditionPanel"
+            process="@this" />
+          <!-- CSV出力ボタン -->
+          <p:commandButton
+            id="exportCsvButton"
+            value="CSV出力"
+            icon="pi pi-download"
+            style="margin-left: 10px"
+            ajax="false">
+            <p:fileDownload
+              value="#{dac2024ctl.exportCsv()}"
+              contentDisposition="attachment" />
+          </p:commandButton>
+        </f:facet>
+
+      </p:panel>
+
+    </h:form>
+
+    <!-- 業種検索ダイアログ（TODO: DAA1108が生成されたら以下のコメントを外す） -->
+    <!--
+    <ui:include src="/view/DAA1108/DAA1108_IndustrySearch.xhtml" />
+    -->
+
+  </ui:define>
+
+</ui:composition>

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.or.hokuren.dac.view.dac2024.DAC2024_OutputFeeAllocationStatementMpr">
+
+  <!-- =========================================================== -->
+  <!-- 選択可能業種コードリスト取得                                     -->
+  <!-- =========================================================== -->
+  <select id="getSelectGyoshuList"
+    parameterType="java.util.Map"
+    resultType="java.lang.String">
+    <bind name="DAA_CommonsCns"
+      value="@java.lang.Class@forName('jp.or.hokuren.daa.def.DAA_CommonsCns')"/>
+    <bind name="SAKZYO_KBN_YUKO" value="DAA_CommonsCns.getField('SAKZYO_KBN_YUKO').get(null)"/>
+    select
+        G.GYOSHU_CD
+    from
+        DAA447_SOSHIKI_GYOSHU_MST G
+    where
+        G.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
+        and G.SOSHIKI_CD = #{shozokuCd}
+        and #{kijunbi} between G.TEKIYO_KAISHIBI and G.TEKIYO_SHURYOBI
+    order by
+        G.GYOSHU_CD asc
+  </select>
+
+  <!-- =========================================================== -->
+  <!-- 全道共計手数料配分計算データ一覧取得                              -->
+  <!-- =========================================================== -->
+  <select id="getZendoKyokeiFeeAllocationStatementList"
+    parameterType="jp.or.hokuren.dac.view.dac2024.DAC2024_OutputFeeAllocationStatementSearchDto"
+    resultType="jp.or.hokuren.dac.view.dac2024.DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto">
+    select
+        D.TAISHO_NENGETSU              as taishoNengetsu
+      , D.GYOSHU_CD                    as gyoshuCd
+      , M.GYOSHU_MEI                   as gyoshuMei
+      , D.TORIATSUKAIDAKA              as toriatsukaidaka
+      , D.TESURYO_RITSU                as tesuryoRitsu
+      , D.TESURYO                      as tesuryo
+      , D.TORIATSUKAIDAKA_RUIKEI       as toriatsukaidakaRuikei
+      , D.TESURYO_RUIKEI               as tesuryoRuikei
+      , D.KUMIAIIN_TORIATSUKAIDAKA     as kumiaiin_toriatsukaidaka
+      , D.KUMIAIIN_TESURYO_RITSU       as kumiaiin_tesuryoRitsu
+      , D.KUMIAIIN_TESURYO             as kumiaiin_tesuryo
+      , D.KUMIAIIN_TORIATSUKAIDAKA_RUIKEI as kumiaiin_toriatsukaidakaRuikei
+      , D.KUMIAIIN_TESURYO_RITSU_RUIKEI   as kumiaiin_tesuryoRitsuRuikei
+      , D.TORIATSUKAIDAKA_TESURYO_RUIKEI  as toriatsukaidakaTesuryoRuikei
+    from
+        DAC321_HANBAI_KYOKEI_TESURYO_HAIBUN_KEISAN_DATA D
+        inner join DAA_GYOSHU_MST M
+          on  D.GYOSHU_CD = M.GYOSHU_CD
+          and #{kijunNengetsuMatsujitsu} between M.TEKIYO_KAISHIBI and M.TEKIYO_SHURYOBI
+    where
+        D.TAISHO_NENGETSU = #{kijunNengetsu}
+        <if test="gyoshuCd != null and gyoshuCd != ''">
+          and D.GYOSHU_CD = #{gyoshuCd}
+        </if>
+        <if test="selectableGyoshuCdList != null and selectableGyoshuCdList.size() > 0">
+          and D.GYOSHU_CD in
+          <foreach item="item" collection="selectableGyoshuCdList" open="(" separator="," close=")">
+            #{item}
+          </foreach>
+        </if>
+    order by
+        D.GYOSHU_CD asc
+      , D.TAISHO_NENGETSU asc
+  </select>
+
+  <!-- =========================================================== -->
+  <!-- 購買手数料配分計算データ一覧取得                                  -->
+  <!-- =========================================================== -->
+  <select id="getPurchaseFeeAllocationStatementList"
+    parameterType="jp.or.hokuren.dac.view.dac2024.DAC2024_OutputFeeAllocationStatementSearchDto"
+    resultType="jp.or.hokuren.dac.view.dac2024.DAC2024_PurchaseFeeAllocationStatementCsvDto">
+    with KEISAN_DATA as (
+      select
+          D.TAISHO_NENGETSU
+        , D.GYOSHU_CD
+        , D.KOBAI_TORIATSUKAIDAKA
+        , D.KOBAI_TESURYO_RITSU
+        , D.KOBAI_TESURYO
+        , D.KOBAI_TORIATSUKAIDAKA_RUIKEI
+        , D.KOBAI_TESURYO_RITSU_RUIKEI
+        , D.KOBAI_TESURYO_RUIKEI
+        , D.KUMIAIIN_KOBAI_TORIATSUKAIDAKA
+        , D.KUMIAIIN_KOBAI_TESURYO_RITSU
+        , D.KUMIAIIN_KOBAI_TESURYO
+        , D.KUMIAIIN_KOBAI_TORIATSUKAIDAKA_RUIKEI
+        , D.KUMIAIIN_KOBAI_TESURYO_RITSU_RUIKEI
+        , D.KUMIAIIN_KOBAI_TESURYO_RUIKEI
+        , D.SEIKATSU_TORIATSUKAIDAKA
+        , D.SEIKATSU_TESURYO_RITSU
+        , D.SEIKATSU_TESURYO
+        , D.SEIKATSU_TORIATSUKAIDAKA_RUIKEI
+        , D.SEIKATSU_TESURYO_RITSU_RUIKEI
+        , D.SEIKATSU_TESURYO_RUIKEI
+        , D.NENRYO_TORIATSUKAIDAKA
+        , D.NENRYO_TESURYO_RITSU
+        , D.NENRYO_TESURYO
+        , D.NENRYO_TORIATSUKAIDAKA_RUIKEI
+        , D.NENRYO_TESURYO_RITSU_RUIKEI
+        , D.NENRYO_TESURYO_RUIKEI
+        , D.ZAIKOHIN_TORIATSUKAIDAKA
+        , D.ZAIKOHIN_TESURYO_RITSU
+        , D.ZAIKOHIN_TESURYO
+        , D.ZAIKOHIN_TORIATSUKAIDAKA_RUIKEI
+        , D.ZAIKOHIN_TESURYO_RITSU_RUIKEI
+        , D.ZAIKOHIN_TESURYO_RITSU_RUIKEI
+      from
+          DAC322_KOBAI_TESURYO_HAIBUN_KEISAN_DATA D
+      where
+          D.TAISHO_NENGETSU = #{kijunNengetsu}
+    )
+    select
+        K.TAISHO_NENGETSU              as taishoNengetsu
+      , K.GYOSHU_CD                    as gyoshuCd
+      , M.GYOSHU_MEI                   as gyoshuMei
+      , K.KOBAI_TORIATSUKAIDAKA              as kobaiToriatsukaidaka
+      , K.KOBAI_TESURYO_RITSU                as kobaiTesuryoRitsu
+      , K.KOBAI_TESURYO                      as kobaiTesuryo
+      , K.KOBAI_TORIATSUKAIDAKA_RUIKEI       as kobaiToriatsukaidakaRuikei
+      , K.KOBAI_TESURYO_RITSU_RUIKEI         as kobaiTesuryoRitsuRuikei
+      , K.KOBAI_TESURYO_RUIKEI               as kobaiTesuryoRuikei
+      , K.KUMIAIIN_KOBAI_TORIATSUKAIDAKA     as kumiaiin_kobaiToriatsukaidaka
+      , K.KUMIAIIN_KOBAI_TESURYO_RITSU       as kumiaiin_kobaiTesuryoRitsu
+      , K.KUMIAIIN_KOBAI_TESURYO             as kumiaiin_kobaiTesuryo
+      , K.KUMIAIIN_KOBAI_TORIATSUKAIDAKA_RUIKEI as kumiaiin_kobaiToriatsukaidakaRuikei
+      , K.KUMIAIIN_KOBAI_TESURYO_RITSU_RUIKEI   as kumiaiin_kobaiTesuryoRitsuRuikei
+      , K.KUMIAIIN_KOBAI_TESURYO_RUIKEI          as kumiaiin_kobaiTesuryoRuikei
+      , K.SEIKATSU_TORIATSUKAIDAKA               as seikatsumono_toriatsukaidaka
+      , K.SEIKATSU_TESURYO_RITSU                 as seikatsumono_tesuryoRitsu
+      , K.SEIKATSU_TESURYO                       as seikatsumono_tesuryo
+      , K.SEIKATSU_TORIATSUKAIDAKA_RUIKEI        as seikatsumono_toriatsukaidakaRuikei
+      , K.SEIKATSU_TESURYO_RITSU_RUIKEI          as seikatsumono_tesuryoRitsuRuikei
+      , K.SEIKATSU_TESURYO_RUIKEI                as seikatsumono_tesuryoRuikei
+      , K.NENRYO_TORIATSUKAIDAKA                 as nenryo_toriatsukaidaka
+      , K.NENRYO_TESURYO_RITSU                   as nenryo_tesuryoRitsu
+      , K.NENRYO_TESURYO                         as nenryo_tesuryo
+      , K.NENRYO_TORIATSUKAIDAKA_RUIKEI          as nenryo_toriatsukaidakaRuikei
+      , K.NENRYO_TESURYO_RITSU_RUIKEI            as nenryo_tesuryoRitsuRuikei
+      , K.NENRYO_TESURYO_RUIKEI                  as nenryo_tesuryoRuikei
+      , K.ZAIKOHIN_TORIATSUKAIDAKA               as zaikohin_toriatsukaidaka
+      , K.ZAIKOHIN_TESURYO_RITSU                 as zaikohin_tesuryoRitsu
+      , K.ZAIKOHIN_TESURYO                       as zaikohin_tesuryo
+      , K.ZAIKOHIN_TORIATSUKAIDAKA_RUIKEI        as zaikohin_toriatsukaidakaRuikei
+      , K.ZAIKOHIN_TESURYO_RITSU_RUIKEI          as zaikohin_tesuryoRitsuRuikei
+      , K.ZAIKOHIN_TESURYO_RITSU_RUIKEI          as zaikohinTesuryoRitsuRuikei
+    from
+        KEISAN_DATA K
+        inner join DAA_GYOSHU_MST M
+          on  K.GYOSHU_CD = M.GYOSHU_CD
+          and #{kijunNengetsuMatsujitsu} between M.TEKIYO_KAISHIBI and M.TEKIYO_SHURYOBI
+    where
+        1 = 1
+        <if test="gyoshuCd != null and gyoshuCd != ''">
+          and K.GYOSHU_CD = #{gyoshuCd}
+        </if>
+        <if test="selectableGyoshuCdList != null and selectableGyoshuCdList.size() > 0">
+          and K.GYOSHU_CD in
+          <foreach item="item" collection="selectableGyoshuCdList" open="(" separator="," close=")">
+            #{item}
+          </foreach>
+        </if>
+    order by
+        K.GYOSHU_CD asc
+      , K.TAISHO_NENGETSU asc
+  </select>
+
+</mapper>
