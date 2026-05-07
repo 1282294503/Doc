@@ -4,15 +4,15 @@
 == 【Logic JUnit】 YNマトリックス  （DAO・外部サービスをモック化。Controller は含まない）
 ===========================================================================
 
-シート	Logicメソッド	モック対象	呼び出し元Controller
-LSheet1	initMain	DAO, DAA_DateUtils, DAA_MessageUtils, DAA_MasterData	init
-LSheet2	showMain	validateSingle, validateRelated, getDispName（内部呼び出し）	show
-LSheet3	validateSingle	DAA_MasterData, DAA_DateUtils	showMain / exportCsvMain
-LSheet4	validateRelated	なし（SearchDtoの値のみで判定）	showMain / exportCsvMain
-LSheet5	getDispName	DAA_MasterData	showMain
-LSheet6	exportCsvMain	validateSingle, validateRelated, DAA_FileUtils, searchZendo..., searchPurchase...	exportCsv
-LSheet7	searchZendoKyokeiFeeAllocationStatement	DAO	exportCsvMain
-LSheet8	searchPurchaseFeeAllocationStatement	DAO	exportCsvMain
+シート	Logicメソッド	モック対象
+LSheet1	initMain	DAO, DAA_DateUtils, DAA_MessageUtils, DAA_MasterData
+LSheet2	showMain	validateSingle, validateRelated, getDispName（内部呼び出し）
+LSheet3	validateSingle	DAA_MasterData, DAA_DateUtils
+LSheet4	validateRelated	なし（SearchDtoの値のみで判定）
+LSheet5	getDispName	DAA_MasterData
+LSheet6	exportCsvMain	validateSingle, validateRelated, DAA_FileUtils, searchZendo..., searchPurchase...
+LSheet7	searchZendoKyokeiFeeAllocationStatement	DAO
+LSheet8	searchPurchaseFeeAllocationStatement	DAO
 
 ---
 
@@ -55,26 +55,36 @@ LSheet8	searchPurchaseFeeAllocationStatement	DAO	exportCsvMain
 ### 【セクション②】確認項目
 
 	№	確認項目内容	1	2	3	4	5	6	7
-確認項目	1	正常終了すること	○	○	○	○	○	○	
-	2	例外がスローされること							○
-	3	返却レコード.参照権限区分=経理部が設定されること	○	○	○				
-	4	返却レコード.参照権限区分=経理部以外が設定されること				○	○	○	
-	5	返却レコード.業種ラベル表示フラグ=falseが設定されること	○	○	○	○		○	
-	6	返却レコード.業種ラベル表示フラグ=trueが設定されること					○		
-	7	返却レコード.選択可能業種リストが0件であること				○			
-	8	返却レコード.選択可能業種リストが1件であること					○		
-	9	返却レコード.選択可能業種リストが2件以上であること						○	
-	10	searchConditionDto.業種コードに初期値が設定されること（1件時）					○		
-	11	searchConditionDto.業種名称にnullまたは空が設定されること（マスタnull時）							○
-	12	返却レコード.運用管理日が設定されること	○	○	○	○	○	○	
-	13	返却レコード.出力画面操作メッセージが設定されること	○	○	○	○	○	○	
-	14	dao.selectSelectableGyoshuList() が呼ばれないこと（経理部）	○	○	○				
-	15	dao.selectSelectableGyoshuList() が1回呼ばれること（経理部以外）				○	○	○	
+	1	戻り値の確認							
+	2	参照権限区分							
+	3	経理部が設定されること	○	○	○				
+	4	経理部以外が設定されること				○	○	○	
+	5	業種ラベル表示フラグ							
+	6	falseが設定されること	○	○	○	○		○	
+	7	trueが設定されること					○		
+	8	選択可能業種リスト件数							
+	9	0件が設定されること				○			
+	10	1件が設定されること					○		
+	11	2件以上が設定されること						○	
+	12	searchConditionDto.業種コード（1件時・初期値設定）							
+	13	初期値が設定されること					○		
+	14	searchConditionDto.業種名称（マスタnull時）							
+	15	nullまたは空が設定されること							○
+	16	運用管理日							
+	17	返却レコードに設定されること	○	○	○	○	○	○	
+	18	出力画面操作メッセージ							
+	19	返却レコードに設定されること	○	○	○	○	○	○	
+	20	モック呼び出し確認							
+	21	dao.selectSelectableGyoshuList() が呼ばれないこと（経理部）	○	○	○				
+	22	dao.selectSelectableGyoshuList() が1回呼ばれること（経理部以外）				○	○	○	
+	23	例外の確認							
+	24	正常終了すること	○	○	○	○	○	○	
+	25	AZA_ApplicationExceptionがスローされること							○
 
 ### 【セクション③】エビデンス
 
 	№	エビデンス内容	1	2	3	4	5	6	7
-エビデンス	1	DAC2024_InitMainResponseRecord の各フィールド値	○	○	○	○	○	○	
+	1	DAC2024_InitMainResponseRecord の各フィールド値	○	○	○	○	○	○	
 	2	モック呼び出し回数（Mockito verify）	○	○	○	○	○	○	
 	3	スローされた例外の型・メッセージ							○
 
@@ -109,20 +119,24 @@ LSheet8	searchPurchaseFeeAllocationStatement	DAO	exportCsvMain
 ### 【セクション②】確認項目
 
 	№	確認項目内容	1	2	3	4
-確認項目	1	正常終了すること	○	○		
-	2	BusinessValidationException がスローされること（validateRelated）			○	
-	3	BusinessValidationException がスローされること（validateSingle）				○
-	4	返却レコード.業種名称に値が設定されること	○			
-	5	返却レコード.業種名称が空文字であること		○		
+	1	戻り値の確認				
+	2	業種名称				
+	3	返却レコードに値が設定されること	○			
+	4	返却レコードが空文字であること		○		
+	5	モック呼び出し確認				
 	6	validateSingle が1回呼ばれること	○	○	○	
 	7	validateRelated が1回呼ばれること	○	○		
 	8	getDispName が1回呼ばれること	○	○		
 	9	validateSingle 例外時に validateRelated が呼ばれないこと				○
+	10	例外の確認				
+	11	正常終了すること	○	○		
+	12	BusinessValidationException がスローされること（validateRelated）			○	
+	13	BusinessValidationException がスローされること（validateSingle）				○
 
 ### 【セクション③】エビデンス
 
 	№	エビデンス内容	1	2	3	4
-エビデンス	1	DAC2024_ShowMainResponseRecord.業種名称の値	○	○		
+	1	DAC2024_ShowMainResponseRecord.業種名称の値	○	○		
 	2	モック呼び出し回数（Mockito verify）	○	○	○	○
 	3	スローされた例外の型・メッセージ			○	○
 
@@ -165,18 +179,21 @@ LSheet8	searchPurchaseFeeAllocationStatement	DAO	exportCsvMain
 ### 【セクション②】確認項目
 
 	№	確認項目内容	1	2	3	4	5	6	7
-確認項目	1	正常終了すること（エラーなし）	○	○		○	○		○
-	2	BusinessValidationException がスローされること			○			○	
-	3	AZA_ApplicationException がスローされること				○			
-	4	エラーメッセージ: DAC00033E（未来年月）が設定されること						○	
-	5	エラーメッセージ: DAC00007E（業種マスタ不存在）が設定されること			○				
-	6	masterDataUtil.getGyoshuInfo() が呼ばれないこと（業種コードなし）	○						
-	7	masterDataUtil.getGyoshuInfo() が1回呼ばれること（業種コードあり）		○	○		○	○	○
+	1	例外の確認							
+	2	正常終了すること（エラーなし）	○	○		○	○		○
+	3	BusinessValidationException がスローされること			○			○	
+	4	AZA_ApplicationException がスローされること				○			
+	5	エラーメッセージの確認							
+	6	DAC00033E（未来年月）が設定されること						○	
+	7	DAC00007E（業種マスタ不存在）が設定されること			○				
+	8	モック呼び出し確認							
+	9	masterDataUtil.getGyoshuInfo() が呼ばれないこと（業種コードなし）	○						
+	10	masterDataUtil.getGyoshuInfo() が1回呼ばれること（業種コードあり）		○	○		○	○	○
 
 ### 【セクション③】エビデンス
 
 	№	エビデンス内容	1	2	3	4	5	6	7
-エビデンス	1	スローなし（正常終了）確認	○	○		○	○		○
+	1	スローなし（正常終了）確認	○	○		○	○		○
 	2	スローされた例外の型・エラーメッセージ管理番号			○	○		○	
 	3	モック呼び出し回数（Mockito verify）	○	○	○		○	○	○
 
@@ -207,15 +224,17 @@ LSheet8	searchPurchaseFeeAllocationStatement	DAO	exportCsvMain
 ### 【セクション②】確認項目
 
 	№	確認項目内容	1	2	3
-確認項目	1	正常終了すること（エラーなし）	○		
-	2	BusinessValidationException がスローされること		○	
-	3	エラーメッセージ: DAC00024E（業種・担当業種不一致）が設定されること		○	
+	1	例外の確認			
+	2	正常終了すること（エラーなし）	○		
+	3	BusinessValidationException がスローされること		○	
 	4	NullPointerException 等がスローされること（または設計上の動作を確認）			○
+	5	エラーメッセージの確認			
+	6	DAC00024E（業種・担当業種不一致）が設定されること		○	
 
 ### 【セクション③】エビデンス
 
 	№	エビデンス内容	1	2	3
-エビデンス	1	スローなし確認	○		
+	1	スローなし確認	○		
 	2	スローされた例外の型・エラーメッセージ管理番号		○	○
 
 ---
@@ -249,18 +268,22 @@ LSheet8	searchPurchaseFeeAllocationStatement	DAO	exportCsvMain
 ### 【セクション②】確認項目
 
 	№	確認項目内容	1	2	3	4
-確認項目	1	正常終了すること	○	○	○	
-	2	返却レコード.業種名称が空文字で返却されること（業種コードなし）	○			
-	3	返却レコード.業種名称にDTOの業種名称が設定されること		○		
-	4	返却レコード.業種名称が空文字で返却されること（マスタnull）			○	
-	5	例外がスローされること（または設計上の動作を確認）				○
-	6	masterDataUtil.getGyoshuInfo() が呼ばれないこと（業種コードなし）	○			
-	7	masterDataUtil.getGyoshuInfo() が1回呼ばれること（業種コードあり）		○	○	
+	1	戻り値の確認				
+	2	業種名称				
+	3	空文字で返却されること（業種コードなし）	○			
+	4	DTOの業種名称が設定されること		○		
+	5	空文字で返却されること（マスタnull）			○	
+	6	モック呼び出し確認				
+	7	masterDataUtil.getGyoshuInfo() が呼ばれないこと（業種コードなし）	○			
+	8	masterDataUtil.getGyoshuInfo() が1回呼ばれること（業種コードあり）		○	○	
+	9	例外の確認				
+	10	正常終了すること	○	○	○	
+	11	例外がスローされること（または設計上の動作を確認）				○
 
 ### 【セクション③】エビデンス
 
 	№	エビデンス内容	1	2	3	4
-エビデンス	1	返却レコード.業種名称の値	○	○	○	
+	1	返却レコード.業種名称の値	○	○	○	
 	2	モック呼び出し回数（Mockito verify）	○	○	○	
 	3	スローされた例外の型				○
 
@@ -298,20 +321,24 @@ LSheet8	searchPurchaseFeeAllocationStatement	DAO	exportCsvMain
 ### 【セクション②】確認項目
 
 	№	確認項目内容	1	2	3	4	5	6
-確認項目	1	正常終了すること	○		○			
-	2	BusinessValidationException がスローされること（CSV取得）		○		○		
-	3	BusinessValidationException がスローされること（validateSingle）					○	
-	4	BusinessValidationException がスローされること（validateRelated）						○
-	5	StreamedContent（CSVファイル）が返却されること	○		○			
-	6	searchZendoKyokeiFeeAllocationStatement が1回呼ばれること	○	○				
-	7	searchPurchaseFeeAllocationStatement が1回呼ばれること			○	○		
-	8	fileUtils.csvDownload() が1回呼ばれること	○		○			
-	9	fileUtils.csvDownload() が呼ばれないこと（例外ケース）		○		○	○	○
+	1	戻り値の確認						
+	2	StreamedContent（CSVファイル）						
+	3	返却されること	○		○			
+	4	モック呼び出し確認						
+	5	searchZendoKyokeiFeeAllocationStatement が1回呼ばれること	○	○				
+	6	searchPurchaseFeeAllocationStatement が1回呼ばれること			○	○		
+	7	fileUtils.csvDownload() が1回呼ばれること	○		○			
+	8	fileUtils.csvDownload() が呼ばれないこと（例外ケース）		○		○	○	○
+	9	例外の確認						
+	10	正常終了すること	○		○			
+	11	BusinessValidationException がスローされること（CSV取得）		○		○		
+	12	BusinessValidationException がスローされること（validateSingle）					○	
+	13	BusinessValidationException がスローされること（validateRelated）						○
 
 ### 【セクション③】エビデンス
 
 	№	エビデンス内容	1	2	3	4	5	6
-エビデンス	1	返却された StreamedContent の値	○		○			
+	1	返却された StreamedContent の値	○		○			
 	2	モック呼び出し回数（Mockito verify）	○	○	○	○	○	○
 	3	スローされた例外の型・メッセージ		○		○	○	○
 
@@ -342,18 +369,23 @@ LSheet8	searchPurchaseFeeAllocationStatement	DAO	exportCsvMain
 ### 【セクション②】確認項目
 
 	№	確認項目内容	1	2	3	4
-確認項目	1	正常終了すること	○			
-	2	全道共計手数料配分計算データDtoリストが返却されること	○			
-	3	BusinessValidationException がスローされること（上限超過）		○		
-	4	エラーメッセージ: DAC00009E が設定されること		○		
-	5	BusinessValidationException がスローされること（0件/null）			○	○
-	6	エラーメッセージ: DAC00008E が設定されること			○	○
-	7	dao.selectZendoKyokeiFeeAllocationStatement() が1回呼ばれること	○	○	○	○
+	1	戻り値の確認				
+	2	全道共計手数料配分計算データDtoリスト				
+	3	正常返却されること	○			
+	4	モック呼び出し確認				
+	5	dao.selectZendoKyokeiFeeAllocationStatement() が1回呼ばれること	○	○	○	○
+	6	例外の確認				
+	7	正常終了すること	○			
+	8	BusinessValidationException がスローされること（上限超過）		○		
+	9	BusinessValidationException がスローされること（0件/null）			○	○
+	10	エラーメッセージの確認				
+	11	DAC00009E（上限超過）が設定されること		○		
+	12	DAC00008E（0件/null）が設定されること			○	○
 
 ### 【セクション③】エビデンス
 
 	№	エビデンス内容	1	2	3	4
-エビデンス	1	返却された Dtoリストの件数・内容	○			
+	1	返却された Dtoリストの件数・内容	○			
 	2	スローされた例外の型・エラーメッセージ管理番号		○	○	○
 	3	モック呼び出し回数（Mockito verify）	○	○	○	○
 
@@ -384,17 +416,22 @@ LSheet8	searchPurchaseFeeAllocationStatement	DAO	exportCsvMain
 ### 【セクション②】確認項目
 
 	№	確認項目内容	1	2	3	4
-確認項目	1	正常終了すること	○			
-	2	購買手数料配分計算書CSVDTOリストが返却されること	○			
-	3	BusinessValidationException がスローされること（上限超過）		○		
-	4	エラーメッセージ: DAC00009E が設定されること		○		
-	5	BusinessValidationException がスローされること（0件/null）			○	○
-	6	エラーメッセージ: DAC00008E が設定されること			○	○
-	7	dao.selectPurchaseFeeAllocationStatement() が1回呼ばれること	○	○	○	○
+	1	戻り値の確認				
+	2	購買手数料配分計算書CSVDTOリスト				
+	3	正常返却されること	○			
+	4	モック呼び出し確認				
+	5	dao.selectPurchaseFeeAllocationStatement() が1回呼ばれること	○	○	○	○
+	6	例外の確認				
+	7	正常終了すること	○			
+	8	BusinessValidationException がスローされること（上限超過）		○		
+	9	BusinessValidationException がスローされること（0件/null）			○	○
+	10	エラーメッセージの確認				
+	11	DAC00009E（上限超過）が設定されること		○		
+	12	DAC00008E（0件/null）が設定されること			○	○
 
 ### 【セクション③】エビデンス
 
 	№	エビデンス内容	1	2	3	4
-エビデンス	1	返却された Dtoリストの件数・内容	○			
+	1	返却された Dtoリストの件数・内容	○			
 	2	スローされた例外の型・エラーメッセージ管理番号		○	○	○
 	3	モック呼び出し回数（Mockito verify）	○	○	○	○
