@@ -1,722 +1,1762 @@
+【Logic YNマトリックス】DAC2015_LaborCostInfoEntryLgc
+
+━━━ 出力前確認事項 ━━━
+
+【1. Logicメソッド一覧】
+
+publicメソッド（19個）:
+  LSheet1:  initMain
+  LSheet2:  searchInputMain
+  LSheet3:  nextInputMain
+  LSheet4:  inquiryInputMain
+  LSheet5:  withdrawInputMain
+  LSheet6:  registBasicInputMain
+  LSheet7:  searchBasicInputMain
+  LSheet8:  listShowBasicInputMain
+  LSheet9:  modifyBasicInputMain
+  LSheet10: exportCsvBasicInputMain
+  LSheet11: saveDraftBasicInputMain
+  LSheet12: deleteBasicInputMain
+  LSheet13: inquiryBasicInputMain
+  LSheet14: confirmBasicInputMain
+  LSheet30: saveDraftDetailInputMain
+  LSheet31: applyConfirmMain
+  LSheet32: inquiryConfirmMain
+  LSheet33: withdrawConfirmMain
+  LSheet34: confirmInquiryMain
+
+privateメソッド（16個）:
+  LSheet30: validateRelatedSearchInput
+  LSheet31: validateRelatedResultInput
+  LSheet32: searchListResultInput
+  LSheet33: getConfirmInfo
+  LSheet34: dispNameBasicInput
+  LSheet30: validateSingleBasicInput
+  LSheet31: validateRelatedBasicInput
+  LSheet32: validateRelatedListBasicInput
+  LSheet33: getShinseiShoninJoho
+  LSheet34: listResultDataBasicInput
+  LSheet30: modifyHeaderData
+  LSheet31: modifyNyuryokuData
+  LSheet32: getTenpuFileShoriKbn
+  LSheet33: validateRelatedConfirm
+  LSheet34: getMeisaiKingaku
+
+【2. テストケース総数】
+  LSheet1=3, LSheet2=3, LSheet3=4, LSheet4=3, LSheet5=3,
+  LSheet6=7, LSheet7=4, LSheet8=3, LSheet9=3, LSheet10=2,
+  LSheet11=6, LSheet12=2, LSheet13=6, LSheet14=4,
+  LSheet15=5, LSheet16=7, LSheet17=3, LSheet18=4, LSheet19=7,
+  LSheet20=5, LSheet21=8, LSheet22=3, LSheet23=3, LSheet24=3,
+  LSheet25=8, LSheet26=14, LSheet27=5, LSheet28=7, LSheet29=3
+  合計: 約157ケース
+
+【3. 境界値テストを設けた条件】
+  - validateRelatedSearchInput: From=To 境界値
+  - validateRelatedResultInput: 選択件数 0件/1件/2件以上
+  - searchListResultInput/listResultDataBasicInput: 0件/上限/上限超え
+  - modifyNyuryokuData: 連動明細あり/なし × 金額変更あり/なし × 入力情報あり/なし（全組合せ）
+  - validateRelatedConfirm: 支給額合計=控除額合計 / 不一致
+  - getTenpuFileShoriKbn: 更新前ID×ファイルID×ファイル の全パターン
+
+【4. 設計書で不明・要確認の点】
+  - exportCsvBasicInputMain: 設計書の仕様が一部のみ確認できた（CSV出力・後続処理の詳細未確認）
+  - saveDraftBasicInputMain: メソッド名は設計書から確認（呼称確認済み）
+
+【5. 設計書に記載されていないため除外した処理】
+  - getMeisaiKingaku は設計書に正式記載あり（LSheet29で独立シートを作成）
+  - confirmInquiryMain の中で getMeisaiKingaku を直接呼び出す記述は設計書にないため、
+    LSheet14（confirmInquiryMain）シートでは getMeisaiKingaku の呼び出しを記載しない
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+# LSheet 1: initMain
+
 ## Logic: initMain()
 
 ### テスト対象クラス・メソッド
 項目	内容
 クラス	DAC2015_LaborCostInfoEntryLgc
 メソッド	initMain()
-モック対象	DAA_DateUtils, DAA_MasterData, DAA_MessageUtils
+モック対象	DAA_DateUtils, DAA_ObjectList, DAA_MessageUtils
 
 ### 【セクション①】テストケース条件
+
 テストケースＮｏ．			case	1	2	3
-    №	テストケース条件内容			
-テストケース条件		public: initMain			
-    1	運用管理日（LocalDate）			
-    2	　null → getSysDateTimeを呼び出す		Y	
-    3	　not null → そのまま変換	Y		Y
-    4	コードオブジェクトリスト取得（4種）			
-    5	　正常取得	Y	Y	
-    6	　例外発生（AZA_ApplicationException）			Y
-    7	メッセージ文字列取得（7種）			
-    8	　正常取得	Y	Y	Y
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: initMain
+		仕様1: 運用管理日取得（getUnyoKanriDate）
+	1		　戻り値が not null（→convertLocalDateToInteger）	Y		Y
+	2		　戻り値が null（→getSysDateTime→toLocalDate→convertLocalDateToInteger）		Y
+		仕様2: createCodeList（コード分類＝入力区分）
+	3		　正常取得	Y	Y
+	4		　AZA_ApplicationException			Y
+		仕様3: createCodeList（コード分類＝給与区分）
+	5		　正常取得	Y	Y
+	6		　AZA_ApplicationException			Y
+		仕様4: createCodeList（コード分類＝人件費科目分類）
+	7		　正常取得	Y	Y
+	8		　AZA_ApplicationException			Y
+		仕様5: createCodeList（コード分類＝人件費科目区分）
+	9		　正常取得	Y	Y
+	10		　AZA_ApplicationException			Y
+		仕様6(1): getMessage（DAC00246I）→ リスト追加
+	11		　正常取得	Y	Y
+	12		　AZA_ApplicationException			Y
+		仕様6(2): getMessage（DAC00247I）→ リスト追加
+	13		　正常取得	Y	Y
+		仕様6(3): getMessage（DAC00248I）→ リスト追加
+	14		　正常取得	Y	Y
+		仕様6(4): getMessage（DAC00202I）→ リスト追加
+	15		　正常取得	Y	Y
+		仕様6(5): getMessage（DAC00249I）→ リスト追加
+	16		　正常取得	Y	Y
+		仕様6(6): getMessage（DAC00313I）→ リスト追加
+	17		　正常取得	Y	Y
+		仕様6(7): getMessage（DAC00312I）→ リスト追加
+	18		　正常取得	Y	Y
 
 ### 【セクション②】確認項目
-    №	確認項目内容	1	2	3
-    1	戻り値の確認			
-    2	　コードオブジェクトリスト（4種）が設定されること	○	○	
-    3	　メッセージ文字列（7種）が設定されること	○	○	
-    4	モック呼び出し確認			
-    5	　getSysDateTime() が1回呼ばれること		○	
-    6	　getSysDateTime() が呼ばれないこと	○		
-    7	　コードリスト取得メソッドが呼ばれること（4回）	○	○	
-    8	例外の確認			
-    9	　正常終了すること	○	○	
-    10	　AZA_ApplicationExceptionがスローされること			○
+	No.		確認項目内容	1	2	3
+	1		getSysDateTime が呼ばれること		○
+	2		getSysDateTime が呼ばれないこと	○		○
+	3		createCodeList が4回呼ばれること	○	○
+	4		getMessage が7回呼ばれること	○	○
+	5		戻り値に全4種コードリストが設定されること	○	○
+	6		戻り値に操作メッセージリスト（7件）が設定されること	○	○
+	7		正常終了すること	○	○
+	8		AZA_ApplicationException がスローされること			○
 
 ### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3
-    1	モック設定値・戻り値一覧	○	○	○
-    2	initMainの戻り値（コードリスト・メッセージ一覧）	○	○	
-    3	スローされた例外の型・メッセージ			○
-	
-	## Logic: searchInputMain()
-※ validateRelatedSearchInput / searchListResultInput の全分岐をこのシートでカバー（フルカバー担当）
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		コードリスト・メッセージリスト内容	○	○
+	3		スローされた例外の型・メッセージ			○
+
+---
+
+# LSheet 2: searchInputMain
+
+## Logic: searchInputMain()
 
 ### テスト対象クラス・メソッド
 項目	内容
 クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	searchInputMain(searchDto, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao
-備考	※ validateRelatedSearchInput / searchListResultInput の全分岐をこのシートでカバー（フルカバー担当）
+メソッド	searchInputMain(DAC2015_LaborCostInfoEntrySearchDto)
+モック対象	DAC2015_LaborCostInfoEntryDao（検索DAO）
 
 ### 【セクション①】テストケース条件
-テストケースＮｏ．			case	1	2	3	4	5	6
-    №	テストケース条件内容						
-テストケース条件		public: searchInputMain						
-    1	From日付					
-    2	　null（未入力）				Y		
-    3	　設定あり	Y	Y	Y		Y	Y
-    4	To日付					
-    5	　null（未入力）				Y		
-    6	　設定あり	Y	Y	Y		Y	Y
-        private①: validateRelatedSearchInput					
-    7	From日付 vs To日付					
-    8	　From > To（エラー）		Y				
-    9	　From = To（境界値）			Y			
-    10	　From < To（正常）	Y			Y	Y	Y
-    11	From/Toともにnull → チェックスキップ				Y		
-        private②: searchListResultInput					
-    12	DAO#一覧検索結果件数					
-    13	　null（0件扱い）					Y	
-    14	　0件 → エラー				Y			
-    15	　1件（正常）	Y					Y
-    16	　上限値（境界値・正常）		Y		Y		
-    17	　上限値+1（超過エラー）			Y			Y
-    18	例外発生					
-    19	　なし	Y	Y	Y	Y		
-    20	　AZA_ApplicationException（DAO呼び出し時）					Y
 
-### 【セクション②】確認項目
-    №	確認項目内容	1	2	3	4	5	6
-    1	エラーの確認						
-    2	　バリデーションエラーが発生すること（From>To）		○				
-    3	　0件エラー（DAC00124E等）が発生すること				○		
-    4	　上限超過エラーが発生すること			○				○
-    5	戻り値の確認						
-    6	　検索結果リストが設定されること	○	○			○	
-    7	モック呼び出し確認						
-    8	　DAO#一覧取得が呼ばれること	○	○	○		○	○
-    9	　DAO#一覧取得が呼ばれないこと（バリデーションNG）		○				
-    10	例外の確認						
-    11	　正常終了すること	○	○		○	○	
-    12	　AZA_ApplicationExceptionがスローされること					Y	○
-
-### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3	4	5	6
-    1	モック設定値・戻り値一覧	○	○	○	○	○	○
-    2	検索結果リスト	○	○			○	
-    3	エラーメッセージ内容		○	○	○		
-    4	スローされた例外の型・メッセージ					○
-	
-	## Logic: nextInputMain()
-※ validateRelatedResultInput（ボタン種別=次画面）の全分岐をこのシートでカバー（フルカバー担当）
-
-### テスト対象クラス・メソッド
-項目	内容
-クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	nextInputMain(selectedList, inputKbnCd, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao
-備考	※ validateRelatedResultInput の全分岐をこのシートでカバー（フルカバー担当）
-
-### 【セクション①】テストケース条件
-テストケースＮｏ．			case	1	2	3	4	5	6	7	8
-    №	テストケース条件内容								
-テストケース条件		public: nextInputMain								
-    1	入力区分コード								
-    2	　給与支給	Y	Y	Y	Y	Y	Y		
-    3	　給与控除								Y
-    4	　その他（給与支給・給与控除以外）						Y	
-        private①: validateRelatedResultInput（ボタン種別=次画面）								
-    5	選択済みリスト件数								
-    6	　null → DAC00124Eエラー		Y						
-    7	　0件 → DAC00124Eエラー			Y					
-    8	　1件（正常）	Y			Y	Y	Y	Y	Y
-    9	　2件以上 → DAC00125Eエラー				Y				
-    10	承認状況（1件正常の場合）								
-    11	　下書保存	Y					Y	Y	Y
-    12	　差戻						Y	Y	Y
-    13	　null（下書/差戻と同扱い）	Y				Y	Y	Y	Y
-    14	　上記以外 → DAC00173Eエラー					Y			
-    15	DAO#基本入力ヘッダ情報取得								
-    16	　null / 0件 → AZA_DirtyUpdateException					Y		
-    17	　正常取得	Y							Y	Y
-
-### 【セクション②】確認項目
-    №	確認項目内容	1	2	3	4	5	6	7	8
-    1	エラーの確認								
-    2	　DAC00124Eエラーが発生すること		○	○					
-    3	　DAC00125Eエラーが発生すること				○				
-    4	　DAC00173Eエラーが発生すること					○			
-    5	　AZA_DirtyUpdateExceptionが発生すること						○		
-    6	戻り値の確認								
-    7	　給与支給用プルダウンリストが構築されること	○					○		
-    8	　給与控除用プルダウンリストが構築されること								○
-    9	　プルダウン構築なしで処理継続すること						Y	○	
-    10	モック呼び出し確認								
-    11	　DAO#ヘッダ情報取得が呼ばれること	○					○	○	○
-    12	例外の確認								
-    13	　正常終了すること	○					○	○	○
-    14	　例外がスローされること		○	○	○	○	○		
-
-### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3	4	5	6	7	8
-    1	モック設定値・戻り値一覧	○	○	○	○	○	○	○	○
-    2	プルダウンリスト内容	○					○		○
-    3	エラーメッセージ内容		○	○	○	○			
-    4	スローされた例外の型						○		
-	
-	## Logic: inquiryInputMain()
-※ getConfirmInfo の全分岐をこのシートでカバー（フルカバー担当）
-※ validateRelatedResultInput は LSheet3: nextInputMain でフルカバー済み → 簡易ケースのみ
-※ getShinseiShoninJoho は LSheet6: registBasicInputMain でフルカバー済み → 簡易ケースのみ
-
-### テスト対象クラス・メソッド
-項目	内容
-クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	inquiryInputMain(selectedList, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao, DAA_WorkflowUtils
-備考	※ getConfirmInfo の全分岐をこのシートでカバー（フルカバー担当）
-
-### 【セクション①】テストケース条件
-テストケースＮｏ．			case	1	2	3	4	5
-    №	テストケース条件内容					
-テストケース条件		public: inquiryInputMain					
-        private①: validateRelatedResultInput（ボタン種別=照会）※ 簡易ケースのみ					
-    1	選択済みリスト件数					
-    2	　1件（正常）	Y	Y	Y	Y	
-    3	　0件 → エラー（簡易）					Y
-        private②: getConfirmInfo（フルカバー担当）					
-    4	DAO#基本入力ヘッダ情報取得					
-    5	　null / 0件 → AZA_DirtyUpdateException			Y		
-    6	　正常取得	Y	Y		Y	
-    7	添付ファイル数計算					
-    8	　0件	Y					
-    9	　1件以上		Y		Y	
-    10	DAO#基本入力一覧明細情報取得					
-    11	　正常取得	Y	Y		Y	
-    12	　例外発生					Y
-    13	getShinseiShoninJoho（申請番号）※ 簡易ケースのみ					
-    14	　申請番号 = null → インスタンス生成のみ	Y				
-    15	　申請番号 = not null → ワークフロー照会	Y	Y	Y	Y	
-
-### 【セクション②】確認項目
-    №	確認項目内容	1	2	3	4	5
-    1	エラーの確認					
-    2	　validateRelatedResultInputエラーが発生すること					○
-    3	　AZA_DirtyUpdateExceptionが発生すること			○		
-    4	　DAO#明細情報取得例外がスローされること					○
-    5	戻り値の確認					
-    6	　ヘッダ情報が設定されること	○	○		○	
-    7	　添付ファイル数が設定されること	○	○		○	
-    8	　明細情報リストが設定されること	○	○		○	
-    9	　申請承認情報が設定されること	○	○		○	
-    10	モック呼び出し確認					
-    11	　DAO#ヘッダ情報取得が呼ばれること	○	○		○	
-    12	　DAO#明細情報取得が呼ばれること	○	○		○	○
-    13	例外の確認					
-    14	　正常終了すること	○	○			
-    15	　例外がスローされること			○		○
-
-### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3	4	5
-    1	モック設定値・戻り値一覧	○	○	○	○	○
-    2	ヘッダ情報・添付ファイル数・明細リスト	○	○		○	
-    3	スローされた例外の型・メッセージ			○		○
-	
-	## Logic: withdrawInputMain()
-※ validateRelatedResultInput は LSheet3: nextInputMain でフルカバー済み → 簡易ケースのみ
-※ getConfirmInfo は LSheet4: inquiryInputMain でフルカバー済み → 簡易ケースのみ
-
-### テスト対象クラス・メソッド
-項目	内容
-クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	withdrawInputMain(selectedList, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao, DAA_WorkflowUtils
-備考	※ validateRelatedResultInput / getConfirmInfo は各フルカバー担当シートでカバー済み → 簡易ケースのみ
-
-### 【セクション①】テストケース条件
 テストケースＮｏ．			case	1	2	3
-    №	テストケース条件内容			
-テストケース条件		public: withdrawInputMain			
-        private①: validateRelatedResultInput（ボタン種別=承認依頼取下）※ 簡易ケースのみ			
-    1	選択済みリスト件数			
-    2	　1件・承認状況=承認依頼中（正常）	Y		
-    3	　1件・承認状況=承認依頼中以外 → DAC00178Eエラー		Y	
-    4	　0件 → エラー（簡易）				Y
-        private②: getConfirmInfo ※ 簡易ケースのみ（LSheet4: inquiryInputMainでフルカバー済み）			
-    5	　正常取得	Y		
-    6	　例外発生（AZA_DirtyUpdateException・簡易）			Y
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: searchInputMain
+		仕様1: validateRelatedSearchInput 呼び出し（private）
+	1		　正常（バリデーションエラーなし）	Y		Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: searchListResultInput 呼び出し（private）
+	3		　正常（件数1件以上・上限以内）	Y
+	4		　BusinessValidationException スロー			Y
 
 ### 【セクション②】確認項目
-    №	確認項目内容	1	2	3
-    1	エラーの確認			
-    2	　DAC00178Eエラーが発生すること		○	
-    3	　validateRelatedResultInputエラーが発生すること			○
-    4	　AZA_DirtyUpdateExceptionが発生すること			○
-    5	戻り値の確認			
-    6	　確認情報が設定されること	○		
-    7	例外の確認			
-    8	　正常終了すること	○		
-    9	　例外がスローされること		○	○
+	No.		確認項目内容	1	2	3
+	1		validateRelatedSearchInput が呼ばれること	○	○	○
+	2		searchListResultInput が呼ばれること	○		○
+	3		searchListResultInput が呼ばれないこと		○
+	4		戻り値（一覧Dtoリスト）が設定されること	○
+	5		BusinessValidationException がスローされること		○	○
 
 ### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3
-    1	モック設定値・戻り値一覧	○	○	○
-    2	確認情報（ヘッダ・明細）	○		
-    3	スローされた例外の型・メッセージ		○	○
-	
-	## Logic: registBasicInputMain()
-※ validateSingleBasicInput の全分岐をこのシートでカバー（フルカバー担当）
-※ validateRelatedBasicInput の全分岐をこのシートでカバー（フルカバー担当）
-※ dispNameBasicInput の全分岐をこのシートでカバー（フルカバー担当）
-※ getShinseiShoninJoho の全分岐をこのシートでカバー（フルカバー担当）
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		戻り値一覧Dtoリスト内容	○
+	3		スローされた例外の型・メッセージ		○	○
+
+---
+
+# LSheet 3: nextInputMain
+
+## Logic: nextInputMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	nextInputMain(DAC2015_LaborCostInfoEntryListDetailDto)
+モック対象	DAC2015_LaborCostInfoEntryDao（ヘッダ取得）, DAA_ObjectList
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: nextInputMain
+		仕様1: validateRelatedResultInput 呼び出し（ボタン種別＝次画面）（private）
+	1		　正常（バリデーションエラーなし）	Y		Y	Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: 選択リスト1件目設定
+	3		　1件目を選択レコードとして設定	Y		Y	Y
+		仕様3: DAO#基本入力ヘッダ情報取得
+	4		　1件以上取得（正常）	Y		Y	Y
+	5		　null または 0件 → AZA_DirtyUpdateException スロー			Y
+		仕様4(1): 検索条件Dto設定（支給日）
+	6		　支給日を設定	Y			Y
+		仕様4(2): 検索条件Dto設定（一覧明細入力区分コード）
+	7		　一覧明細入力区分コードを設定	Y			Y
+		仕様4(3): 検索条件Dto設定（入力区分コード）
+	8		　入力区分コード＝給与支給・給与控除 → 定数.給与支給を設定				Y
+	9		　入力区分コード＝給与支給・給与控除以外 → そのまま設定	Y
+		仕様5(1): 入力区分プルダウンリスト設定（空文字追加）
+	10		　空文字を先頭に追加	Y			Y
+		仕様5(2): 入力区分プルダウンリスト設定（給与支給・給与控除の場合）
+	11		　給与支給項目 + 給与控除項目を追加				Y
+	12		　入力区分コードに対応する項目を追加（給与支給・給与控除以外）	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4
+	1		validateRelatedResultInput が呼ばれること	○	○	○	○
+	2		DAO#基本入力ヘッダ情報取得 が呼ばれること	○		○	○
+	3		DAO#基本入力ヘッダ情報取得 が呼ばれないこと		○
+	4		AZA_DirtyUpdateException がスローされること			○
+	5		入力区分プルダウンに給与支給＋給与控除項目が含まれること				○
+	6		入力区分プルダウンに対応区分のみ含まれること	○
+	7		正常終了すること	○			○
+	8		BusinessValidationException がスローされること		○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4
+	1		モック設定値・戻り値一覧	○	○	○	○
+	2		戻り値Dto内容	○			○
+	3		スローされた例外の型・メッセージ		○	○
+
+---
+
+# LSheet 4: inquiryInputMain
+
+## Logic: inquiryInputMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	inquiryInputMain(DAC2015_LaborCostInfoEntryListDetailDto)
+モック対象	DAC2015_LaborCostInfoEntryDao（ヘッダ取得・明細取得）, workflowUtils
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: inquiryInputMain
+		仕様1: validateRelatedResultInput 呼び出し（ボタン種別＝照会）（private）
+	1		　正常（バリデーションエラーなし）	Y		Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: 選択リスト1件目コピー
+	3		　1件目を確認用Dtoとして設定	Y		Y
+		仕様3: getConfirmInfo 呼び出し（private）
+	4		　正常（ヘッダ・明細取得成功）	Y
+	5		　AZA_DirtyUpdateException スロー			Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3
+	1		validateRelatedResultInput が呼ばれること	○	○	○
+	2		getConfirmInfo が呼ばれること	○		○
+	3		getConfirmInfo が呼ばれないこと		○
+	4		戻り値Dtoが正しく設定されること	○
+	5		BusinessValidationException がスローされること		○
+	6		AZA_DirtyUpdateException がスローされること			○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		戻り値Dto内容	○
+	3		スローされた例外の型・メッセージ		○	○
+
+---
+
+# LSheet 5: withdrawInputMain
+
+## Logic: withdrawInputMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	withdrawInputMain(DAC2015_LaborCostInfoEntryListDetailDto)
+モック対象	DAC2015_LaborCostInfoEntryDao（ヘッダ取得・明細取得）, workflowUtils
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: withdrawInputMain
+		仕様1: validateRelatedResultInput 呼び出し（ボタン種別＝承認依頼取下）（private）
+	1		　正常（バリデーションエラーなし）	Y		Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: 選択リスト1件目コピー
+	3		　1件目を確認用Dtoとして設定	Y		Y
+		仕様3: getConfirmInfo 呼び出し（private）
+	4		　正常（ヘッダ・明細取得成功）	Y
+	5		　AZA_DirtyUpdateException スロー			Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3
+	1		validateRelatedResultInput が呼ばれること	○	○	○
+	2		getConfirmInfo が呼ばれること	○		○
+	3		getConfirmInfo が呼ばれないこと		○
+	4		戻り値Dtoが正しく設定されること	○
+	5		BusinessValidationException がスローされること		○
+	6		AZA_DirtyUpdateException がスローされること			○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		戻り値Dto内容	○
+	3		スローされた例外の型・メッセージ		○	○
+
+---
+
+# LSheet 6: registBasicInputMain
 
 ## Logic: registBasicInputMain()
-※ validateSingleBasicInput の全分岐をこのシートでカバー（フルカバー担当）
-※ validateRelatedBasicInput の全分岐をこのシートでカバー（フルカバー担当）
-※ dispNameBasicInput の全分岐をこのシートでカバー（フルカバー担当）
-※ getShinseiShoninJoho の全分岐をこのシートでカバー（フルカバー担当）
-
 
 ### テスト対象クラス・メソッド
 項目	内容
 クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	registBasicInputMain(inputDto, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao, DAA_WorkflowUtils, DAA_MasterData
+メソッド	registBasicInputMain(DAC2015_LaborCostInfoEntryBasicInputDto)
+モック対象	masterData, DAC2015_LaborCostInfoEntryDao（明細取得・取引先取得）, workflowUtils
 
 ### 【セクション①】テストケース条件
-テストケースＮｏ．			case	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16
-    №	テストケース条件内容												
-テストケース条件		public: registBasicInputMain												
-    1	入力区分コード												
-    2	　会負担健保（KAISHA_TANTO_KENPO）			Y								
-    3	　会負担年金（KAISHA_TANTO_NENKIN）				Y							
-    4	　給与支給	Y	Y				Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
-    5	申請番号												
-    6	　null（新規）		Y										
-    7	　not null（更新）	Y		Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
-        private①: validateSingleBasicInput（フルカバー担当）												
-    8	給与個所コード												
-    9	　null → NOT NULL投入テスト（バリデーションエラー）					Y					Y	
-    10	　マスタ存在なし → エラー								Y				Y	
-    11	　正常（マスタあり）	Y	Y	Y	Y		Y	Y		Y	Y	Y	Y	Y	Y	Y	Y
-    12	業種コード												
-    13	　null → NOT NULL投入テスト（バリデーションエラー）						Y				Y	
-    14	　マスタ存在なし → エラー									Y			Y	
-    15	　正常（マスタあり）	Y	Y	Y	Y	Y		Y	Y		Y	Y	Y	Y	Y	Y	Y
-    16	所属コード												
-    17	　null → NOT NULL投入テスト（バリデーションエラー）							Y			Y	
-    18	　マスタ存在なし → エラー										Y		Y	
-    19	　正常（マスタあり）	Y	Y	Y	Y	Y	Y		Y	Y		Y	Y	Y	Y	Y	Y
-        private②: validateRelatedBasicInput（フルカバー担当）												
-    20	必須7項目（全て設定）												
-    21	　7項目全て設定あり	Y	Y	Y	Y						Y			Y	Y	Y
-    22	　1項目以上null → エラー									Y			
-    23	業種コード + 所属コードの組み合わせチェック												
-    24	　組み合わせ正常	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y				Y	Y	Y
-    25	　組み合わせ不正 → エラー										Y		
-    26	連動ヘッダ情報存在チェック												
-    27	　存在あり	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y		Y	Y	Y
-    28	　存在なし → エラー												Y	
-    29	連動明細情報存在チェック												
-    30	　存在あり	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y		Y	Y
-    31	　存在なし → エラー													Y
-    32	既登録チェック												
-    33	　未登録	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y		Y
-    34	　登録済み → エラー												Y
-        private③: dispNameBasicInput（フルカバー担当）												
-    35	名称取得結果												
-    36	　マスタあり → 名称設定	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	
-    37	　マスタなし → エラー												Y
-        private④: getShinseiShoninJoho（フルカバー担当）												
-    38	申請番号												
-    39	　null → インスタンス生成のみ		Y										
-    40	　not null → ワークフロー照会API呼び出し	Y		Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
-    41	会負担健保/年金の場合												
-    42	　支払先情報を取得すること（DAOモック）			Y	Y						
+
+テストケースＮｏ．			case	1	2	3	4	5	6	7
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: registBasicInputMain
+		仕様1: validateSingleBasicInput 呼び出し（private）
+	1		　正常（バリデーションエラーなし）	Y		Y	Y	Y	Y	Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: validateRelatedBasicInput 呼び出し（ボタン種別＝登録）（private）
+	3		　正常（バリデーションエラーなし）	Y			Y	Y	Y	Y
+	4		　BusinessValidationException スロー			Y
+		仕様3(2): 基本入力一覧明細Dto 初期化
+	5		　Dto 初期化	Y				Y	Y	Y
+		仕様3(3): dispNameBasicInput 呼び出し（private）
+	6		　正常（名称リスト取得）	Y				Y	Y	Y
+		仕様3(4): 名称設定（給与個所名称＝1番目, 業種名称＝2番目, 所属名称＝3番目）
+	7		　給与個所名称をリスト1番目から設定	Y				Y	Y	Y
+	8		　業種名称をリスト2番目から設定	Y				Y	Y	Y
+	9		　所属名称をリスト3番目から設定	Y				Y	Y	Y
+		仕様3(5): 入力区分コード判定（会負担健保 または 会負担年金）
+	10		　入力区分コード＝会負担健保 または 会負担年金				Y	Y	Y
+	11		　入力区分コード＝その他（会負担健保・会負担年金以外）	Y
+		仕様3(5)ア: getCodeJoho（人件費情報入力相手先）呼び出し（入力区分=会負担健保/会負担年金時）
+	12		　戻り値が null 以外 → 支払先区分・コード設定 → convertLocalDateToInteger				Y		Y
+	13		　戻り値が null → 支払先設定スキップ					Y
+		仕様3(5)イ: DAO#取引先情報取得（getCodeJoho 戻り値 null 以外時）
+	14		　1件以上取得 → 支払先名称設定				Y			Y
+	15		　null または 0件 → 支払先名称設定スキップ						Y
+		仕様4: DAO#人件費明細情報取得
+	16		　取得成功	Y				Y	Y	Y
+		仕様5: 申請番号分岐
+	17		　入力区分コード＝給与控除 → 申請番号（給与控除）を使用							Y
+	18		　入力区分コード＝給与控除以外 → 申請番号を使用	Y				Y	Y
+		仕様5: getShinseiShoninJoho 呼び出し（private）
+	19		　正常（申請・承認情報取得）	Y				Y	Y	Y
 
 ### 【セクション②】確認項目
-    №	確認項目内容	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16
-    1	エラーの確認												
-    2	　validateSingle: 給与個所コードnullエラー					○					○	
-    3	　validateSingle: 業種コードnullエラー						○				○	
-    4	　validateSingle: 所属コードnullエラー							○			○	
-    5	　validateSingle: 給与個所マスタなしエラー								○			○
-    6	　validateSingle: 業種マスタなしエラー									○		○
-    7	　validateSingle: 所属マスタなしエラー										○	○
-    8	　validateRelated: 必須項目nullエラー									○		
-    9	　validateRelated: 組み合わせ不正エラー										○	
-    10	　validateRelated: 連動ヘッダなしエラー												○
-    11	　validateRelated: 連動明細なしエラー												Y
-    12	　validateRelated: 既登録エラー												○
-    13	　dispName: 名称なしエラー												○
-    14	戻り値の確認												
-    15	　名称情報が設定されること	○	○	○	○	○	○	○								
-    16	　申請承認情報が設定されること	○		○	○	○	○	○								
-    17	　支払先情報が設定されること			○	○								
-    18	モック呼び出し確認												
-    19	　DAO#登録処理が呼ばれること	○	○	○	○										
-    20	　ワークフロー照会APIが呼ばれること	○		○	○	○	○	○								
-    21	例外の確認												
-    22	　正常終了すること	○	○	○	○									
-    23	　バリデーションエラーが発生すること					○	○	○	○	○	○	○	○	○	○	○	○
+	No.		確認項目内容	1	2	3	4	5	6	7
+	1		validateSingleBasicInput が呼ばれること	○	○	○	○	○	○	○
+	2		validateRelatedBasicInput が呼ばれること	○		○	○	○	○	○
+	3		dispNameBasicInput が呼ばれること	○			○	○	○	○
+	4		getCodeJoho（相手先）が呼ばれること				○	○	○
+	5		DAO#取引先情報取得 が呼ばれること				○		○
+	6		DAO#取引先情報取得 が呼ばれないこと					○	○
+	7		DAO#人件費明細情報取得 が呼ばれること	○			○	○	○	○
+	8		getShinseiShoninJoho が呼ばれること	○			○	○	○	○
+	9		戻り値Dtoが正しく設定されること	○			○	○	○	○
+	10		給与控除側の申請番号が使用されること							○
+	11		BusinessValidationException がスローされること		○	○
 
 ### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3	4	5	6	7	8	9	10	11	12	13	14	15	16
-    1	モック設定値・戻り値一覧	○	○	○	○	○	○	○	○	○	○	○	○	○	○	○	○
-    2	名称取得結果・申請承認情報	○	○	○	○								
-    3	エラーメッセージ一覧					○	○	○	○	○	○	○	○	○	○	○	○
+	No.		エビデンス内容	1	2	3	4	5	6	7
+	1		モック設定値・戻り値一覧	○	○	○	○	○	○	○
+	2		戻り値Dto内容	○			○	○	○	○
+	3		スローされた例外の型・メッセージ		○	○
+
+---
+
+# LSheet 7: searchBasicInputMain
 
 ## Logic: searchBasicInputMain()
-※ listResultDataBasicInput の全分岐をこのシートでカバー（フルカバー担当）
-※ validateSingleBasicInput は LSheet6: registBasicInputMain でフルカバー済み → 簡易ケースのみ
-※ validateRelatedBasicInput は LSheet6: registBasicInputMain でフルカバー済み → 簡易ケースのみ
-※ dispNameBasicInput は LSheet6: registBasicInputMain でフルカバー済み → 簡易ケースのみ
 
 ### テスト対象クラス・メソッド
 項目	内容
 クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	searchBasicInputMain(inputDto, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao, DAA_MasterData
+メソッド	searchBasicInputMain(DAC2015_LaborCostInfoEntryBasicInputDto)
+モック対象	masterData, DAC2015_LaborCostInfoEntryDao（明細一覧取得）
 
 ### 【セクション①】テストケース条件
-テストケースＮｏ．			case	1	2	3	4	5	6
-    №	テストケース条件内容					
-テストケース条件		public: searchBasicInputMain					
-        private①: validateSingleBasicInput / validateRelatedBasicInput / dispNameBasicInput ※ 簡易ケースのみ					
-    1	バリデーション結果					
-    2	　正常（エラーなし）	Y	Y		Y	Y	Y
-    3	　バリデーションエラー発生（簡易）			Y			
-        private②: listResultDataBasicInput（フルカバー担当）					
-    4	DAO#一覧検索結果					
-    5	　null → ループなし（4パターン: null）				Y		
-    6	　0件 → エラー（0件エラー）					Y	
-    7	　1件（正常・ループ1回）	Y					
-    8	　複数件（正常・ループ複数回）		Y			Y	
-    9	上限件数チェック					
-    10	　上限以下（正常）	Y	Y				
-    11	　上限超過 → エラー					Y	Y
+
+テストケースＮｏ．			case	1	2	3	4
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: searchBasicInputMain
+		仕様1: validateSingleBasicInput 呼び出し（private）
+	1		　正常（バリデーションエラーなし）	Y		Y	Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: validateRelatedBasicInput 呼び出し（ボタン種別＝照会）（private）
+	3		　正常（バリデーションエラーなし）	Y			Y
+	4		　BusinessValidationException スロー			Y
+		仕様3: dispNameBasicInput 呼び出し（private）
+	5		　正常（名称リスト取得）	Y				Y
+		仕様4: listResultDataBasicInput 呼び出し（private）
+	6		　正常（1件以上・上限以内）	Y
+	7		　BusinessValidationException スロー				Y
 
 ### 【セクション②】確認項目
-    №	確認項目内容	1	2	3	4	5	6
-    1	エラーの確認					
-    2	　バリデーションエラーが発生すること			○			
-    3	　0件エラーが発生すること					○	
-    4	　上限超過エラーが発生すること					Y	○
-    5	戻り値の確認					
-    6	　検索結果リストが設定されること（1件）	○				
-    7	　検索結果リストが設定されること（複数件）		○				
-    8	モック呼び出し確認					
-    9	　DAO#一覧取得が呼ばれること	○	○		○	○	○
-    10	　DAO#一覧取得が呼ばれないこと（バリデーションNG）			○		
-    11	例外の確認					
-    12	　正常終了すること	○	○			
-    13	　バリデーションエラーが発生すること			○		○	○
+	No.		確認項目内容	1	2	3	4
+	1		validateSingleBasicInput が呼ばれること	○	○	○	○
+	2		validateRelatedBasicInput が呼ばれること	○		○	○
+	3		dispNameBasicInput が呼ばれること	○			○
+	4		listResultDataBasicInput が呼ばれること	○			○
+	5		listResultDataBasicInput が呼ばれないこと		○	○
+	6		戻り値（一覧明細Dtoリスト＋名称）が正しく設定されること	○
+	7		BusinessValidationException がスローされること		○	○	○
 
 ### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3	4	5	6
-    1	モック設定値・戻り値一覧	○	○	○	○	○	○
-    2	検索結果リスト（件数・内容）	○	○				
-    3	エラーメッセージ内容		○	○	○	○	○
-	
-	## Logic: listShowBasicInputMain()
-※ validateSingleBasicInput は LSheet6: registBasicInputMain でフルカバー済み → 簡易ケースのみ
-※ validateRelatedBasicInput は LSheet6: registBasicInputMain でフルカバー済み → 簡易ケースのみ
-※ dispNameBasicInput は LSheet6: registBasicInputMain でフルカバー済み → 簡易ケースのみ
+	No.		エビデンス内容	1	2	3	4
+	1		モック設定値・戻り値一覧	○	○	○	○
+	2		戻り値一覧Dtoリスト内容	○
+	3		スローされた例外の型・メッセージ		○	○	○
+
+---
+
+# LSheet 8: listShowBasicInputMain
+
+## Logic: listShowBasicInputMain()
 
 ### テスト対象クラス・メソッド
 項目	内容
 クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	listShowBasicInputMain(inputDto, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao, DAA_MasterData
+メソッド	listShowBasicInputMain(DAC2015_LaborCostInfoEntryBasicInputDto)
+モック対象	masterData
 
 ### 【セクション①】テストケース条件
+
 テストケースＮｏ．			case	1	2	3
-    №	テストケース条件内容			
-テストケース条件		public: listShowBasicInputMain			
-        private①: validateSingleBasicInput / validateRelatedBasicInput / dispNameBasicInput ※ 簡易ケースのみ（ボタン種別=表示）			
-    1	バリデーション結果			
-    2	　正常（エラーなし）	Y	Y	
-    3	　バリデーションエラー発生（簡易）			Y
-    4	DAO#表示用情報取得			
-    5	　正常取得	Y		
-    6	　null/0件 → 表示なし（空リスト）		Y	
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: listShowBasicInputMain
+		仕様1: validateSingleBasicInput 呼び出し（private）
+	1		　正常（バリデーションエラーなし）	Y		Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: validateRelatedBasicInput 呼び出し（ボタン種別＝表示）（private）
+	3		　正常（バリデーションエラーなし）	Y			Y
+	4		　BusinessValidationException スロー			Y
+		仕様3: dispNameBasicInput 呼び出し（private）
+	5		　正常（名称リスト取得）	Y
 
 ### 【セクション②】確認項目
-    №	確認項目内容	1	2	3
-    1	エラーの確認			
-    2	　バリデーションエラーが発生すること			○
-    3	戻り値の確認			
-    4	　表示用データリストが設定されること	○		
-    5	　空リストが設定されること		○	
-    6	例外の確認			
-    7	　正常終了すること	○	○	
+	No.		確認項目内容	1	2	3
+	1		validateSingleBasicInput が呼ばれること	○	○	○
+	2		validateRelatedBasicInput が呼ばれること	○		○
+	3		dispNameBasicInput が呼ばれること	○
+	4		dispNameBasicInput が呼ばれないこと		○	○
+	5		戻り値（名称リスト）が正しく設定されること	○
+	6		BusinessValidationException がスローされること		○	○
 
 ### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3
-    1	モック設定値・戻り値一覧	○	○	○
-    2	表示用データリスト	○	○	
-    3	エラーメッセージ内容			○
-	
-	## Logic: modifyBasicInputMain()
-※ validateRelatedListBasicInput の全分岐をこのシートでカバー（フルカバー担当）
-※ dispNameBasicInput は LSheet6: registBasicInputMain でフルカバー済み → 簡易ケースのみ
-※ getShinseiShoninJoho は LSheet6: registBasicInputMain でフルカバー済み → 簡易ケースのみ
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		戻り値名称リスト内容	○
+	3		スローされた例外の型・メッセージ		○	○
+
+---
+
+# LSheet 9: modifyBasicInputMain
+
+## Logic: modifyBasicInputMain()
 
 ### テスト対象クラス・メソッド
 項目	内容
 クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	modifyBasicInputMain(inputDto, selectedList, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao, DAA_WorkflowUtils, DAA_MasterData
+メソッド	modifyBasicInputMain(DAC2015_LaborCostInfoEntryBasicInputListDetailDto)
+モック対象	DAC2015_LaborCostInfoEntryDao（明細取得）, workflowUtils
 
 ### 【セクション①】テストケース条件
-テストケースＮｏ．			case	1	2	3	4	5	6
-    №	テストケース条件内容					
-テストケース条件		public: modifyBasicInputMain					
-    1	入力区分コード					
-    2	　給与控除（申請番号選択あり）					Y
-    3	　給与控除以外	Y	Y	Y	Y		
-    4	申請番号選択（給与控除の場合）					
-    5	　申請番号選択あり					Y
-    6	　申請番号選択なし → エラー（DAC00XXX）					
-        private①: validateRelatedListBasicInput（フルカバー担当）					
-    7	選択済みリスト件数					
-    8	　null → 0件扱い（スキップ or エラー）		Y				
-    9	　0件 → DAC00323Eエラー			Y			
-    10	　1件（正常）	Y			Y	Y	
-    11	　2件以上 → DAC00125Eエラー				Y		
-        private②: dispNameBasicInput（簡易ケースのみ）※ LSheet6でフルカバー済み					
-    12	名称取得					
-    13	　正常	Y			Y	Y	Y
-        private③: getShinseiShoninJoho（簡易ケースのみ）※ LSheet6でフルカバー済み					
-    14	申請番号					
-    15	　null → インスタンス生成のみ				Y		
-    16	　not null → ワークフロー照会API呼び出し	Y			Y	Y	Y
 
-### 【セクション②】確認項目
-    №	確認項目内容	1	2	3	4	5	6
-    1	エラーの確認					
-    2	　0件エラー（DAC00323E）が発生すること			○			
-    3	　2件以上エラー（DAC00125E）が発生すること				○		
-    4	戻り値の確認					
-    5	　選択済み1件の情報が設定されること	○			○	○	○
-    6	　申請承認情報が設定されること	○			○	○	○
-    7	モック呼び出し確認					
-    8	　DAO#明細情報取得が呼ばれること	○			○	○	○
-    9	　ワークフロー照会APIが呼ばれること	○			○	○	○
-    10	例外の確認					
-    11	　正常終了すること	○		○	○	○	○
-    12	　エラーが発生すること		○	○	○		
-
-### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3	4	5	6
-    1	モック設定値・戻り値一覧	○	○	○	○	○	○
-    2	選択済み1件情報・申請承認情報	○			○	○	○
-    3	エラーメッセージ内容		○	○	○		
-	
-	## Logic: exportCsvBasicInputMain()
-※ getTenpuFileShoriKbn の全分岐をこのシートでカバー（フルカバー担当）
-
-### テスト対象クラス・メソッド
-項目	内容
-クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	exportCsvBasicInputMain(inputDto, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao, ファイルアップロードサービス
-備考	※ getTenpuFileShoriKbn の全分岐をこのシートでカバー（フルカバー担当）
-
-### 【セクション①】テストケース条件
-テストケースＮｏ．			case	1	2	3	4	5	6	7	8
-    №	テストケース条件内容							
-テストケース条件		public: exportCsvBasicInputMain							
-    1	添付ファイルリスト（ループ対象）							
-    2	　null → ループなし（NullPointerException発生しないこと）				Y			
-    3	　0件 → ループなし（空リスト）					Y		
-    4	　1件 → ループ1回実行	Y						Y
-    5	　複数件 → ループ複数回実行		Y					
-        private①: getTenpuFileShoriKbn（フルカバー担当）※ ループ内で各要素に適用							
-    6	更新前ファイルID（KosinMaeFileId）							
-    7	　null	Y		Y	Y	Y	Y			
-    8	　not null（既存あり）		Y						Y
-    9	現在のファイルID（FileId）							
-    10	　null	Y		Y	Y	Y	Y			
-    11	　not null（既存あり）								Y
-    12	アップロードファイル（UploadFile）							
-    13	　null → アップロードなし	Y		Y		Y	Y		Y
-    14	　not null → アップロードあり		Y				Y		
-    15	処理区分決定ロジック							
-    16	　KosinMaeFileId=null, FileId=null, File=null → 処理なし	Y			Y	Y		
-    17	　KosinMaeFileId=null, FileId=null, File=あり → アップロード				Y			
-    18	　KosinMaeFileId=あり, FileId=null, File=null → 削除					Y		
-    19	　KosinMaeFileId=あり, FileId=null, File=あり → 削除+アップロード		Y			Y	
-    20	　KosinMaeFileId=あり, FileId=あり, File=null → 処理なし（ID有）								Y
-
-### 【セクション②】確認項目
-    №	確認項目内容	1	2	3	4	5	6	7	8
-    1	NullPointerException確認						
-    2	　nullリストでNullPointerExceptionが発生しないこと				○			
-    3	処理区分の確認						
-    4	　処理なし判定となること	○		○	○	○		
-    5	　アップロード処理が実行されること		○					○		
-    6	　削除処理が実行されること					○		
-    7	　削除+アップロード処理が実行されること		○				○	
-    8	　処理なし（ID有）判定となること								○
-    9	モック呼び出し確認						
-    10	　ファイルアップロードAPIが呼ばれること		○					○		
-    11	　ファイル削除APIが呼ばれること					○	○		
-    12	　DAO#更新処理が呼ばれること	○	○		○	○	○	○	○
-    13	例外の確認						
-    14	　正常終了すること	○	○		○	○	○	○	○
-
-### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3	4	5	6	7	8
-    1	モック設定値（各ファイルID・アップロードファイル）	○	○	○	○	○	○	○	○
-    2	実行された処理区分（処理なし/アップロード/削除/削除+アップロード）	○	○		○	○	○	○	○
-    3	DAO更新呼び出し確認	○	○		○	○	○	○	○
-	
-	## Logic: inquiryConfirmMain()
-
-### テスト対象クラス・メソッド
-項目	内容
-クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	inquiryConfirmMain(inputDto, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao
-
-### 【セクション①】テストケース条件
 テストケースＮｏ．			case	1	2	3
-    №	テストケース条件内容			
-テストケース条件		public: inquiryConfirmMain			
-    1	DAO#人件費明細情報取得結果			
-    2	　null → エラー（DAC00XXX or NullPointerException発生しないこと）		Y	
-    3	　0件 → エラー（0件エラー）			Y
-    4	　1件以上（正常）	Y		
-    5	明細リストのNULL許容フィールド			
-    6	　NULL許容フィールドにnullを設定しても後続処理が正常終了すること	Y		
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: modifyBasicInputMain
+		仕様1: validateRelatedListBasicInput 呼び出し（ボタン種別＝修正）（private）
+	1		　正常（バリデーションエラーなし）	Y		Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: 選択リスト1行目設定
+	3		　1行目を選択レコードとして設定	Y		Y
+		仕様3: DAO#人件費明細情報取得
+	4		　取得成功	Y		Y
+		仕様4: 申請番号分岐
+	5		　入力区分コード＝給与控除 → 申請番号（給与控除）を使用			Y
+	6		　入力区分コード＝給与控除以外 → 申請番号を使用	Y
+		仕様4: getShinseiShoninJoho 呼び出し（private）
+	7		　正常（申請・承認情報取得）	Y		Y
 
 ### 【セクション②】確認項目
-    №	確認項目内容	1	2	3
-    1	エラーの確認			
-    2	　null取得時にエラーが発生すること or 正常終了すること		○	
-    3	　0件エラーが発生すること			○
-    4	戻り値の確認			
-    5	　明細情報リストが設定されること	○		
-    6　　　NULLフィールドを含む明細でNullPointerExceptionが発生しないこと	○		
-    7	例外の確認			
-    8	　正常終了すること	○		
+	No.		確認項目内容	1	2	3
+	1		validateRelatedListBasicInput が呼ばれること	○	○	○
+	2		DAO#人件費明細情報取得 が呼ばれること	○		○
+	3		getShinseiShoninJoho が呼ばれること	○		○
+	4		給与控除側の申請番号が使用されること			○
+	5		戻り値Dtoが正しく設定されること	○		○
+	6		BusinessValidationException がスローされること		○
 
 ### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3
-    1	モック設定値・戻り値一覧	○	○	○
-    2	明細情報リスト内容	○		
-    3	エラーメッセージ内容		○	○
-	
-	## Logic: withdrawConfirmMain()
-※ modifyHeaderData の全分岐をこのシートでカバー（フルカバー担当）
-※ validateRelatedConfirm は LSheet13: confirmInquiryMain でフルカバー済み → 簡易ケースのみ
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		戻り値Dto内容	○		○
+	3		スローされた例外の型・メッセージ		○
+
+---
+
+# LSheet 10: exportCsvBasicInputMain
+
+## Logic: exportCsvBasicInputMain()
+## ※設計書の一部のみ確認済み。後続処理の詳細については設計書要確認。
 
 ### テスト対象クラス・メソッド
 項目	内容
 クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	withdrawConfirmMain(inputDto, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao, DAA_NumberingUtils
+メソッド	exportCsvBasicInputMain(DAC2015_LaborCostInfoEntryBasicInputDto)
+モック対象	DAC2015_LaborCostInfoEntryDao（連動リスト取得）
 
 ### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: exportCsvBasicInputMain
+		仕様1(1): 連動リスト情報 初期化
+	1		　ローカル変数初期化	Y	Y
+		仕様1(2): 基本入力検索条件Dto設定
+	2		　基本入力検索条件Dtoに各項目を設定	Y	Y
+		仕様1(3): 連動リスト取得結果判定
+	3		　リストが null → 選択キー情報リスト＝null	Y
+	4		　リストが null 以外（→後続処理）		Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2
+	1		連動リスト検索処理が呼ばれること	○	○
+	2		リストnull時に選択キー情報リストが null 設定されること	○
+	3		正常終了すること	○	○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2
+	1		モック設定値・戻り値一覧	○	○
+	2		戻り値内容	○	○
+
+---
+
+# LSheet 11: saveDraftBasicInputMain
+
+## Logic: saveDraftBasicInputMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	saveDraftBasicInputMain(DAC2015_LaborCostInfoEntryBasicInputDto)
+モック対象	fileUtils, workflowUtils, DAC2015_LaborCostInfoEntryDao（ヘッダ更新・一覧検索）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4	5	6
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: saveDraftBasicInputMain
+		仕様1: 添付ファイル1 処理区分判定
+	1		　処理区分＝アップロード または 削除・アップロード → fileUtils#uploadTempFile 呼び出し		Y			Y
+	2		　処理区分＝その他 → fileUtils#uploadTempFile 呼び出しなし	Y		Y	Y		Y
+		仕様1: 添付ファイル2 処理区分判定
+	3		　処理区分＝アップロード または 削除・アップロード → fileUtils#uploadTempFile 呼び出し			Y		Y
+	4		　処理区分＝その他 → fileUtils#uploadTempFile 呼び出しなし	Y	Y		Y		Y
+		仕様1: 添付ファイル3 処理区分判定
+	5		　処理区分＝アップロード または 削除・アップロード → fileUtils#uploadTempFile 呼び出し				Y	Y
+	6		　処理区分＝その他 → fileUtils#uploadTempFile 呼び出しなし	Y	Y	Y			Y
+		仕様2: ヘッダ関連変数設定（支給日）
+	7		　支給日を設定	Y	Y	Y	Y	Y	Y
+		仕様2: ヘッダ関連変数設定（入力区分）
+	8		　入力区分を設定	Y	Y	Y	Y	Y	Y
+		仕様2: ヘッダ関連変数設定（伝票番号）
+	9		　伝票番号を設定	Y	Y	Y	Y	Y	Y
+		仕様2: ヘッダ関連変数設定（申請番号）
+	10		　申請番号を設定	Y	Y	Y	Y	Y	Y
+		仕様3: 申請処理（申請番号有無判定）
+	11		　申請番号＝あり → 再申請フラグ＝true				Y		Y
+	12		　申請番号＝なし → workflowUtils#apply 呼び出し	Y	Y	Y		Y
+		仕様4: modifyHeaderData 呼び出し（private）
+	13		　正常（ヘッダ更新成功）	Y	Y	Y	Y		Y
+	14		　AZA_DirtyUpdateException スロー					Y
+		仕様5: 再申請フラグ判定
+	15		　再申請フラグ＝true → workflowUtils#reapply 呼び出し				Y		Y
+	16		　再申請フラグ＝false → workflowUtils#reapply 呼び出しなし	Y	Y	Y		Y
+		仕様6: searchListResultInput 呼び出し（private）
+	17		　正常（一覧取得成功）	Y	Y	Y	Y		Y
+	18		　BusinessValidationException スロー						Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4	5	6
+	1		fileUtils#uploadTempFile が呼ばれる回数（設定された分のみ）	○	○	○	○	○	○
+	2		workflowUtils#apply が呼ばれること	○	○	○		○
+	3		workflowUtils#apply が呼ばれないこと				○		○
+	4		modifyHeaderData が呼ばれること	○	○	○	○		○
+	5		workflowUtils#reapply が呼ばれること				○		○
+	6		workflowUtils#reapply が呼ばれないこと	○	○	○		○
+	7		searchListResultInput が呼ばれること	○	○	○	○		○
+	8		searchListResultInput が呼ばれないこと					○
+	9		戻り値（一覧Dtoリスト）が正しく設定されること	○	○	○	○		○
+	10		AZA_DirtyUpdateException がスローされること					○
+	11		BusinessValidationException がスローされること						○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4	5	6
+	1		モック設定値・戻り値一覧	○	○	○	○	○	○
+	2		戻り値Dto内容	○	○	○	○
+	3		スローされた例外の型・メッセージ					○	○
+
+---
+
+# LSheet 12: deleteBasicInputMain
+
+## Logic: deleteBasicInputMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	deleteBasicInputMain(DAC2015_LaborCostInfoEntryBasicInputDto, List, LocalDate)
+モック対象	validateRelatedListBasicInput（private）, DAC2015_LaborCostInfoEntryDao
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: deleteBasicInputMain
+		仕様1: validateRelatedListBasicInput 呼び出し（ボタン種別＝削除）（private）
+	1		　正常（バリデーションエラーなし）	Y		Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: DAO#削除処理（validateRelatedList正常時のみ）
+	3		　更新件数 > 0（正常）	Y
+	4		　更新件数 = 0 → AZA_DirtyUpdateException スロー			Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3
+	1		validateRelatedListBasicInput が呼ばれること	○	○	○
+	2		DAO#削除 が呼ばれること	○		○
+	3		DAO#削除 が呼ばれないこと		○
+	4		削除完了メッセージが設定されること	○
+	5		正常終了すること	○
+	6		BusinessValidationException がスローされること		○
+	7		AZA_DirtyUpdateException がスローされること			○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		削除完了メッセージ内容	○
+	3		スローされた例外の型・メッセージ		○	○
+
+---
+
+# LSheet 13: inquiryBasicInputMain
+
+## Logic: inquiryBasicInputMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	inquiryBasicInputMain(DAC2015_LaborCostInfoEntryBasicInputDto, List, LocalDate)
+モック対象	validateRelatedListBasicInput（private）, getConfirmInfo（private）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: inquiryBasicInputMain
+		仕様1: validateRelatedListBasicInput 呼び出し（ボタン種別＝照会）（private）
+	1		　正常（バリデーションエラーなし）	Y		Y	Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: getConfirmInfo 呼び出し（validateRelatedList正常時のみ）（private）
+	3		　正常（ヘッダ・明細取得成功）	Y
+	4		　AZA_DirtyUpdateException スロー			Y
+	5		　例外発生（明細取得失敗）				Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4
+	1		validateRelatedListBasicInput が呼ばれること	○	○	○	○
+	2		getConfirmInfo が呼ばれること	○		○	○
+	3		getConfirmInfo が呼ばれないこと		○
+	4		ヘッダ・明細・添付ファイル数が設定されること	○
+	5		正常終了すること	○
+	6		BusinessValidationException がスローされること		○
+	7		AZA_DirtyUpdateException がスローされること			○
+	8		例外がスローされること				○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4
+	1		モック設定値・戻り値一覧	○	○	○	○
+	2		ヘッダ・明細・添付ファイル数	○
+	3		スローされた例外の型・メッセージ		○	○	○
+
+---
+
+# LSheet 14: confirmBasicInputMain
+
+## Logic: confirmBasicInputMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	confirmBasicInputMain(DAC2015_LaborCostInfoEntryBasicInputDto, LocalDate)
+モック対象	validateSingleBasicInput（private）, validateRelatedBasicInput（private）, dispNameBasicInput（private）, getShinseiShoninJoho（private）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: confirmBasicInputMain
+		仕様1: validateSingleBasicInput 呼び出し（private）
+	1		　正常（バリデーションエラーなし）	Y		Y	Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: validateRelatedBasicInput 呼び出し（ボタン種別＝確認）（private）
+	3		　正常（バリデーションエラーなし）	Y			Y
+	4		　BusinessValidationException スロー			Y
+		仕様3: dispNameBasicInput 呼び出し（validateRelated正常時のみ）（private）
+	5		　正常（名称リスト取得）	Y
+	6		　BusinessValidationException スロー				Y
+		仕様4: getShinseiShoninJoho 呼び出し（dispName正常時のみ）（private）
+	7		　正常（申請・承認情報取得）	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4
+	1		validateSingleBasicInput が呼ばれること	○	○	○	○
+	2		validateRelatedBasicInput が呼ばれること	○		○	○
+	3		dispNameBasicInput が呼ばれること	○
+	4		getShinseiShoninJoho が呼ばれること	○
+	5		確認画面遷移用データが設定されること	○
+	6		申請承認情報が設定されること	○
+	7		正常終了すること	○
+	8		BusinessValidationException がスローされること		○	○	○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4
+	1		モック設定値・戻り値一覧	○	○	○	○
+	2		確認画面遷移用データ・申請承認情報	○
+	3		スローされた例外の型・メッセージ		○	○	○
+
+---
+
+# LSheet 15: saveDraftDetailInputMain
+
+## Logic: saveDraftDetailInputMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	saveDraftDetailInputMain(DAC2015_LaborCostInfoEntryBasicInputDto, LocalDate)
+モック対象	modifyNyuryokuData（private）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: saveDraftDetailInputMain
+		仕様1: modifyNyuryokuData 呼び出し（各明細項目に対して繰り返し）（private）
+	1		　正常（更新成功）	Y
+	2		　AZA_DirtyUpdateException スロー		Y
+	3		　AZA_ApplicationException スロー			Y
+		仕様2: 下書保存完了メッセージ設定（正常時のみ）
+	4		　下書保存完了メッセージが設定されること	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3
+	1		modifyNyuryokuData が呼ばれること	○	○	○
+	2		下書保存完了メッセージが設定されること	○
+	3		正常終了すること	○
+	4		AZA_DirtyUpdateException がスローされること		○
+	5		AZA_ApplicationException がスローされること			○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		下書保存完了メッセージ内容	○
+	3		スローされた例外の型・メッセージ		○	○
+
+---
+
+# LSheet 16: applyConfirmMain
+
+## Logic: applyConfirmMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	applyConfirmMain(DAC2015_LaborCostInfoEntryBasicInputDto, LocalDate)
+モック対象	validateRelatedConfirm（private）, modifyConfirm（private）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: applyConfirmMain
+		仕様1: validateRelatedConfirm 呼び出し（処理モード＝登録）（private）
+	1		　正常（バリデーションエラーなし）	Y		Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: modifyConfirm 呼び出し（validateRelatedConfirm正常時のみ）（private）
+	3		　正常（申請完了）	Y
+	4		　AZA_DirtyUpdateException スロー			Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3
+	1		validateRelatedConfirm が呼ばれること	○	○	○
+	2		modifyConfirm が呼ばれること	○		○
+	3		modifyConfirm が呼ばれないこと		○
+	4		申請完了メッセージが設定されること	○
+	5		正常終了すること	○
+	6		BusinessValidationException がスローされること		○
+	7		AZA_DirtyUpdateException がスローされること			○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		申請完了メッセージ・申請情報	○
+	3		スローされた例外の型・メッセージ		○	○
+
+---
+
+# LSheet 17: inquiryConfirmMain
+
+## Logic: inquiryConfirmMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	inquiryConfirmMain(DAC2015_LaborCostInfoEntryBasicInputListDetailDto)
+モック対象	DAC2015_LaborCostInfoEntryDao（人件費明細情報取得）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: inquiryConfirmMain
+		仕様1: DAO#人件費明細情報取得（パラメータ.人件費情報確認一覧明細を引数）
+	1		　1件以上取得（正常）	Y
+	2		　null または 0件		Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2
+	1		DAO#人件費明細情報取得 が呼ばれること	○	○
+	2		戻り値（人件費情報明細入力Dto）が設定されること	○
+	3		戻り値が null または空	 	○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2
+	1		モック設定値・戻り値一覧	○	○
+	2		戻り値Dto内容	○
+
+---
+
+# LSheet 18: withdrawConfirmMain
+
+## Logic: withdrawConfirmMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	withdrawConfirmMain(DAC2015_LaborCostInfoEntryBasicInputListDetailDto)
+モック対象	DAA301_JinkenhiRendoJohoHeaderDao（ヘッダ更新）, workflowUtils, DAC2015_LaborCostInfoEntryDao（一覧検索）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4	5	6
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: withdrawConfirmMain
+		仕様1: validateRelatedConfirm 呼び出し（処理モード＝承認依頼取下）（private）
+	1		　正常（バリデーションエラーなし）	Y		Y	Y	Y	Y
+	2		　BusinessValidationException スロー		Y
+		仕様2: 人件費連動情報ヘッダ更新（承認状況＝差戻）
+	3		　更新件数1件以上（正常）	Y		Y	Y	Y	Y
+	4		　更新件数0件 → AZA_DirtyUpdateException スロー			Y
+		仕様3: 入力区分判定（給与支給・給与控除 かどうか）
+	5		　給与支給・給与控除 → 給与控除側ヘッダも更新（承認状況＝下書保存）				Y	Y	Y
+	6		　給与支給・給与控除以外 → 給与控除側更新スキップ	Y
+		仕様3: 給与控除側 人件費連動情報ヘッダ更新
+	7		　更新件数1件以上（正常）				Y		Y
+	8		　更新件数0件 → AZA_DirtyUpdateException スロー					Y
+		仕様4: workflowUtils#withdraw 呼び出し（申請番号）
+	9		　正常（取下成功）	Y			Y		Y
+		仕様5: searchListResultInput 呼び出し（private）
+	10		　正常（1件以上・上限以内）	Y			Y		Y
+	11		　BusinessValidationException スロー						Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4	5	6
+	1		validateRelatedConfirm が呼ばれること	○	○	○	○	○	○
+	2		ヘッダ更新（承認状況＝差戻）が呼ばれること	○		○	○	○	○
+	3		給与控除側ヘッダ更新が呼ばれること				○	○	○
+	4		給与控除側ヘッダ更新が呼ばれないこと	○
+	5		workflowUtils#withdraw が呼ばれること	○			○		○
+	6		searchListResultInput が呼ばれること	○			○		○
+	7		BusinessValidationException がスローされること		○				○
+	8		AZA_DirtyUpdateException がスローされること（差戻更新）			○
+	9		AZA_DirtyUpdateException がスローされること（給与控除側更新）					○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4	5	6
+	1		モック設定値・戻り値一覧	○	○	○	○	○	○
+	2		戻り値一覧Dtoリスト内容	○			○		○
+	3		スローされた例外の型・メッセージ		○	○		○	○
+
+---
+
+# LSheet 19: confirmInquiryMain
+
+## Logic: confirmInquiryMain()
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	confirmInquiryMain(DAC2015_LaborCostInfoEntryBasicInputDto)
+モック対象	人件費補完情報リポジトリ, DAC2015_LaborCostInfoEntryDao（明細一覧取得）, masterData
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		public: confirmInquiryMain
+		仕様1: 人件費補完情報論理削除（検索条件設定）
+	1		　削除区分＝有効, 支給日, 業種コード, 所属コード, 入力区分, 給与区分, 給与個所, 科目分類, 科目区分 を設定	Y	Y	Y	Y
+		仕様1: 人件費補完情報リポジトリ.select 呼び出し
+	2		　RecordEntityリストを取得（1件）	Y			Y
+	3		　RecordEntityリストを取得（複数件）			Y
+	4		　null または 0件		Y
+		仕様1: RecordEntityリスト繰り返し（inactivate呼び出し）
+	5		　各RecordEntityのinactivate（排他カウンタ）を実行	Y		Y	Y
+	6		　ループに入らない（null/0件のため）		Y
+		仕様2: searchBasicInputMain 呼び出し（private）
+	7		　正常（一覧明細Dtoリスト取得成功）	Y	Y	Y
+	8		　BusinessValidationException スロー				Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4
+	1		リポジトリ.select が呼ばれること	○	○	○	○
+	2		inactivate が呼ばれること（1回）	○
+	3		inactivate が呼ばれること（複数回）			○	○
+	4		inactivate が呼ばれないこと		○
+	5		searchBasicInputMain が呼ばれること	○	○	○	○
+	6		戻り値（基本入力一覧明細Dtoリスト）が設定されること	○	○	○
+	7		BusinessValidationException がスローされること				○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4
+	1		モック設定値・戻り値一覧	○	○	○	○
+	2		戻り値一覧Dtoリスト内容	○	○	○
+	3		スローされた例外の型・メッセージ				○
+
+---
+
+# LSheet 20: validateRelatedSearchInput（private）
+
+## Logic: validateRelatedSearchInput()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	validateRelatedSearchInput(DAC2015_LaborCostInfoEntrySearchDto)
+モック対象	なし
+
+### 【セクション①】テストケース条件
+
 テストケースＮｏ．			case	1	2	3	4	5
-    №	テストケース条件内容				
-テストケース条件		public: withdrawConfirmMain				
-        private①: validateRelatedConfirm（簡易ケースのみ）※ LSheet13でフルカバー済み				
-    1	バリデーション結果				
-    2	　正常（エラーなし）	Y	Y	Y	Y	
-    3	　エラー発生（簡易）					Y
-        private②: modifyHeaderData（フルカバー担当）				
-    4	入力区分コード				
-    5	　給与支給または給与控除 → 連動フラグ=true	Y	Y		Y	
-    6	　その他 → 連動フラグ=false			Y		
-    7	伝票番号採番処理				
-    8	　採番あり（新規）	Y	Y	Y			
-    9	　採番なし（既存あり）				Y	
-    10	DAO#ヘッダ情報更新結果				
-    11	　更新件数 > 0（正常）	Y	Y	Y			
-    12	　更新件数 = 0 → AZA_DirtyUpdateException				Y	
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: validateRelatedSearchInput
+		仕様1: From（自支給日）設定有無
+	1		　From＝null（未入力）					Y
+	2		　From＝設定あり	Y	Y	Y	Y
+		仕様1: To（至支給日）設定有無
+	3		　To＝null（未入力）				Y	Y
+	4		　To＝設定あり	Y	Y	Y
+		仕様1: 両方設定時の From vs To 大小比較
+	5		　From ＜ To（正常）	Y
+	6		　From ＝ To（境界値・正常）		Y
+	7		　From ＞ To（エラー: DAC00315E）			Y
+		仕様1: From のみ設定（To未設定）→ 大小比較スキップ
+	8		　スキップ（エラーなし）				Y
+		仕様1: 両方未設定 → 大小比較スキップ
+	9		　スキップ（エラーなし）					Y
+		仕様2: エラーリスト件数判定
+	10		　エラーリスト 0件 → 正常終了	Y	Y		Y	Y
+	11		　エラーリスト 1件以上 → BusinessValidationException スロー			Y
 
 ### 【セクション②】確認項目
-    №	確認項目内容	1	2	3	4	5
-    1	エラーの確認				
-    2	　validateRelatedConfirmエラーが発生すること					○
-    3	　AZA_DirtyUpdateExceptionが発生すること				○	
-    4	戻り値・処理の確認				
-    5	　連動フラグ=trueが設定されること	○	○		○	
-    6	　連動フラグ=falseが設定されること			○		
-    7	　採番処理が呼ばれること	○	○	○			
-    8	　採番処理が呼ばれないこと				○	
-    9	モック呼び出し確認				
-    10	　DAO#更新処理が呼ばれること	○	○	○			
-    11	例外の確認				
-    12	　正常終了すること	○	○	○			
-    13	　例外がスローされること				○	○
+	No.		確認項目内容	1	2	3	4	5
+	1		エラーなしで正常終了すること	○	○		○	○
+	2		DAC00315E エラーが追加されること			○
+	3		BusinessValidationException がスローされること			○
 
 ### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3	4	5
-    1	モック設定値・戻り値一覧	○	○	○	○	○
-    2	連動フラグ・採番結果	○	○	○	○	
-    3	スローされた例外の型・メッセージ				○	○
-	
-	## Logic: confirmInquiryMain()
-※ validateRelatedConfirm の全分岐をこのシートでカバー（フルカバー担当）
-※ getMeisaiKingaku の全分岐をこのシートでカバー（フルカバー担当）
+	No.		エビデンス内容	1	2	3	4	5
+	1		入力値（From/To 日付）	○	○	○	○	○
+	2		エラーメッセージの内容・埋め込み文字列			○
+
+---
+
+# LSheet 21: validateRelatedResultInput（private）
+
+## Logic: validateRelatedResultInput()（private）
 
 ### テスト対象クラス・メソッド
 項目	内容
 クラス	DAC2015_LaborCostInfoEntryLgc
-メソッド	confirmInquiryMain(inputDto, unyoKanribi)
-モック対象	DAC2015_LaborCostInfoEntryDao, DAA_WorkflowUtils, DAA_MasterData
-備考	※ validateRelatedConfirm / getMeisaiKingaku の全分岐をこのシートでカバー（フルカバー担当）
+メソッド	validateRelatedResultInput(String buttonType, List<DAC2015_LaborCostInfoEntryListDetailDto>)
+モック対象	なし
 
 ### 【セクション①】テストケース条件
-テストケースＮｏ．			case	1	2	3	4	5	6	7	8	9	10	11	12
-    №	テストケース条件内容									
-テストケース条件		public: confirmInquiryMain									
-    1	処理モード									
-    2	　登録モード	Y	Y	Y	Y	Y	Y				
-    3	　承認依頼取下モード								Y		
-    4	　照会モード									Y	
-        private①: validateRelatedConfirm（フルカバー担当）									
-    5	確認情報リスト件数									
-    6	　null → チェックなし（登録モード以外はスキップ）		Y					Y	Y	
-    7	　0件 → チェックなし	Y								
-    8	　1件以上（正常・登録モード）	Y	Y		Y	Y	Y				
-    9	給与支給/控除合計チェック									
-    10	　一致	Y	Y	Y	Y				Y	Y	Y	Y
-    11	　不一致 → DAC00171Eエラー					Y					
-    12	預貯金合計チェック									
-    13	　一致	Y	Y	Y		Y	Y			Y	Y	Y
-    14	　不一致 → DAC00174Eエラー				Y					
-        private②: getMeisaiKingaku（フルカバー担当）									
-    15	明細リポジトリ（repository）									
-    16	　あり → リポジトリから金額取得								Y		
-    17	　なし → 連動明細から計算									Y		
-    18	　連動明細もなし → 0を返す									Y	
-        論理削除ループ（人件費補完情報論理削除リスト）									
-    19	　null → ループなし（NullPointerException発生しないこと）					Y			
-    20	　0件 → ループなし									Y		
-    21	　1件 → ループ1回実行	Y								Y
-    22	　複数件 → ループ複数回実行		Y					Y		Y	Y
-    23	DAO#論理削除処理									
-    24	　正常実行	Y	Y					Y		Y	Y
-    25	　例外発生					Y					
+
+テストケースＮｏ．			case	1	2	3	4	5	6	7
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: validateRelatedResultInput
+		仕様1: 選択リスト件数チェック（ボタン種別＝次画面/照会/承認依頼取下）
+	1		　選択リスト＝null または 0件 → エラー（DAC00124E）		Y
+	2		　選択リスト＝1件（正常）	Y		Y	Y	Y	Y	Y
+	3		　選択リスト＝2件以上 → エラー（DAC00125E）			Y
+		仕様2: ボタン種別＝次画面 → 承認状況チェック
+	4		　ボタン種別＝次画面, 承認状況＝null → 正常	Y
+	5		　ボタン種別＝次画面, 承認状況＝下書保存 → 正常	Y
+	6		　ボタン種別＝次画面, 承認状況＝差戻 → 正常
+	7		　ボタン種別＝次画面, 承認状況＝承認依頼中（≠null/下書保存/差戻）→ エラー（DAC00173E）				Y
+		仕様2: ボタン種別＝照会 → 承認状況チェックなし
+	8		　ボタン種別＝照会 → 承認状況チェックスキップ（正常終了）					Y
+		仕様2: ボタン種別＝承認依頼取下 → 承認状況チェック
+	9		　ボタン種別＝承認依頼取下, 承認状況＝承認依頼中 → 正常					Y
+	10		　ボタン種別＝承認依頼取下, 承認状況＝下書保存（≠承認依頼中）→ エラー（DAC00178E）						Y
+		仕様3: エラーリスト件数判定
+	11		　エラーリスト 0件 → 正常終了	Y		Y	Y	Y	Y
+	12		　エラーリスト 1件以上 → BusinessValidationException スロー		Y	Y	Y		Y	Y
 
 ### 【セクション②】確認項目
-    №	確認項目内容	1	2	3	4	5	6	7	8	9	10	11	12
-    1	エラーの確認									
-    2	　DAC00171Eエラーが発生すること					○					
-    3	　DAC00174Eエラーが発生すること				○					
-    4	　論理削除例外がスローされること					○					
-    5	NullPointerException確認									
-    6	　nullリストでNullPointerExceptionが発生しないこと					○			
-    7	戻り値の確認									
-    8	　確認情報リストが設定されること	○	○		○	○				
-    9	　金額がリポジトリから取得されること								○		
-    10	　金額が連動明細から計算されること									○		
-    11	　金額=0が設定されること									○	
-    12	モック呼び出し確認									
-    13	　DAO#論理削除が呼ばれること	○	○					○		○	○
-    14	　DAO#論理削除が呼ばれないこと（リストnull/0件）			○		○	○			
-    15	　searchBasicInputMainが呼ばれること（再表示）	○	○	○	○	○	○	○	○	○	○	○	○
-    16	例外の確認									
-    17	　正常終了すること	○	○	○		○	○	○	○	○	○	○	○
-    18	　例外がスローされること				○	○					
+	No.		確認項目内容	1	2	3	4	5	6	7
+	1		エラーなしで正常終了すること	○		○	○	○	○
+	2		DAC00124E エラーが発生すること		○
+	3		DAC00125E エラーが発生すること			○
+	4		DAC00173E エラーが発生すること				○
+	5		DAC00178E エラーが発生すること						○
+	6		BusinessValidationException がスローされること		○	○	○		○	○
 
 ### 【セクション③】エビデンス
-    №	エビデンス内容	1	2	3	4	5	6	7	8	9	10	11	12
-    1	モック設定値・戻り値一覧	○	○	○	○	○	○	○	○	○	○	○	○
-    2	確認情報リスト・金額計算結果	○	○		○	○			○	○	○	○
-    3	エラーメッセージ内容			○	○	○					
-    4	スローされた例外の型・メッセージ				○	○					
+	No.		エビデンス内容	1	2	3	4	5	6	7
+	1		入力値（ボタン種別・選択リスト件数・承認状況）	○	○	○	○	○	○	○
+	2		エラーメッセージの内容		○	○	○		○	○
+
+---
+
+# LSheet 22: searchListResultInput（private）
+
+## Logic: searchListResultInput()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	searchListResultInput(DAC2015_LaborCostInfoEntrySearchDto)
+モック対象	DAC2015_LaborCostInfoEntryDao（人件費情報入力一覧検索）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: searchListResultInput
+		仕様1: DAO#人件費情報入力一覧検索
+	1		　取得成功	Y	Y	Y
+		仕様2: 取得件数判定
+	2		　null または 0件 → BusinessValidationException（DAC00008E）		Y
+	3		　件数 ＞ 上限 → BusinessValidationException（DAC00009E）			Y
+	4		　件数 ≦ 上限（正常）	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3
+	1		DAO#一覧検索 が呼ばれること	○	○	○
+	2		戻り値（一覧Dtoリスト）が正しく設定されること	○
+	3		DAC00008E（0件）BusinessValidationException がスローされること		○
+	4		DAC00009E（上限超え）BusinessValidationException がスローされること			○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		戻り値一覧Dtoリスト内容	○
+	3		スローされた例外の型・メッセージ		○	○
+
+---
+
+# LSheet 23: getConfirmInfo（private）
+
+## Logic: getConfirmInfo()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	getConfirmInfo(DAC2015_LaborCostInfoEntryBasicInputDto)
+モック対象	DAC2015_LaborCostInfoEntryDao（ヘッダ取得・明細一覧取得）, workflowUtils
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: getConfirmInfo
+		仕様1(1): DAO#基本入力ヘッダ情報取得
+	1		　1件以上取得（正常）	Y		Y	Y
+	2		　null または 0件 → AZA_DirtyUpdateException スロー		Y
+		仕様1(1): ヘッダ取得後 → 1件目設定
+	3		　1件目をヘッダDtoとして設定	Y		Y	Y
+		仕様1(1): 添付ファイル情報設定（添付ファイル1〜3 の null 以外の件数）
+	4		　添付ファイルが1件以上あり → 添付ファイル数設定	Y
+	5		　添付ファイルが全て null → 添付ファイル数＝0			Y
+		仕様2: DAO#基本入力一覧明細情報取得（支給日＋一覧明細入力区分コード）
+	6		　取得成功	Y		Y	Y
+		仕様3: getShinseiShoninJoho 呼び出し（申請番号）（private）
+	7		　申請番号＝null → 新インスタンス（申請業務コード設定）	Y
+	8		　申請番号＝not null → workflowUtils#getShinseiShoninJoho 呼び出し					Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4
+	1		DAO#ヘッダ情報取得 が呼ばれること	○	○	○	○
+	2		AZA_DirtyUpdateException がスローされること		○
+	3		添付ファイル数が正しく設定されること	○		○	○
+	4		DAO#一覧明細情報取得 が呼ばれること	○		○	○
+	5		getShinseiShoninJoho が呼ばれること	○		○	○
+	6		戻り値Dtoが正しく設定されること	○		○	○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4
+	1		モック設定値・戻り値一覧	○	○	○	○
+	2		戻り値Dto内容（ヘッダ・明細・添付・申請情報）	○		○	○
+	3		スローされた例外の型・メッセージ		○
+
+---
+
+# LSheet 24: dispNameBasicInput（private）
+
+## Logic: dispNameBasicInput()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	dispNameBasicInput(DAC2015_LaborCostInfoEntryBasicInputDto)
+モック対象	masterData（getCodeJoho, getGyoshuJoho, getSoshikiJoho）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4	5	6	7
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: dispNameBasicInput
+		仕様1(1): 給与個所コード設定有無
+	1		　給与個所コード＝設定あり → getCodeJoho 呼び出し	Y		Y
+	2		　給与個所コード＝未設定 → 空文字追加				Y
+		仕様1(1)ア: getCodeJoho（人事給与個所）戻り値
+	3		　戻り値＝null 以外 → コード名称をリストに追加	Y
+	4		　戻り値＝null → 空文字をリストに追加		Y
+		仕様2(1): 業種コード設定有無
+	5		　業種コード＝設定あり → getGyoshuJoho 呼び出し	Y	Y		Y
+	6		　業種コード＝未設定 → 空文字追加					Y
+		仕様2(1)ア: getGyoshuJoho 戻り値
+	7		　戻り値＝null 以外 → 業種名称をリストに追加	Y
+	8		　戻り値＝null → 空文字をリストに追加			Y
+		仕様3(1): 所属コード設定有無
+	9		　所属コード＝設定あり → getSoshikiJoho 呼び出し	Y	Y	Y		Y
+	10		　所属コード＝未設定 → 空文字追加						Y
+		仕様3(1)ア: getSoshikiJoho 戻り値
+	11		　戻り値＝null 以外 → 組織名称をリストに追加	Y
+	12		　戻り値＝null → 空文字をリストに追加				Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4	5	6	7
+	1		getCodeJoho が呼ばれること	○		○
+	2		getCodeJoho が呼ばれないこと		○		○	○	○	○
+	3		getGyoshuJoho が呼ばれること	○	○		○
+	4		getGyoshuJoho が呼ばれないこと				Y	○	○
+	5		getSoshikiJoho が呼ばれること	○	○	○		○
+	6		getSoshikiJoho が呼ばれないこと					Y	Y	○
+	7		戻り値リストに給与個所名称が設定されること	○
+	8		戻り値リストに業種名称が設定されること	○
+	9		戻り値リストに組織名称が設定されること	○
+	10		空文字が該当位置に設定されること		○	○	○	○	○	○
+	11		戻り値リストが3要素であること	○	○	○	○	○	○	○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4	5	6	7
+	1		モック設定値・戻り値一覧	○	○	○	○	○	○	○
+	2		戻り値リスト内容（3要素）	○	○	○	○	○	○	○
+
+---
+
+# LSheet 25: validateSingleBasicInput（private）
+
+## Logic: validateSingleBasicInput()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	validateSingleBasicInput(DAC2015_LaborCostInfoEntryBasicInputDto)
+モック対象	masterData（getCodeJoho, getGyoshuJoho, getSoshikiJoho）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4	5
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: validateSingleBasicInput
+		仕様1: 給与個所コード → getCodeJoho（人事給与個所, コード, 支給日）
+	1		　戻り値＝null 以外（マスタ存在）→ エラーなし	Y	Y	Y	Y
+	2		　戻り値＝null（マスタ不存在）→ エラー（DAC00007E, [給与個所コード,マスタ]）		Y
+		仕様2: 業種コード → getGyoshuJoho（業種コード, 支給日）
+	3		　戻り値＝null 以外（マスタ存在）→ エラーなし	Y		Y	Y
+	4		　戻り値＝null（マスタ不存在）→ エラー（DAC00007E, [業種コード,業種マスタ]）			Y
+		仕様3: 所属コード → getSoshikiJoho（組織コード, 支給日）
+	5		　戻り値＝null 以外（マスタ存在）→ エラーなし	Y		Y	Y
+	6		　戻り値＝null（マスタ不存在）→ エラー（DAC00007E, [所属コード,マスタ]）				Y
+		仕様4: エラーリスト件数判定
+	7		　エラーリスト 0件 → 正常終了	Y
+	8		　エラーリスト 1件以上 → BusinessValidationException スロー		Y	Y	Y	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4	5
+	1		getCodeJoho が呼ばれること	○	○	○	○	○
+	2		getGyoshuJoho が呼ばれること	○	○	○	○	○
+	3		getSoshikiJoho が呼ばれること	○	○	○	○	○
+	4		エラーなしで正常終了すること	○
+	5		DAC00007E（給与個所）エラーが発生すること		○			○
+	6		DAC00007E（業種）エラーが発生すること			○		○
+	7		DAC00007E（所属）エラーが発生すること				○	○
+	8		BusinessValidationException がスローされること		○	○	○	○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4	5
+	1		モック設定値・戻り値一覧	○	○	○	○	○
+	2		エラーメッセージの内容・埋め込み文字列		○	○	○	○
+
+---
+
+# LSheet 26: validateRelatedBasicInput（private）
+
+## Logic: validateRelatedBasicInput()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	validateRelatedBasicInput(String buttonType, DAC2015_LaborCostInfoEntryBasicInputDto)
+モック対象	masterData（getSoshikiGyoshuJoho）, 人件費連動情報ヘッダリポジトリ（find）, 人件費連動情報明細リポジトリ（find）, 人件費情報入力リポジトリ（find）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4	5	6	7	8
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: validateRelatedBasicInput
+		仕様1: ボタン種別＝登録 → 必須チェック（7項目）
+	1		　入力区分コード＝未設定 → エラー（DAC00143E）				Y
+	2		　給与区分コード＝未設定 → エラー（DAC00143E）				Y
+	3		　給与個所コード＝未設定 → エラー（DAC00143E）				Y
+	4		　科目分類コード＝未設定 → エラー（DAC00143E）				Y
+	5		　科目区分コード＝未設定 → エラー（DAC00143E）				Y
+	6		　業種コード＝未設定 → エラー（DAC00143E）				Y
+	7		　所属コード＝未設定 → エラー（DAC00143E）				Y
+	8		　7項目すべて設定あり → 必須チェックOK	Y	Y	Y		Y	Y	Y	Y
+		仕様2: ボタン種別＝登録/照会/表示 → 業種コード＋所属コード 組合せチェック
+	9		　業種コード＋所属コード 共に設定あり → getSoshikiGyoshuJoho 呼び出し	Y	Y	Y		Y	Y	Y	Y
+	10		　getSoshikiGyoshuJoho 戻り値＝null 以外 → エラーなし	Y	Y	Y			Y	Y
+	11		　getSoshikiGyoshuJoho 戻り値＝null → エラー（DAC00172E）					Y
+		仕様3: ボタン種別＝登録/照会 かつ エラー0件 → ヘッダ存在チェック（find）
+	12		　ヘッダ存在（null 以外）→ エラーなし	Y	Y	Y			Y	Y	Y
+	13		　ヘッダ not 存在（null）→ エラー（DAC00008E）						Y
+		仕様3: ボタン種別＝登録/照会 かつ エラー0件 → 明細存在チェック（find）
+	14		　明細存在（null 以外）→ エラーなし	Y	Y	Y			Y	Y	Y
+	15		　明細 not 存在（null）→ エラー（DAC00008E）							Y
+		仕様4: ボタン種別＝登録 かつ エラー0件 → 人件費情報入力 重複チェック（find）
+	16		　人件費情報入力 not 存在（null）→ エラーなし（正常）	Y			Y	Y
+	17		　人件費情報入力 存在（null 以外）→ エラー（DAC00314E）		Y
+		仕様4: ボタン種別＝表示 → 重複チェックなし
+	18		　ボタン種別＝表示 → 重複チェックスキップ				Y	Y	Y	Y	Y
+		仕様5: エラーリスト件数判定
+	19		　エラーリスト 0件 → 正常終了	Y
+	20		　エラーリスト 1件以上 → BusinessValidationException スロー		Y	Y	Y	Y	Y	Y	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4	5	6	7	8
+	1		getSoshikiGyoshuJoho が呼ばれること	○	○	○		○	○	○	○
+	2		ヘッダ存在チェック（find）が呼ばれること	○	○	○		○	○	○	○
+	3		明細存在チェック（find）が呼ばれること	○	○	○		○	○	○	○
+	4		人件費情報入力重複チェック（find）が呼ばれること	○	○
+	5		エラーなしで正常終了すること	○
+	6		DAC00143E エラーが発生すること				○
+	7		DAC00172E エラーが発生すること					○
+	8		DAC00008E（ヘッダ）エラーが発生すること						○
+	9		DAC00008E（明細）エラーが発生すること							○
+	10		DAC00314E エラーが発生すること		○
+	11		BusinessValidationException がスローされること		○	○	○	○	○	○	○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4	5	6	7	8
+	1		モック設定値・戻り値一覧	○	○	○	○	○	○	○	○
+	2		エラーメッセージの内容・埋め込み文字列		○	○	○	○	○	○	○
+
+---
+
+# LSheet 27: validateRelatedListBasicInput（private）
+
+## Logic: validateRelatedListBasicInput()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	validateRelatedListBasicInput(String buttonType, List<DAC2015_LaborCostInfoEntryBasicInputListDetailDto>)
+モック対象	なし
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: validateRelatedListBasicInput
+		仕様1: 選択リスト件数チェック（ボタン種別＝修正/個別照会/削除）
+	1		　選択リスト＝null または 0件 → エラー（DAC00323E, [対象の情報]）		Y
+	2		　選択リスト＝1件（正常）	Y
+	3		　選択リスト＝2件以上 → エラー（DAC00125E）			Y
+		仕様2: エラーリスト件数判定
+	4		　エラーリスト 0件 → 正常終了	Y
+	5		　エラーリスト 1件以上 → BusinessValidationException スロー		Y	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3
+	1		エラーなしで正常終了すること	○
+	2		DAC00323E エラーが発生すること		○
+	3		DAC00125E エラーが発生すること			○
+	4		BusinessValidationException がスローされること		○	○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3
+	1		入力値（ボタン種別・選択リスト件数）	○	○	○
+	2		エラーメッセージの内容・埋め込み文字列		○	○
+
+---
+
+# LSheet 28: getShinseiShoninJoho（private）
+
+## Logic: getShinseiShoninJoho()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	getShinseiShoninJoho(String shinseiNo)
+モック対象	workflowUtils（getShinseiShoninJoho, getShoninRouteInput）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: getShinseiShoninJoho
+		仕様1: 申請番号 null/非null 判定
+	1		　申請番号＝null → 新インスタンス生成（申請業務コード＝人件費情報入力承認）	Y
+	2		　申請番号＝not null → workflowUtils#getShinseiShoninJoho 呼び出し		Y	Y
+		仕様2: workflowUtils#getShoninRouteInput 呼び出し（申請業務コード, 申請番号）
+	3		　正常（承認ルート情報取得）	Y	Y	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3
+	1		workflowUtils#getShinseiShoninJoho が呼ばれないこと	○
+	2		workflowUtils#getShinseiShoninJoho が呼ばれること		○	○
+	3		workflowUtils#getShoninRouteInput が呼ばれること	○	○	○
+	4		戻り値Dto（申請承認情報）が正しく設定されること	○	○	○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		戻り値Dto内容	○	○	○
+
+---
+
+# LSheet 29: listResultDataBasicInput（private）
+
+## Logic: listResultDataBasicInput()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	listResultDataBasicInput(DAC2015_LaborCostInfoEntryBasicInputDto)
+モック対象	DAC2015_LaborCostInfoEntryDao（基本入力一覧明細情報取得）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: listResultDataBasicInput
+		仕様1: DAO#基本入力一覧明細情報取得
+	1		　取得成功	Y	Y	Y
+		仕様2: 取得件数判定
+	2		　null または 0件 → BusinessValidationException（DAC00008E）		Y
+	3		　件数 ＞ 上限 → BusinessValidationException（DAC00009E）			Y
+	4		　件数 ≦ 上限（正常）	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3
+	1		DAO#基本入力一覧明細情報取得 が呼ばれること	○	○	○
+	2		戻り値（一覧明細Dtoリスト）が正しく設定されること	○
+	3		DAC00008E BusinessValidationException がスローされること		○
+	4		DAC00009E BusinessValidationException がスローされること			○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		戻り値一覧明細Dtoリスト内容	○
+	3		スローされた例外の型・メッセージ		○	○
+
+---
+
+# LSheet 30: modifyHeaderData（private）
+
+## Logic: modifyHeaderData()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	modifyHeaderData(DAC2015_ModifyHeaderDataDto)
+モック対象	DAA_DateUtils（getKaikeiNendo）, DAA_NumberingUtils（getNextNo）, DAA301_JinkenhiRendoJohoHeaderDao（update）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4	5	6	7	8
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: modifyHeaderData
+		仕様1: 給与支給・給与控除更新フラグ設定
+	1		　入力区分コード＝給与支給・給与控除 → フラグ＝true	Y				Y
+	2		　入力区分コード＝給与支給 → フラグ＝true		Y
+	3		　入力区分コード＝給与控除 → フラグ＝true			Y
+	4		　入力区分コード＝上記以外 → フラグ＝false				Y			Y	Y
+		仕様2(1): 伝票番号初期値設定
+	5		　入力区分コード＝給与控除以外 → Dto.伝票番号を設定	Y	Y		Y	Y		Y	Y
+	6		　入力区分コード＝給与控除 → Dto.伝票番号（給与控除）を設定			Y
+		仕様2(2): 伝票番号採番要否判定（承認状況＝下書保存/承認依頼中 かつ 伝票番号＝null/空）
+	7		　承認状況＝下書保存, 伝票番号＝null → 採番実行	Y	Y	Y
+	8		　承認状況＝承認依頼中, 伝票番号＝null → 採番実行					Y
+	9		　承認状況＝下書保存, 伝票番号＝設定あり → 採番スキップ				Y
+	10		　承認状況＝差戻（採番条件外）→ 採番スキップ							Y	Y
+		仕様2(2)ア: dateUtils#getKaikeiNendo 呼び出し（採番実行時）
+	11		　会計年度取得成功	Y	Y	Y			Y
+		仕様2(2)イ: numberingUtils#getNextNo 呼び出し（採番ルール＝伝票番号, 会計年度下2桁）
+	12		　採番成功（伝票番号を取得）	Y	Y	Y			Y
+		仕様3(2): DAO#人件費連動情報ヘッダ更新
+	13		　更新件数 1件以上（正常）	Y	Y	Y	Y	Y		Y	Y
+	14		　更新件数 0件 → AZA_DirtyUpdateException スロー					Y	Y
+		仕様4: 給与支給・給与控除フラグ＝true → 給与控除側ヘッダ更新
+	15		　給与控除側 DAO#ヘッダ更新 呼び出し	Y	Y	Y			Y
+	16		　給与控除側更新 スキップ（フラグ＝false）				Y				Y	Y
+		仕様4(3): 給与控除側更新 件数判定
+	17		　給与控除側 更新件数 1件以上（正常）	Y	Y	Y			Y
+	18		　給与控除側 更新件数 0件 → AZA_DirtyUpdateException スロー		Y
+		仕様5(1): 戻り値 排他カウンタ設定
+	19		　Dto.排他カウンタ＋1 を設定	Y	Y	Y	Y	Y		Y	Y
+		仕様5(1): 戻り値 排他カウンタ（給与控除）設定
+	20		　フラグ＝true → Dto.排他カウンタ（給与控除）＋1 を設定	Y				Y
+	21		　フラグ＝false → Dto.排他カウンタ（給与控除）をそのまま設定				Y				Y	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4	5	6	7	8
+	1		getKaikeiNendo が呼ばれること	○	○	○			○
+	2		getKaikeiNendo が呼ばれないこと				○	○		○	○
+	3		getNextNo が呼ばれること	○	○	○			○
+	4		getNextNo が呼ばれないこと				○	○		○	○
+	5		DAO#ヘッダ更新 が呼ばれること	○	○	○	○	○		○	○
+	6		給与控除側DAO#ヘッダ更新 が呼ばれること	○	○	○			○
+	7		給与控除側DAO#ヘッダ更新 が呼ばれないこと				○				○	○
+	8		戻り値の排他カウンタが Dto値＋1 であること	○	○	○	○	○		○	○
+	9		戻り値の排他カウンタ（給与控除）が Dto値＋1 であること	○	○	○			○
+	10		戻り値の排他カウンタ（給与控除）が Dto値のままであること				○				○	○
+	11		AZA_DirtyUpdateException がスローされること（ヘッダ更新失敗）					○
+	12		AZA_DirtyUpdateException がスローされること（ヘッダ更新失敗・採番前失敗）						○
+	13		AZA_DirtyUpdateException がスローされること（給与控除側更新失敗）		○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4	5	6	7	8
+	1		モック設定値・戻り値一覧	○	○	○	○	○	○	○	○
+	2		採番結果（伝票番号）	○	○	○			○
+	3		戻り値Dto（排他カウンタ各値）	○	○	○	○	○		○	○
+	4		スローされた例外の型・メッセージ					○	○	○
+
+---
+
+# LSheet 31: modifyNyuryokuData（private）
+
+## Logic: modifyNyuryokuData()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	modifyNyuryokuData(Integer processMode, String nyuryokuKomokuCd, DAC2015_LaborCostInfoEntryBasicInputListDetailDto, DAC2015_LaborCostInfoEntryDetailInputDto, DAC2015_LaborCostInfoEntryDetailInputDto)
+モック対象	DAA301_JinkenhiRendoJohoMeisaiRpo（find, insert）, DAC213_JinkenhiJohoNyuryokuRpo（find, insert, update）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4	5	6	7	8	9	10	11	12	13	14
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: modifyNyuryokuData
+		仕様1: 項目コードから金額・排他カウンタ取得（テーブル参照）
+	1		　項目コード＝定数.給与支給.支給額.役員報酬 → Dto.役員報酬 / 排他カウンタ(役員報酬)	Y
+	2		　項目コード＝定数.給与控除.控除額.健康保険料 → Dto.健康保険料 / 排他カウンタ(健康保険料)		Y	Y	Y
+	3		　項目コード＝定数.預貯金.支給額.定期貯金 → Dto.支給額定期貯金 / 排他カウンタ(支給額定期貯金)				Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
+		仕様2: 人件費連動情報明細検索条件（AZA_Where）初期化
+	4		　検索条件を初期化	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
+		仕様3(1): 人件費連動情報明細リポジトリ.find 呼び出し
+	5		　人件費連動情報明細情報を取得	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
+		仕様3(2): 処理モード＝登録 → 更新区分判定
+	6		　処理モード＝登録	Y	Y	Y	Y
+	7		　処理モード＝修正					Y	Y	Y	Y	Y	Y	Y	Y	Y	Y
+		仕様3(2)ア(ア): 連動明細＝null/0件 かつ 金額＝null/0 → 更新区分＝null
+	8		　更新区分＝null（更新しない）		Y
+		仕様3(2)ア(ア): 連動明細＝null/0件 かつ 金額≠null/0 → 更新区分＝登録
+	9		　更新区分＝登録	Y
+		仕様3(2)ア(イ): 連動明細＝あり かつ 金額＝連動明細金額 → 更新区分＝null
+	10		　更新区分＝null（更新しない）			Y
+		仕様3(2)ア(イ): 連動明細＝あり かつ 金額≠連動明細金額 → 更新区分＝登録
+	11		　更新区分＝登録				Y
+		仕様3(3)ア(ア): 連動明細＝null/0件 かつ 金額＝null/0 かつ 入力情報＝null/0件 → 更新区分＝null
+	12		　更新区分＝null（更新しない）					Y
+		仕様3(3)ア(ア): 連動明細＝null/0件 かつ 金額＝null/0 かつ 入力情報＝あり → 更新区分＝修正
+	13		　更新区分＝修正						Y
+		仕様3(3)ア(イ): 連動明細＝null/0件 かつ 金額≠null/0 かつ 入力情報＝null/0件 → 更新区分＝登録
+	14		　更新区分＝登録							Y
+		仕様3(3)ア(イ): 連動明細＝null/0件 かつ 金額≠null/0 かつ 入力情報＝あり → 更新区分＝修正
+	15		　更新区分＝修正								Y
+		仕様3(3)ア(ウ): 連動明細＝あり かつ 金額＝連動明細金額 かつ 入力情報＝null/0件 → 更新区分＝null
+	16		　更新区分＝null（更新しない）									Y
+		仕様3(3)ア(ウ): 連動明細＝あり かつ 金額＝連動明細金額 かつ 入力情報＝あり → 更新区分＝修正
+	17		　更新区分＝修正										Y
+		仕様3(3)ア(ウ): 連動明細＝あり かつ 金額≠連動明細金額 かつ 入力情報＝null/0件 → 更新区分＝登録
+	18		　更新区分＝登録											Y
+		仕様3(3)ア(ウ): 連動明細＝あり かつ 金額≠連動明細金額 かつ 入力情報＝あり → 更新区分＝修正
+	19		　更新区分＝修正												Y
+		仕様4(1): 更新区分＝登録 → 論理削除レコード確認（find: 削除区分＝無効）
+	20		　論理削除レコード＝あり（1件）→ 更新区分を修正に変更					Y		Y		Y		Y
+	21		　論理削除レコード＝なし → 更新区分変更なし	Y			Y					Y
+		仕様4(2): 更新区分＝登録 → リポジトリ.insert 呼び出し
+	22		　insert 実行	Y			Y					Y
+		仕様4(3): 更新区分＝修正 → リポジトリ.update 呼び出し
+	23		　update 実行（削除区分＝有効, 金額設定）			Y			Y		Y		Y		Y
+		仕様5: 連動明細＝null/0件 かつ 更新区分＝登録/修正 → 人件費連動情報明細リポジトリ.insert
+	24		　人件費連動情報明細 insert 実行	Y		Y		Y	Y	Y	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4	5	6	7	8	9	10	11	12	13	14
+	1		連動明細リポジトリ.find が呼ばれること	○	○	○	○	○	○	○	○	○	○	○	○	○	○
+	2		入力情報リポジトリ.find（更新前データ）が呼ばれること					○	○	○	○	○	○	○	○	○	○
+	3		入力情報リポジトリ.find（論理削除）が呼ばれること	○		○		○		○		○		○		○
+	4		入力情報リポジトリ.insert が呼ばれること	○			○					○
+	5		入力情報リポジトリ.update が呼ばれること			○			○		○		○		○
+	6		連動明細リポジトリ.insert（金額null）が呼ばれること	○		○		○	○	○	○
+	7		連動明細リポジトリ.insert が呼ばれないこと		○		○				○		○		○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4	5	6	7	8	9	10	11	12	13	14
+	1		モック設定値・戻り値一覧	○	○	○	○	○	○	○	○	○	○	○	○	○	○
+	2		更新区分の判定結果	○	○	○	○	○	○	○	○	○	○	○	○	○	○
+	3		insertまたはupdateに設定されたエンティティ内容	○	○	○	○	○	○	○	○	○	○	○	○	○	○
+
+---
+
+# LSheet 32: getTenpuFileShoriKbn（private）
+
+## Logic: getTenpuFileShoriKbn()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	getTenpuFileShoriKbn(String beforeTenpuFileId, String tenpuFileId, UploadedFile uploadedFile)
+モック対象	なし
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4	5
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: getTenpuFileShoriKbn
+		仕様1: マトリクス判定（更新前添付ファイルID）
+	1		　更新前添付ファイルID＝null	Y	Y
+	2		　更新前添付ファイルID＝あり			Y	Y	Y
+		仕様1: マトリクス判定（添付ファイルID）
+	3		　添付ファイルID＝null	Y	Y	Y	Y
+	4		　添付ファイルID＝あり					Y
+		仕様1: マトリクス判定（添付ファイル）
+	5		　添付ファイル＝null	Y		Y
+	6		　添付ファイル＝あり		Y		Y
+		仕様1: 処理区分判定結果
+	7		　定数.添付ファイル処理区分.処理なし（更新前null, ID null, File null）	Y
+	8		　定数.添付ファイル処理区分.アップロード（更新前null, ID null, File あり）		Y
+	9		　定数.添付ファイル処理区分.削除（更新前あり, ID null, File null）			Y
+	10		　定数.添付ファイル処理区分.削除・アップロード（更新前あり, ID null, File あり）				Y
+	11		　定数.添付ファイル処理区分.処理なし（更新前あり, ID あり, File null）					Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4	5
+	1		戻り値＝定数.添付ファイル処理区分.処理なし	○				○
+	2		戻り値＝定数.添付ファイル処理区分.アップロード		○
+	3		戻り値＝定数.添付ファイル処理区分.削除			○
+	4		戻り値＝定数.添付ファイル処理区分.削除・アップロード				○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4	5
+	1		入力値（更新前ID・ファイルID・ファイルオブジェクト）	○	○	○	○	○
+	2		戻り値（処理区分定数値）	○	○	○	○	○
+
+---
+
+# LSheet 33: validateRelatedConfirm（private）
+
+## Logic: validateRelatedConfirm()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	validateRelatedConfirm(Integer processMode, List<DAC2015_LaborCostInfoEntryBasicInputListDetailDto>)
+モック対象	DAC213_JinkenhiJohoNyuryokuRpo（find）, DAA301_JinkenhiRendoJohoMeisaiRpo（find）（getMeisaiKingaku経由）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4	5	6	7
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: validateRelatedConfirm
+		仕様1: 処理モード判定
+	1		　処理モード＝登録	Y	Y	Y	Y	Y
+	2		　処理モード＝承認依頼取下（チェックなし）						Y
+	3		　処理モード＝照会（チェックなし）							Y
+		仕様1(1): 確認一覧明細リスト件数判定（処理モード＝登録のみ）
+	4		　確認一覧明細リスト＝null または 0件 → チェックせず終了		Y
+	5		　確認一覧明細リスト＝1件以上	Y		Y	Y	Y
+		仕様1(2)ア: 繰り返し（入力区分コード＝給与支給 または 給与控除）
+	6		　入力区分コード＝給与支給 または 給与控除	Y		Y
+	7		　入力区分コード＝預貯金					Y	Y
+		仕様1(2)ア(ア): 給与支給額合計算出（10項目リストで getMeisaiKingaku を繰り返し）
+	8		　給与支給10項目 各ループで getMeisaiKingaku 呼び出し・合計算出	Y		Y
+		仕様1(2)ア(イ): 給与控除額合計算出（18+項目リストで getMeisaiKingaku を繰り返し）
+	9		　給与控除18+項目 各ループで getMeisaiKingaku 呼び出し・合計算出	Y		Y
+		仕様1(2)ア(ウ): 給与支給額合計 vs 給与控除額合計 比較
+	10		　支給額合計 ＝ 控除額合計 → エラーなし	Y
+	11		　支給額合計 ≠ 控除額合計 → エラー（DAC00171E）			Y
+		仕様1(2)イ: 繰り返し（入力区分コード＝預貯金）
+	12		　入力区分コード＝預貯金					Y	Y
+		仕様1(2)イ(ア): 預貯金支給額合計算出（4項目リストで getMeisaiKingaku を繰り返し）
+	13		　預貯金支給4項目 各ループで getMeisaiKingaku 呼び出し・合計算出					Y	Y
+		仕様1(2)イ(イ): 預貯金控除額合計算出（6項目リストで getMeisaiKingaku を繰り返し）
+	14		　預貯金控除6項目 各ループで getMeisaiKingaku 呼び出し・合計算出					Y	Y
+		仕様1(2)イ(ウ): 預貯金支給額合計 vs 預貯金控除額合計 比較
+	15		　預貯金支給合計 ＝ 預貯金控除合計 → エラーなし					Y
+	16		　預貯金支給合計 ≠ 預貯金控除合計 → エラー（DAC00174E）						Y
+		仕様4: エラーリスト件数判定
+	17		　エラーリスト 0件 → 正常終了	Y	Y		Y	Y	Y	Y
+	18		　エラーリスト 1件以上 → BusinessValidationException スロー			Y				Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4	5	6	7
+	1		getMeisaiKingaku が給与支給10項目分呼ばれること	○		○
+	2		getMeisaiKingaku が給与控除分呼ばれること	○		○
+	3		getMeisaiKingaku が預貯金支給4項目分呼ばれること					○	○
+	4		getMeisaiKingaku が預貯金控除6項目分呼ばれること					○	○
+	5		getMeisaiKingaku が全く呼ばれないこと		○			Y	Y	Y
+	6		エラーなしで正常終了すること	○	○		○	○	○	○
+	7		DAC00171E エラーが発生すること			○
+	8		DAC00174E エラーが発生すること						○
+	9		BusinessValidationException がスローされること			○				○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4	5	6	7
+	1		モック設定値・戻り値一覧	○	○	○	○	○	○	○
+	2		支給額合計・控除額合計の計算値	○		○
+	3		預貯金支給合計・預貯金控除合計の計算値					○	○
+	4		エラーメッセージの内容・埋め込み文字列（支給日/入力区分/給与区分/給与個所）			○				○
+
+---
+
+# LSheet 34: modifyConfirm（private）
+
+## Logic: modifyConfirm()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	modifyConfirm(DAC2015_LaborCostInfoEntryBasicInputDto, String processMode, LocalDate)
+モック対象	DAA_NumberingUtils（getNextNo）, DAC2015_LaborCostInfoEntryDao（ヘッダ更新）, workflowUtils（apply/withdraw）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3	4	5
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: modifyConfirm
+		仕様1: 処理モード判定（申請/承認依頼取下）
+	1		　処理モード＝申請（apply）	Y	Y	Y
+	2		　処理モード＝承認依頼取下（withdraw）				Y	Y
+		仕様2: 伝票番号採番要否判定
+	3		　伝票番号＝null/空 → numberingUtils#getNextNo 呼び出し	Y	Y	Y
+	4		　伝票番号＝設定あり → 採番スキップ				Y	Y
+		仕様3: DAO#ヘッダ更新
+	5		　更新件数 > 0（正常）	Y	Y	Y	Y
+	6		　更新件数 = 0 → AZA_DirtyUpdateException スロー					Y
+		仕様4: 処理モード＝申請 → workflowUtils#apply 呼び出し
+	7		　申請完了（申請情報が設定される）	Y	Y	Y
+		仕様4: 処理モード＝承認依頼取下 → workflowUtils#withdraw 呼び出し
+	8		　取下完了情報が設定される				Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3	4	5
+	1		numberingUtils#getNextNo が呼ばれること	○	○	○
+	2		numberingUtils#getNextNo が呼ばれないこと				○	○
+	3		DAO#ヘッダ更新 が呼ばれること	○	○	○	○
+	4		workflowUtils#apply が呼ばれること	○	○	○
+	5		workflowUtils#withdraw が呼ばれること				○
+	6		申請完了情報が設定されること	○	○	○
+	7		取下完了情報が設定されること				○
+	8		正常終了すること	○	○	○	○
+	9		AZA_DirtyUpdateException がスローされること					○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3	4	5
+	1		モック設定値・戻り値一覧	○	○	○	○	○
+	2		採番結果・ヘッダ更新内容	○	○	○	○
+	3		申請/取下完了情報内容	○	○	○	○
+	4		スローされた例外の型・メッセージ					○
+
+---
+
+# LSheet 35: getMeisaiKingaku（private）
+
+## Logic: getMeisaiKingaku()（private）
+
+### テスト対象クラス・メソッド
+項目	内容
+クラス	DAC2015_LaborCostInfoEntryLgc
+メソッド	getMeisaiKingaku(LocalDate, String, String, String, String, String, String, String, String)
+モック対象	DAC213_JinkenhiJohoNyuryokuRpo（find）, DAA301_JinkenhiRendoJohoMeisaiRpo（find）
+
+### 【セクション①】テストケース条件
+
+テストケースＮｏ．			case	1	2	3
+	No.	テストケース（省略）	テストケース条件内容
+テストケース条件		private①: getMeisaiKingaku
+		仕様1: 検索条件設定（削除区分.有効, 支給日, 業種, 所属, 入力区分, 給与区分, 給与個所, 科目分類, 科目区分, 項目コード）
+	1		　全10項目の検索条件を設定	Y	Y	Y
+		仕様2(1): 人件費情報入力リポジトリ.find 呼び出し
+	2		　取得成功	Y	Y	Y
+		仕様2(2): 人件費情報入力リポジトリ.RecordEntity 判定
+	3		　RecordEntity＝null 以外（1件）→ ローカル変数.金額に RecordEntity.金額 を設定	Y
+	4		　RecordEntity＝null または 0件 → 人件費連動情報明細リポジトリへフォールバック		Y	Y
+		仕様3(1): 人件費連動情報明細リポジトリ.find 呼び出し（入力リポジトリが null/0件の場合のみ）
+	5		　取得成功		Y	Y
+		仕様3(2): 人件費連動情報明細リポジトリ.RecordEntity 判定
+	6		　RecordEntity＝null 以外（1件）→ ローカル変数.金額に RecordEntity.金額 を設定		Y
+	7		　RecordEntity＝null または 0件 → 金額は null のまま（次ステップで 0 設定）			Y
+		仕様4: 金額＝null の場合、ローカル変数.金額 に 0 を設定
+	8		　金額＝null → 0 設定			Y
+	9		　金額＝null 以外 → そのまま	Y	Y
+
+### 【セクション②】確認項目
+	No.		確認項目内容	1	2	3
+	1		人件費情報入力リポジトリ.find が呼ばれること	○	○	○
+	2		人件費連動情報明細リポジトリ.find が呼ばれること		○	○
+	3		人件費連動情報明細リポジトリ.find が呼ばれないこと	○
+	4		戻り値（金額）が RecordEntity.金額 と一致すること	○	○
+	5		戻り値（金額）が 0 であること			○
+
+### 【セクション③】エビデンス
+	No.		エビデンス内容	1	2	3
+	1		モック設定値・戻り値一覧	○	○	○
+	2		検索条件の設定値（10項目）	○	○	○
+	3		戻り値（金額）	○	○	○
+
+---
+※ 以上、全29シートのYNマトリックス出力完了
