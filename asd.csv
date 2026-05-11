@@ -1,2 +1,5 @@
-grep -r "9080\|hokurenDAA\|localhost:90" /mnt/c/webAPI/apps/web/src --include="*.ts" --include="*.js" -l
-grep -r "9080\|hokurenDAA" /mnt/c/webAPI/apps/web/src --include="*.ts" --include="*.js" -n
+# 查 next.config.js/ts 里的 rewrites/proxy 配置
+cat /mnt/c/webAPI/apps/web/next.config.js 2>/dev/null || cat /mnt/c/webAPI/apps/web/next.config.ts 2>/dev/null || cat /mnt/c/webAPI/apps/web/next.config.mjs 2>/dev/null
+
+# 查 middleware.ts
+cat /mnt/c/webAPI/apps/web/src/middleware.ts
