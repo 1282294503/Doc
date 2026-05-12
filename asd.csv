@@ -1,276 +1,41 @@
-# DB 設計書 → CREATE TABLE 文 生成プロンプトテンプレート
-
-## 使い方
-
-Excel2md で変換した DB 設計書テキストから、DB2 用の CREATE TABLE 文を生成するプロンプト。
-
-**送信構成：**
-
-| 送信回 | 内容 | 备考 |
-|--------|------|------|
-| 1回目 | プロンプト本文 | 必須 |
-| 2回目 | 全資料（主キー情報 + DB設計書） | 1つのテキストに統合 |
-| 3回目 | 「以上で全ての設計書です。すべてのテーブルの CREATE TABLE 文を生成してください」 | 生成指示 |
-
-※ トークンに余裕があれば1回で送ってOK（その場合、プロンプト本文と全資料を一緒に貼り付け）。
-
-**手順：**
-1. 下の「プロンプト本文」をコピー
-2. 手持ちの文档（主キー、外部キー、DB設計書が全て含まれている）を所定位置に貼り付け
-3. 対話ボックスに貼り付けて送信
-
----
-## ▼ プロンプト本文（ここから全文コピー）
----
-
-添付の DB 設計書に基づき、DB2 用の CREATE TABLE 文を生成してください。
-
-■ 前提条件
-
-このタスクは、Excel2md で変換された DB 設計書テキストから、実データベースに対応する CREATE TABLE 文を生成するものです。
-提供される設計書の形式に従い、すべてのテーブルについて CREATE TABLE 文を出力します。
-
-【DB環境】
-対象データベース: **IBM DB2**
-※ DB2固有のデータ型、構文、コメント方法を使用してください
-
-【変換ルール】
-
-### 1. テーブル定義の読み込み
-
-提供される Excel2md 形式の設計書は、以下のような Markdown 表フォーマット：
-
-```
-|テーブル名|項目名（日本語）|英語カラム名|データ型|桁数|小数点以下|NOT NULL|初期値|説明|
-|---|---|---|---|---|---|---|---|---|
-|DAA301_JinkenhiRendoJohoHeader|削除区分|SAKZYO_KBN|CHAR|1||Y|0|論理削除フラグ|
-|DAA301_JinkenhiRendoJohoHeader|排他カウント|HAITA_CNT|INTEGER||N|初期値なし|楽観的ロック用|
-|DAA301_JinkenhiRendoJohoHeader|作成日時|SAKSE_DTM|TIMESTAMP||Y|現在時刻|レコード作成時刻|
-```
-
-### 2. データ型マッピング（Excel 設計書 → DB2 SQL）
-
-| 設計書の型 | DB2 型 | 例 | 備考 |
-|-----------|--------|-----|------|
-| CHAR | CHAR(n) | CHAR(1), CHAR(10) | 固定長文字列、桁数を指定 |
-| VARCHAR | VARCHAR(n) | VARCHAR(100) | 可変長文字列、桁数を指定 |
-| INTEGER | INTEGER | INTEGER | 整数型、桁数は無視 |
-| DECIMAL | DECIMAL(p,s) | DECIMAL(10,2) | 小数型、桁数.小数点以下で指定 |
-| DATE | DATE | DATE | 日付型（YYYY-MM-DD） |
-| TIME | TIME | TIME | 時刻型（HH:MM:SS） |
-| TIMESTAMP | TIMESTAMP | TIMESTAMP | 日時型（YYYY-MM-DD HH:MM:SS.mmmmmm） |
-| BIGINT | BIGINT | BIGINT | 大きい整数 |
-| SMALLINT | SMALLINT | SMALLINT | 小さい整数 |
-| FLOAT | FLOAT(n) | FLOAT(8) | 浮動小数点数 |
-| NUMERIC | NUMERIC(p,s) | NUMERIC(14,0) | DECIMAL と同等 |
-
-### 3. NOT NULL 制約
-
-- 設計書で NOT NULL = Y → CREATE TABLE で `NOT NULL` キーワード追加
-- 設計書で NOT NULL = N → 制約なし（デフォルトは NULL 許可）
-
-### 4. 初期値（DEFAULT）
-
-- 設計書の「初期値」列に値がある場合 → `DEFAULT ...` を追加
-- 例：
-  - テキスト値 → `DEFAULT '0'`
-  - 現在日時 → `DEFAULT CURRENT_TIMESTAMP`
-  - 現在日付 → `DEFAULT CURRENT_DATE`
-  - 現在時刻 → `DEFAULT CURRENT_TIME`
-  - 数値 → `DEFAULT 0`
-
-### 5. 主キー（PRIMARY KEY）
-
-- **複合主キー情報が提供されている場合**（例：「主キー: (JINKENKHI_ID, VERSION_NO)」）
-  - その情報に基づき PRIMARY KEY 制約を定義
-  - テーブルの末尾に `PRIMARY KEY (col1, col2)` を追加
-
-- **情報が提供されていない場合**
-  - 最初のカラムを主キーと仮定（多くの場合 xxx_ID）
-  - 明示的に「この列は主キーではない」と記載されている場合はそれを尊重
-
-### 6. ユニーク制約（UNIQUE）
-
-- 設計書で「ユニークキー」情報が提供されている場合
-  - その情報に基づき UNIQUE 制約を定義
-  - 例：`UNIQUE (SHOKUUN_KIGO, RENSEI_YOTEI_ID)`
-
-### 7. 外部キー（FOREIGN KEY）
-
-- 設計書で「外部キー」情報が提供されている場合
-  - FK_カラム名 → 参照テーブル.参照カラム» という形式で定義
-  - 例：`FOREIGN KEY (SYOKUNIN_ID) REFERENCES DAA200 (SYOKUNIN_ID)`
-
-### 8. コメント（COMMENT）
-
-DB2 でのコメント方法：
-
-```sql
--- テーブルコメント：COMMENT ON TABLE 文を別途生成
--- 例：COMMENT ON TABLE DAA301_JinkenhiRendoJohoHeader IS '人件比連動情報ヘッダ';
-
--- カラムコメント：COMMENT ON COLUMN 文を別途生成
--- 例：COMMENT ON COLUMN DAA301_JinkenhiRendoJohoHeader.SAKZYO_KBN IS '削除区分（0=有効、1=削除）';
-```
-
-各カラムの日本語名と説明を COMMENT ON COLUMN で記載。
-
-### 9. カラムの順序
-
-- 設計書に記載されたカラムの順序をそのまま採用
-
-### 10. 複数テーブルの処理
-
-提供される設計書に複数テーブルが含まれる場合：
-- テーブルごとに CREATE TABLE 文を生成
-- テーブル間の外部キー関係を考慮し、参照先テーブルが先に定義されるように並べる（または、CREATE TABLE IF NOT EXISTS を使用）
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-■ 全設計材料（テーブル設計情報 + DB 設計書）
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-【重要】以下に、主キー・外部キー・ユニークキー情報と DB 設計書（Excel2md 形式）を **一つのテキストブロック** に統合して貼り付けてください。
-
-**貼り付けすべき内容の順序：**
-
-1. **テーブル設計情報（主キー、外部キー、ユニークキー、インデックス）**
-   ```
-   【テーブル1: DAA301_JinkenhiRendoJohoHeader】
-   - 主キー: JINKENKHI_ID, VERSION_NO
-   - ユニークキー: SHOKUUN_KIGO + RENSEI_YOTEI_ID
-   - 外部キー: SYOKUNIN_ID → DAA200.SYOKUNIN_ID
-   - 説明: 人件比連動情報ヘッダ
-   
-   【テーブル2: ...】
-   ...
-   ```
-
-2. **DB 設計書（Excel2md テキスト版）**
-   ```
-   |テーブル名|項目名（日本語）|英語カラム名|データ型|桁数|...|
-   |---|---|---|---|---|---|
-   |DAA301_JinkenhiRendoJohoHeader|削除区分|SAKZYO_KBN|CHAR|1|...|
-   ...
-   ```
-
-▼ 全設計材料（テーブル情報 + DB設計書）
-────────────────────────────────
-（ここに【テーブル設計情報】セクションと【DB設計書】セクション、両方を統合して貼り付け）
-（主キーがない場合は省略、設計書があれば十分です）
-────────────────────────────────
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-■ 出力所見・不確定点
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-以下の情報をまとめて出力してください：
-
-**ステップA: テーブル検出レポート**
-
-設計書から検出されたテーブルを列挙：
-
-```
-【テーブル検出レポート】
-
-検出されたテーブル総数：X個
-
-▼ テーブル1: DAA301_JinkenhiRendoJohoHeader
-  - 検出カラム数：Y個
-  - 主キー：JINKENKHI_ID, VERSION_NO
-  - 外部キー：SYOKUNIN_ID → DAA200 (SYOKUNIN_ID)
-  - ユニークキー：SHOKUUN_KIGO + RENSEI_YOTEI_ID
-
-▼ テーブル2: ...
-  ...
-```
-
-**ステップB: 不確定点・判断事項**
-- 提供された設計情報と DB設計書が矛盾していないか確認した旨
-- テーブル間の依存関係（どのテーブルを先に生成するべきか）
-- データ型の確定判定
-- 曖昧な制約条件についての判定（主キーが明示されていない場合など）
-
-**ステップC: CREATE TABLE 文一覧**
-
-各テーブルについて、以下の形式で CREATE TABLE 文を出力：
-
-```sql
--- ============================================
--- テーブル: DAA301_JinkenhiRendoJohoHeader
--- 説明: 人件比連動情報ヘッダ
--- ============================================
-
-CREATE TABLE DAA301_JinkenhiRendoJohoHeader (
-  JINKENKHI_ID VARCHAR(20) NOT NULL,
-  VERSION_NO INTEGER NOT NULL,
-  SAKZYO_KBN CHAR(1) NOT NULL DEFAULT '0',
-  HAITA_CNT INTEGER,
-  SAKSE_DTM TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  LSTUPD_DTM TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (JINKENKHI_ID, VERSION_NO),
-  FOREIGN KEY (SYOKUNIN_ID) REFERENCES DAA200 (SYOKUNIN_ID)
+-- ============================================================
+-- テーブル名: （※ 未指定のため TARGET_TABLE と仮称）
+-- 説明: （※ 設計書にテーブル名の記載がないため、お手数ですがご確認ください）
+-- ============================================================
+CREATE TABLE TARGET_TABLE (
+    SAKZYO_KBN CHAR(1) NOT NULL,
+    HAITA_CNT INTEGER NOT NULL,
+    SAKSE_DTM TIMESTAMP NOT NULL,
+    LSTUPD_DTM TIMESTAMP NOT NULL,
+    LSTUPD_USER_ID VARCHAR(8) NOT NULL,
+    NYURYOKU_DTM TIMESTAMP NOT NULL,
+    NYURYOKU_USER_ID VARCHAR(8) NOT NULL,
+    SHONIN_DTM TIMESTAMP,
+    SHONIN_USER_ID VARCHAR(8),
+    SOSHIKI_CD VARCHAR(4) NOT NULL,
+    GYOSHU_CD VARCHAR(2) NOT NULL,
+    TEKIYO_KAISHIBI INTEGER NOT NULL,
+    TEKIYO_SHURYOBI INTEGER DEFAULT 99991231 NOT NULL,
+    SHINSEI_NO VARCHAR(20) NOT NULL,
+    PRIMARY KEY (SOSHIKI_CD, GYOSHU_CD, TEKIYO_KAISHIBI)
 );
 
--- テーブルコメント
-COMMENT ON TABLE DAA301_JinkenhiRendoJohoHeader IS '人件比連動情報ヘッダ';
+-- ============================================================
+-- コメント（COMMENT）
+-- ============================================================
+COMMENT ON TABLE TARGET_TABLE IS '組織・業種マスタ（仮）';
 
--- カラムコメント
-COMMENT ON COLUMN DAA301_JinkenhiRendoJohoHeader.JINKENKHI_ID IS '人件比ID';
-COMMENT ON COLUMN DAA301_JinkenhiRendoJohoHeader.VERSION_NO IS 'バージョン番号';
-COMMENT ON COLUMN DAA301_JinkenhiRendoJohoHeader.SAKZYO_KBN IS '削除区分（0=有効、1=削除）';
-...
-```
-
----
-## ▲ プロンプト本文ここまで
----
-
-## 補足：Tips
-
-### 複合主キーの指定
-
-複数カラムが主キーになる場合：
-```sql
-PRIMARY KEY (カラム1, カラム2, カラム3)
-```
-
-### 外部キー制約の指定
-
-```sql
-FOREIGN KEY (FK_カラム) REFERENCES 参照テーブル (参照カラム)
-```
-
-複数カラムの場合：
-```sql
-FOREIGN KEY (FK_カラム1, FK_カラム2) REFERENCES 参照テーブル (参照カラム1, 参照カラム2)
-```
-
-### DB2 特有の注意点
-
-1. **TIMESTAMP の精度**
-   - DB2 TIMESTAMP は デフォルトで microseconds (6桁) を含む
-   - `TIMESTAMP(6)` で明示可能
-
-2. **VARCHAR の デフォルト長**
-   - VARCHAR は桁数指定が必須（CHAR はオプション）
-   - `VARCHAR(100)` のように指定
-
-3. **DECIMAL vs NUMERIC**
-   - 両者は DB2 でほぼ同等
-   - 設計書に合わせて使用
-
-4. **CREATE TABLE IF NOT EXISTS**
-   - テーブルが既に存在する場合の対策
-   - 必要に応じて `CREATE TABLE IF NOT EXISTS` を使用
-
-### テーブル作成順序
-
-複数テーブルがある場合、外部キー依存関係に基づいて順序を指定：
-1. 被参照テーブル（親表）を先に生成
-2. 参照テーブル（子表）を後に生成
-
-例：
-```
-1. DAA200 (SYOKUNIN: 職人マスタ) ← 親表
-2. DAA301_JinkenhiRendoJohoHeader (人件比連動情報) ← 子表、DAA200 を参照
-```
+COMMENT ON COLUMN TARGET_TABLE.SAKZYO_KBN IS '削除区分';
+COMMENT ON COLUMN TARGET_TABLE.HAITA_CNT IS '排他カウンタ';
+COMMENT ON COLUMN TARGET_TABLE.SAKSE_DTM IS '作成日時';
+COMMENT ON COLUMN TARGET_TABLE.LSTUPD_DTM IS '最終更新日時';
+COMMENT ON COLUMN TARGET_TABLE.LSTUPD_USER_ID IS '最終更新者ユーザーＩＤ';
+COMMENT ON COLUMN TARGET_TABLE.NYURYOKU_DTM IS '入力日時';
+COMMENT ON COLUMN TARGET_TABLE.NYURYOKU_USER_ID IS '入力者ユーザーＩＤ';
+COMMENT ON COLUMN TARGET_TABLE.SHONIN_DTM IS '承認日時';
+COMMENT ON COLUMN TARGET_TABLE.SHONIN_USER_ID IS '承認者ユーザーＩＤ';
+COMMENT ON COLUMN TARGET_TABLE.SOSHIKI_CD IS '組織コード';
+COMMENT ON COLUMN TARGET_TABLE.GYOSHU_CD IS '業種コード';
+COMMENT ON COLUMN TARGET_TABLE.TEKIYO_KAISHIBI IS '適用開始日';
+COMMENT ON COLUMN TARGET_TABLE.TEKIYO_SHURYOBI IS '適用終了日';
+COMMENT ON COLUMN TARGET_TABLE.SHINSEI_NO IS '申請番号';
