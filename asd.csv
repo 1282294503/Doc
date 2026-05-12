@@ -1,1048 +1,1100 @@
 ## LSheet1
 
-テストケースNo.				case 1	case 2
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件					
-public: initMain					
-			仕様2: 日時Utils#運用管理日取得(dateUtils#getUnyoKanriDate)を実行する		
-	1		dateUtils#getUnyoKanriDateが正常終了する	Y	Y
-			仕様2(1): ローカル変数.運用管理日（LocalDate）がnullの場合		
-	2		運用管理日（LocalDate）= null → dateUtils#getSysDateTimeを実行してシステム日時を取得する	Y	
-	3		システム日時をLocalDate型に変換してローカル変数.システム日付に設定する	Y	
-	4		dateUtils#convertLocalDateToInteger（引数: システム日付）を実行してローカル変数.運用管理日（Integer）に設定する	Y	
-			仕様2(2): ローカル変数.運用管理日（LocalDate）がnull以外の場合		
-	5		運用管理日（LocalDate）≠ null → dateUtils#convertLocalDateToInteger（引数: 運用管理日（LocalDate））を実行してローカル変数.運用管理日（Integer）に設定する		Y
+テストケースNo.			case 1	case 2
+	No.	テストケース条件内容
+テストケース条件		public: initMain		
+	1	運用管理日（LocalDate）: 		
+	2	 null → getSysDateTime実行	Y	
+	3	運用管理日（LocalDate）: 		
+	4	 not null → そのまま変換		Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2
-			戻り値の確認		
-	1		コードオブジェクトリスト（4種）が設定されること	○	○
-	2		メッセージ文字列（7種）が設定されること	○	○
-			モック呼び出し確認		
-	3		getSysDateTime() が1回呼ばれること	○	
-	4		getSysDateTime() が呼ばれないこと		○
-	5		コードリスト取得メソッドが呼ばれること（4回）	○	○
-			例外の確認		
-	6		正常終了すること	○	○
+	No.	確認項目内容	1	2
+		戻り値の確認		
+	1	コードオブジェクトリスト（4種）が設定されること	○	○
+	2	メッセージ文字列（7種）が設定されること	○	○
+		モック呼び出し確認		
+	3	getSysDateTime() が1回呼ばれること	○	
+	4	getSysDateTime() が呼ばれないこと		○
+	5	コードリスト取得メソッドが呼ばれること（4回）	○	○
+		例外の確認		
+	6	正常終了すること	○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2
-	1		モック設定値・戻り値一覧	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○
+	No.	確認項目内容	1	2
+	1	モック設定値・戻り値一覧	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○
 
 ## LSheet2
 
-テストケースNo.				case 1	case 2
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件					
-public: searchInputMain					
-			仕様1: ロジック#人件費情報入力画面 検索条件関連チェック(validateRelatedSearchInput)を実行する		
-	1		validateRelatedSearchInputが正常終了する	Y	
-	2		validateRelatedSearchInputがBusinessValidationExceptionをスローする → 処理中止		Y
-			仕様2: ロジック#人件費情報入力一覧検索結果情報取得(searchListResultInput)を実行する		
-	3		searchListResultInputが正常終了する	Y	
-	4		searchListResultInputがBusinessValidationException(DAC00008E: 0件)をスローする → 処理中止		
-	5		searchListResultInputがBusinessValidationException(DAC00009E: 上限超過)をスローする → 処理中止		
+テストケースNo.			case 1	case 2
+	No.	テストケース条件内容
+テストケース条件		public: searchInputMain		
+	1	validateRelatedSearchInput: 		
+	2	 正常	Y	
+	3	validateRelatedSearchInput: 		
+	4	 BusinessValidationException → 処理中止		Y
+	5	searchListResultInput: 		
+	6	 正常	Y	
+	7	searchListResultInput: 		
+	8	 DAC00008E（0件）→ 処理中止		
+	9	searchListResultInput: 		
+	10	 DAC00009E（上限超過）→ 処理中止		
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2
-			戻り値の確認		
-	1		人件費情報入力一覧明細Dtoリストが返却されること	○	
-			例外の確認		
-	2		正常終了すること	○	
-	3		BusinessValidationExceptionがスローされること		○
+	No.	確認項目内容	1	2
+		戻り値の確認		
+	1	人件費情報入力一覧明細Dtoリストが返却されること	○	
+		例外の確認		
+	2	正常終了すること	○	
+	3	BusinessValidationExceptionがスローされること		○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2
-	1		モック設定値・戻り値一覧	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○
+	No.	確認項目内容	1	2
+	1	モック設定値・戻り値一覧	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○
 
 ## LSheet3
 
-テストケースNo.				case 1	case 2	case 3	case 4	case 5
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件								
-public: nextInputMain								
-			仕様1: ロジック#人件費情報入力画面 検索結果関連チェック(validateRelatedResultInput)を実行する（ボタン種別: 次画面）					
-	1		validateRelatedResultInputが正常終了する	Y				
-	2		一覧Dtoリストが0件 → DAC00124E BusinessValidationExceptionをスローする		Y			
-	3		一覧Dtoリストが2件以上 → DAC00125E BusinessValidationExceptionをスローする			Y		
-	4		承認状況が「null/下書保存/差戻」以外（例: 承認依頼中）→ DAC00173E BusinessValidationExceptionをスローする				Y	
-			仕様3(1): DAO#基本入力ヘッダ情報取得（0件の場合は排他エラー）					
-	5		人件費情報基本入力Dtoリストが1件以上取得できる	Y				
-	6		人件費情報基本入力Dtoリスト = null/0件 → AZA_DirtyUpdateExceptionをスローする					Y
-			仕様4(4): 入力区分コードの設定（ローカル変数.人件費情報基本入力検索条件Dto.入力区分コード）					
-	7		入力区分コードが定数.入力区分.給与支給・給与控除の場合 → 入力区分コードに定数.入力区分.給与支給を設定する	Y				
-	8		入力区分コードが定数.入力区分.給与支給・給与控除以外の場合 → 元の入力区分コードをそのまま設定する					
-			仕様5(3): 基本入力_入力区分オブジェクトリストの設定					
-	9		入力区分コードが定数.入力区分.給与支給・給与控除の場合 → 給与支給と給与控除の2項目をリストに追加する	Y				
-	10		入力区分コードが定数.入力区分.給与支給・給与控除以外の場合 → 該当する入力区分の1項目をリストに追加する					
+テストケースNo.			case 1	case 2	case 3	case 4	case 5
+	No.	テストケース条件内容
+テストケース条件		public: nextInputMain					
+	1	validateRelatedResultInput: 					
+	2	 正常	Y				
+	3	validateRelatedResultInput: 					
+	4	 DAC00124E（0件）		Y			
+	5	validateRelatedResultInput: 					
+	6	 DAC00125E（2件以上）			Y		
+	7	validateRelatedResultInput: 					
+	8	 DAC00173E（承認依頼中）				Y	
+	9	基本入力Dtoリスト: 					
+	10	 1件以上 → 正常	Y				
+	11	基本入力Dtoリスト: 					
+	12	 null/0件 → AZA_DirtyUpdateException					Y
+	13	入力区分コード: 					
+	14	 給与支給・給与控除 → 給与支給に変換	Y				
+	15	入力区分コード: 					
+	16	 給与支給・給与控除以外 → そのまま					
+	17	入力区分リスト: 					
+	18	 給与支給・給与控除 → 2項目追加	Y				
+	19	入力区分リスト: 					
+	20	 給与支給・給与控除以外 → 1項目追加					
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4	5
-			戻り値の確認					
-	1		人件費情報基本入力Dto・検索条件Dto・入力区分リストが返却されること	○				
-			例外の確認					
-	2		正常終了すること	○				
-	3		BusinessValidationExceptionがスローされること		○	○	○	
-	4		AZA_DirtyUpdateExceptionがスローされること					○
+	No.	確認項目内容	1	2	3	4	5
+		戻り値の確認					
+	1	人件費情報基本入力Dto・検索条件Dto・入力区分リストが返却されること	○				
+		例外の確認					
+	2	正常終了すること	○				
+	3	BusinessValidationExceptionがスローされること		○	○	○	
+	4	AZA_DirtyUpdateExceptionがスローされること					○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4	5
-	1		モック設定値・戻り値一覧	○	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○
+	No.	確認項目内容	1	2	3	4	5
+	1	モック設定値・戻り値一覧	○	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○
 
 ## LSheet4
 
-テストケースNo.				case 1	case 2	case 3
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件						
-public: inquiryInputMain						
-			仕様1: ロジック#人件費情報入力画面 検索結果関連チェック(validateRelatedResultInput)を実行する（ボタン種別: 照会）			
-	1		validateRelatedResultInputが正常終了する	Y		
-	2		一覧Dtoリストが0件 → DAC00124E BusinessValidationExceptionをスローする		Y	
-	3		一覧Dtoリストが2件以上 → DAC00125E BusinessValidationExceptionをスローする			Y
-			仕様3: ロジック#確認画面情報取得処理(getConfirmInfo)を実行する			
-	4		getConfirmInfoが正常終了する	Y		
-	5		getConfirmInfoがAZA_DirtyUpdateExceptionをスローする（基本入力ヘッダ0件）			
+テストケースNo.			case 1	case 2	case 3
+	No.	テストケース条件内容
+テストケース条件		public: inquiryInputMain			
+	1	validateRelatedResultInput: 			
+	2	 正常	Y		
+	3	validateRelatedResultInput: 			
+	4	 DAC00124E（0件）		Y	
+	5	validateRelatedResultInput: 			
+	6	 DAC00125E（2件以上）			Y
+	7	getConfirmInfo: 			
+	8	 正常	Y		
+	9	getConfirmInfo: 			
+	10	 AZA_DirtyUpdateException（ヘッダ0件）			
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3
-			戻り値の確認			
-	1		基本入力Dto・明細Dto・申請承認情報Dtoが返却されること	○		
-			例外の確認			
-	2		正常終了すること	○		
-	3		BusinessValidationExceptionがスローされること		○	○
-	4		AZA_DirtyUpdateExceptionがスローされること			
+	No.	確認項目内容	1	2	3
+		戻り値の確認			
+	1	基本入力Dto・明細Dto・申請承認情報Dtoが返却されること	○		
+		例外の確認			
+	2	正常終了すること	○		
+	3	BusinessValidationExceptionがスローされること		○	○
+	4	AZA_DirtyUpdateExceptionがスローされること			
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3
-	1		モック設定値・戻り値一覧	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
+	No.	確認項目内容	1	2	3
+	1	モック設定値・戻り値一覧	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
 
 ## LSheet5
 
-テストケースNo.				case 1	case 2	case 3
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件						
-public: withdrawInputMain						
-			仕様1: ロジック#人件費情報入力画面 検索結果関連チェック(validateRelatedResultInput)を実行する（ボタン種別: 承認依頼取下）			
-	1		validateRelatedResultInputが正常終了する	Y		
-	2		一覧Dtoリストが0件 → DAC00124E BusinessValidationExceptionをスローする		Y	
-	3		一覧Dtoリストが2件以上 → DAC00125E BusinessValidationExceptionをスローする			
-	4		承認状況が承認依頼中以外 → DAC00178E BusinessValidationExceptionをスローする			Y
-			仕様3: ロジック#確認画面情報取得処理(getConfirmInfo)を実行する			
-	5		getConfirmInfoが正常終了する	Y		
-	6		getConfirmInfoがAZA_DirtyUpdateExceptionをスローする（基本入力ヘッダ0件）			
+テストケースNo.			case 1	case 2	case 3
+	No.	テストケース条件内容
+テストケース条件		public: withdrawInputMain			
+	1	validateRelatedResultInput: 			
+	2	 正常	Y		
+	3	validateRelatedResultInput: 			
+	4	 DAC00124E（0件）		Y	
+	5	validateRelatedResultInput: 			
+	6	 DAC00125E（2件以上）			
+	7	validateRelatedResultInput: 			
+	8	 DAC00178E（承認依頼中以外）			Y
+	9	getConfirmInfo: 			
+	10	 正常	Y		
+	11	getConfirmInfo: 			
+	12	 AZA_DirtyUpdateException（ヘッダ0件）			
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3
-			戻り値の確認			
-	1		基本入力Dto・明細Dto・申請承認情報Dtoが返却されること	○		
-			例外の確認			
-	2		正常終了すること	○		
-	3		BusinessValidationExceptionがスローされること		○	○
-	4		AZA_DirtyUpdateExceptionがスローされること			
+	No.	確認項目内容	1	2	3
+		戻り値の確認			
+	1	基本入力Dto・明細Dto・申請承認情報Dtoが返却されること	○		
+		例外の確認			
+	2	正常終了すること	○		
+	3	BusinessValidationExceptionがスローされること		○	○
+	4	AZA_DirtyUpdateExceptionがスローされること			
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3
-	1		モック設定値・戻り値一覧	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
+	No.	確認項目内容	1	2	3
+	1	モック設定値・戻り値一覧	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
 
 ## LSheet6
 
-テストケースNo.				case 1	case 2	case 3	case 4
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件							
-public: registBasicInputMain							
-			仕様1: ロジック#基本入力検索条件単体チェック(validateSingleBasicInput)を実行する				
-	1		validateSingleBasicInputが正常終了する	Y			
-	2		validateSingleBasicInputがBusinessValidationExceptionをスローする		Y		
-			仕様2: ロジック#基本入力検索条件関連チェック(validateRelatedBasicInput)を実行する（ボタン種別: 登録）				
-	3		validateRelatedBasicInputが正常終了する	Y			
-	4		validateRelatedBasicInputがBusinessValidationExceptionをスローする			Y	
-			仕様3(5): 入力区分コードが定数.入力区分.会負担健保または会負担年金の場合、支払先情報を取得する				
-	5		入力区分コード = 会負担健保または会負担年金の場合、masterData#getCodeJoho（コード分類: 人件費情報入力相手先）を実行する				Y
-	6		入力区分コード = 会負担健保/会負担年金以外の場合、支払先情報取得をスキップする	Y			
-			仕様3(5)イ: masterData#getCodeJohoの戻り値がnull以外の場合、支払先情報を設定する				
-	7		コード情報Dto ≠ null → 支払先区分、支払先コード、支払予定日をローカル変数.人件費情報基本入力一覧明細Dtoに設定する				Y
-	8		コード情報Dto = null → 支払先情報設定をスキップする				
-			仕様3(5)イ(イ)d: DAO#取引先情報取得の戻り値が0件以外の場合、支払先名称を設定する				
-	9		取引先情報Dto ≠ null/0件 → 取引先名略称（漢字）を支払先名称に設定する				Y
-	10		取引先情報Dto = null/0件 → 支払先名称設定をスキップする				
-			仕様5: 申請番号の選択（入力区分コードによる分岐）				
-	11		入力区分コード = 給与控除 → 申請番号（給与控除）を使用する				
-	12		入力区分コード = 給与控除以外 → 申請番号を使用する	Y			Y
+テストケースNo.			case 1	case 2	case 3	case 4
+	No.	テストケース条件内容
+テストケース条件		public: registBasicInputMain				
+	1	validateSingleBasicInput: 				
+	2	 正常	Y			
+	3	validateSingleBasicInput: 				
+	4	 BusinessValidationException		Y		
+	5	validateRelatedBasicInput（登録）: 				
+	6	 正常	Y			
+	7	validateRelatedBasicInput（登録）: 				
+	8	 BusinessValidationException			Y	
+	9	入力区分コード: 				
+	10	 会負担健保/会負担年金 → getCodeJoho実行				Y
+	11	入力区分コード: 				
+	12	 会負担健保/会負担年金以外 → スキップ	Y			
+	13	コード情報Dto: 				
+	14	 not null → 支払先情報設定				Y
+	15	コード情報Dto: 				
+	16	 null → スキップ				
+	17	取引先情報Dto: 				
+	18	 not null/0件 → 支払先名称設定				Y
+	19	取引先情報Dto: 				
+	20	 null/0件 → スキップ				
+	21	入力区分コード: 				
+	22	 給与控除 → 申請番号（給与控除）使用				
+	23	入力区分コード: 				
+	24	 給与控除以外 → 申請番号使用	Y			Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4
-			戻り値の確認				
-	1		登録ボタンメイン返却レコードが返却されること	○			
-			例外の確認				
-	2		正常終了すること	○			
-	3		BusinessValidationExceptionがスローされること		○	○	
-	4		AZA_DirtyUpdateExceptionがスローされること				○
+	No.	確認項目内容	1	2	3	4
+		戻り値の確認				
+	1	登録ボタンメイン返却レコードが返却されること	○			
+		例外の確認				
+	2	正常終了すること	○			
+	3	BusinessValidationExceptionがスローされること		○	○	
+	4	AZA_DirtyUpdateExceptionがスローされること				○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4
-	1		モック設定値・戻り値一覧	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
+	No.	確認項目内容	1	2	3	4
+	1	モック設定値・戻り値一覧	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
 
 ## LSheet7
 
-テストケースNo.				case 1	case 2
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件					
-public: searchBasicInputMain					
-			仕様1: ロジック#基本入力検索条件単体チェック(validateSingleBasicInput)を実行する		
-	1		validateSingleBasicInputが正常終了する	Y	
-	2		validateSingleBasicInputがBusinessValidationExceptionをスローする		Y
-			仕様2: ロジック#基本入力検索条件関連チェック(validateRelatedBasicInput)を実行する（ボタン種別: 照会）		
-	3		validateRelatedBasicInputが正常終了する	Y	
-	4		validateRelatedBasicInputがBusinessValidationExceptionをスローする		Y
-			仕様4: ロジック#基本入力一覧検索結果情報取得(listResultDataBasicInput)を実行する		
-	5		listResultDataBasicInputが正常終了する	Y	
-	6		listResultDataBasicInputがBusinessValidationException(DAC00008E: 0件)をスローする		Y
-	7		listResultDataBasicInputがBusinessValidationException(DAC00009E: 上限超過)をスローする		Y
+テストケースNo.			case 1	case 2
+	No.	テストケース条件内容
+テストケース条件		public: searchBasicInputMain		
+	1	validateSingleBasicInput: 		
+	2	 正常	Y	
+	3	validateSingleBasicInput: 		
+	4	 BusinessValidationException		Y
+	5	validateRelatedBasicInput（照会）: 		
+	6	 正常	Y	
+	7	validateRelatedBasicInput（照会）: 		
+	8	 BusinessValidationException		Y
+	9	listResultDataBasicInput: 		
+	10	 正常	Y	
+	11	listResultDataBasicInput: 		
+	12	 DAC00008E（0件）		Y
+	13	listResultDataBasicInput: 		
+	14	 DAC00009E（上限超過）		Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2
-			戻り値の確認		
-	1		一覧明細DtoリストおよびヘッダDtoが返却されること	○	
-			例外の確認		
-	2		正常終了すること	○	
-	3		BusinessValidationExceptionがスローされること		○
+	No.	確認項目内容	1	2
+		戻り値の確認		
+	1	一覧明細DtoリストおよびヘッダDtoが返却されること	○	
+		例外の確認		
+	2	正常終了すること	○	
+	3	BusinessValidationExceptionがスローされること		○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2
-	1		モック設定値・戻り値一覧	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○
+	No.	確認項目内容	1	2
+	1	モック設定値・戻り値一覧	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○
 
 ## LSheet8
 
-テストケースNo.				case 1	case 2
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件					
-public: listShowBasicInputMain					
-			仕様1: ロジック#基本入力検索条件単体チェック(validateSingleBasicInput)を実行する		
-	1		validateSingleBasicInputが正常終了する	Y	
-	2		validateSingleBasicInputがBusinessValidationExceptionをスローする		Y
-			仕様2: ロジック#基本入力検索条件関連チェック(validateRelatedBasicInput)を実行する（ボタン種別: 表示）		
-	3		validateRelatedBasicInputが正常終了する	Y	
-	4		validateRelatedBasicInputがBusinessValidationExceptionをスローする		Y
+テストケースNo.			case 1	case 2
+	No.	テストケース条件内容
+テストケース条件		public: listShowBasicInputMain		
+	1	validateSingleBasicInput: 		
+	2	 正常	Y	
+	3	validateSingleBasicInput: 		
+	4	 BusinessValidationException		Y
+	5	validateRelatedBasicInput（表示）: 		
+	6	 正常	Y	
+	7	validateRelatedBasicInput（表示）: 		
+	8	 BusinessValidationException		Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2
-			戻り値の確認		
-	1		表示ボタンメイン返却レコードが返却されること	○	
-			例外の確認		
-	2		正常終了すること	○	
-	3		BusinessValidationExceptionがスローされること		○
+	No.	確認項目内容	1	2
+		戻り値の確認		
+	1	人件費情報基本入力画面表示返却レコードが返却されること	○	
+		例外の確認		
+	2	正常終了すること	○	
+	3	BusinessValidationExceptionがスローされること		○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2
-	1		モック設定値・戻り値一覧	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○
+	No.	確認項目内容	1	2
+	1	モック設定値・戻り値一覧	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○
 
 ## LSheet9
 
-テストケースNo.				case 1	case 2	case 3
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件						
-public: modifyBasicInputMain						
-			仕様1: ロジック#基本入力検索結果関連チェック(validateRelatedListBasicInput)を実行する（ボタン種別: 修正）			
-	1		validateRelatedListBasicInputが正常終了する	Y		
-	2		一覧Dtoリストが0件 → DAC00323E BusinessValidationExceptionをスローする		Y	
-	3		一覧Dtoリストが2件以上 → DAC00125E BusinessValidationExceptionをスローする			Y
-			仕様4: 申請番号の選択（入力区分コードによる分岐）			
-	4		入力区分コード = 給与控除 → 申請番号（給与控除）を使用する			
-	5		入力区分コード = 給与控除以外 → 申請番号を使用する	Y		
+テストケースNo.			case 1	case 2	case 3
+	No.	テストケース条件内容
+テストケース条件		public: modifyBasicInputMain			
+	1	validateRelatedListBasicInput（修正）: 			
+	2	 正常	Y		
+	3	validateRelatedListBasicInput（修正）: 			
+	4	 DAC00323E（0件）		Y	
+	5	validateRelatedListBasicInput（修正）: 			
+	6	 DAC00125E（2件以上）			Y
+	7	入力区分コード: 			
+	8	 給与控除 → 申請番号（給与控除）使用			
+	9	入力区分コード: 			
+	10	 給与控除以外 → 申請番号使用	Y		
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3
-			戻り値の確認			
-	1		修正ボタンメイン返却レコードが返却されること	○		
-			例外の確認			
-	2		正常終了すること	○		
-	3		BusinessValidationExceptionがスローされること		○	○
+	No.	確認項目内容	1	2	3
+		戻り値の確認			
+	1	修正ボタンメイン返却レコードが返却されること	○		
+		例外の確認			
+	2	正常終了すること	○		
+	3	BusinessValidationExceptionがスローされること		○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3
-	1		モック設定値・戻り値一覧	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
+	No.	確認項目内容	1	2	3
+	1	モック設定値・戻り値一覧	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
 
 ## LSheet10
 
-テストケースNo.				case 1	case 2	case 3	case 4	case 5	case 6
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件									
-public: exportCsvBasicInputMain									
-			仕様1(3): パラメータ.人件費情報基本入力一覧明細Dtoリストがnullの場合（確認画面からのCSV出力）						
-	1		一覧Dtoリスト = null → 選択されたキー情報のリストにnullを設定する	Y					
-			仕様1(4): パラメータ.人件費情報基本入力一覧明細Dtoリストがnull以外の場合（基本入力画面からのCSV出力: ループ処理）						
-	2		一覧Dtoリスト = null/0件 → ループに入らない		Y				
-	3		一覧Dtoリスト = 1件 → ループを1回実行			Y			
-	4		一覧Dtoリスト = 複数件 → ループを複数回実行				Y	Y	Y
-			仕様2: 取得したCSV出力Dtoリストが0件の場合						
-	5		CSV出力Dtoリスト = null/0件 → DAC00008E BusinessValidationExceptionをスローする					Y	
-	6		CSV出力Dtoリスト = 1件以上 → チェックOK	Y	Y	Y	Y		Y
-			仕様3: 取得したCSV出力Dtoリスト件数がCSV出力上限件数を超過する場合						
-	7		件数 > CSV出力上限件数 → DAC00009E BusinessValidationExceptionをスローする						Y
-	8		件数 ≤ CSV出力上限件数 → チェックOK	Y	Y	Y	Y	Y	
+テストケースNo.			case 1	case 2	case 3	case 4	case 5	case 6
+	No.	テストケース条件内容
+テストケース条件		public: exportCsvBasicInputMain						
+	1	一覧Dtoリスト: 						
+	2	 null → 選択キーにnull設定	Y					
+	3	一覧Dtoリスト: 						
+	4	 null/0件 → ループに入らない		Y				
+	5	一覧Dtoリスト: 						
+	6	 1件 → ループ1回実行			Y			
+	7	一覧Dtoリスト: 						
+	8	 複数件 → ループ複数回実行				Y	Y	Y
+	9	CSV出力Dtoリスト: 						
+	10	 null/0件 → DAC00008E					Y	
+	11	CSV出力Dtoリスト: 						
+	12	 1件以上 → OK	Y	Y	Y	Y		Y
+	13	CSV出力件数: 						
+	14	 上限超過 → DAC00009E						Y
+	15	CSV出力件数: 						
+	16	 上限内 → OK	Y	Y	Y	Y	Y	
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4	5	6
-			戻り値の確認						
-	1		StreamedContent（CSVファイル）が返却されること	○		○	○		
-			例外の確認						
-	2		正常終了すること	○		○	○		
-	3		DAC00008E BusinessValidationExceptionがスローされること					○	
-	4		DAC00009E BusinessValidationExceptionがスローされること						○
+	No.	確認項目内容	1	2	3	4	5	6
+		戻り値の確認						
+	1	StreamedContent（CSVファイル）が返却されること	○		○	○		
+		例外の確認						
+	2	正常終了すること	○		○	○		
+	3	DAC00008E BusinessValidationExceptionがスローされること					○	
+	4	DAC00009E BusinessValidationExceptionがスローされること						○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4	5	6
-	1		モック設定値・戻り値一覧	○	○	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○
+	No.	確認項目内容	1	2	3	4	5	6
+	1	モック設定値・戻り値一覧	○	○	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○
 
 ## LSheet11
 
-テストケースNo.				case 1	case 2	case 3	case 4
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件							
-public: saveDraftBasicInputMain							
-			仕様2(1): 添付ファイル処理区分1がアップロードまたは削除・アップロードの場合				
-	1		処理区分1 = アップロード → fileUtils#uploadTempFileを実行してローカル変数.添付ファイルＩＤ１に設定する		Y		Y
-	2		処理区分1 = 削除・アップロード → fileUtils#uploadTempFileを実行してローカル変数.添付ファイルＩＤ１に設定する				
-	3		処理区分1 = 処理なし/削除 → fileUtils#uploadTempFileを実行しない	Y		Y	
-			仕様2(2): 添付ファイル処理区分2がアップロードまたは削除・アップロードの場合				
-	4		処理区分2 = アップロード/削除・アップロード → fileUtils#uploadTempFileを実行してローカル変数.添付ファイルＩＤ２に設定する		Y		Y
-	5		処理区分2 = 処理なし/削除 → fileUtils#uploadTempFileを実行しない	Y		Y	
-			仕様2(3): 添付ファイル処理区分3がアップロードまたは削除・アップロードの場合				
-	6		処理区分3 = アップロード/削除・アップロード → fileUtils#uploadTempFileを実行してローカル変数.添付ファイルＩＤ３に設定する		Y		Y
-	7		処理区分3 = 処理なし/削除 → fileUtils#uploadTempFileを実行しない	Y		Y	
-			仕様3(1): 人件費連動情報ヘッダ更新条件Dto.添付ファイルＩＤ１の設定				
-	8		処理区分1 = 処理なし → パラメータ.更新前人件費情報基本入力Dto.添付ファイルＩＤ１を設定する	Y			
-	9		処理区分1 = 削除 → nullを設定する			Y	
-	10		処理区分1 = アップロード/削除・アップロード → ローカル変数.添付ファイルＩＤ１を設定する		Y		Y
-			仕様3(2): ロジック#人件費連動情報ヘッダ更新処理(modifyHeaderData)を実行する（承認状況区分: 下書保存）				
-	11		modifyHeaderDataが正常終了して人件費情報基本入力Dtoが返却される	Y	Y	Y	Y
-	12		modifyHeaderDataがAZA_DirtyUpdateExceptionをスローする				
+テストケースNo.			case 1	case 2	case 3	case 4
+	No.	テストケース条件内容
+テストケース条件		public: saveDraftBasicInputMain				
+	1	処理区分1: 				
+	2	 アップロード/削除・アップロード → uploadTempFile実行		Y		Y
+	3	処理区分1: 				
+	4	 処理なし/削除 → uploadTempFile実行しない	Y		Y	
+	5	処理区分2: 				
+	6	 アップロード/削除・アップロード → uploadTempFile実行		Y		Y
+	7	処理区分2: 				
+	8	 処理なし/削除 → uploadTempFile実行しない	Y		Y	
+	9	処理区分3: 				
+	10	 アップロード/削除・アップロード → uploadTempFile実行		Y		Y
+	11	処理区分3: 				
+	12	 処理なし/削除 → uploadTempFile実行しない	Y		Y	
+	13	添付ファイルID1: 				
+	14	 処理なし → 更新前Dto値使用	Y			
+	15	添付ファイルID1: 				
+	16	 削除 → null設定			Y	
+	17	添付ファイルID1: 				
+	18	 アップロード/削除・アップロード → ローカル変数ID使用		Y		Y
+	19	modifyHeaderData: 				
+	20	 正常終了	Y	Y	Y	Y
+	21	modifyHeaderData: 				
+	22	 AZA_DirtyUpdateException				
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4
-			戻り値の確認				
-	1		人件費情報基本入力Dtoが返却されること	○	○	○	○
-			モック呼び出し確認				
-	2		fileUtils#uploadTempFileが必要な箇所のみ呼ばれること		○		○
-			例外の確認				
-	3		正常終了すること	○	○	○	○
-	4		AZA_DirtyUpdateExceptionがスローされること				
+	No.	確認項目内容	1	2	3	4
+		戻り値の確認				
+	1	人件費情報基本入力Dtoが返却されること	○	○	○	○
+		モック呼び出し確認				
+	2	fileUtils#uploadTempFileが必要な箇所のみ呼ばれること		○		○
+		例外の確認				
+	3	正常終了すること	○	○	○	○
+	4	AZA_DirtyUpdateExceptionがスローされること				
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4
-	1		モック設定値・戻り値一覧	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
+	No.	確認項目内容	1	2	3	4
+	1	モック設定値・戻り値一覧	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
 
 ## LSheet12
 
-テストケースNo.				case 1	case 2	case 3
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件						
-public: deleteBasicInputMain						
-			仕様1: ロジック#基本入力検索結果関連チェック(validateRelatedListBasicInput)を実行する（ボタン種別: 削除）			
-	1		validateRelatedListBasicInputが正常終了する	Y		
-	2		一覧Dtoリストが0件 → DAC00323E BusinessValidationExceptionをスローする		Y	
-	3		一覧Dtoリストが2件以上 → DAC00125E BusinessValidationExceptionをスローする			Y
-			仕様4: 申請番号の選択（入力区分コードによる分岐）			
-	4		入力区分コード = 給与控除 → 申請番号（給与控除）を使用する			
-	5		入力区分コード = 給与控除以外 → 申請番号を使用する	Y		
+テストケースNo.			case 1	case 2	case 3
+	No.	テストケース条件内容
+テストケース条件		public: deleteBasicInputMain			
+	1	validateRelatedListBasicInput（削除）: 			
+	2	 正常	Y		
+	3	validateRelatedListBasicInput（削除）: 			
+	4	 DAC00323E（0件）		Y	
+	5	validateRelatedListBasicInput（削除）: 			
+	6	 DAC00125E（2件以上）			Y
+	7	入力区分コード: 			
+	8	 給与控除 → 申請番号（給与控除）使用			
+	9	入力区分コード: 			
+	10	 給与控除以外 → 申請番号使用	Y		
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3
-			戻り値の確認			
-	1		削除ボタンメイン返却レコードが返却されること	○		
-			例外の確認			
-	2		正常終了すること	○		
-	3		BusinessValidationExceptionがスローされること		○	○
+	No.	確認項目内容	1	2	3
+		戻り値の確認			
+	1	削除ボタンメイン返却レコードが返却されること	○		
+		例外の確認			
+	2	正常終了すること	○		
+	3	BusinessValidationExceptionがスローされること		○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3
-	1		モック設定値・戻り値一覧	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
+	No.	確認項目内容	1	2	3
+	1	モック設定値・戻り値一覧	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
 
 ## LSheet13
 
-テストケースNo.				case 1	case 2	case 3
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件						
-public: inquiryBasicInputMain						
-			仕様1: ロジック#基本入力検索結果関連チェック(validateRelatedListBasicInput)を実行する（ボタン種別: 個別照会）			
-	1		validateRelatedListBasicInputが正常終了する	Y		
-	2		一覧Dtoリストが0件 → DAC00323E BusinessValidationExceptionをスローする		Y	
-	3		一覧Dtoリストが2件以上 → DAC00125E BusinessValidationExceptionをスローする			Y
-			仕様4: 申請番号の選択（入力区分コードによる分岐）			
-	4		入力区分コード = 給与控除 → 申請番号（給与控除）を使用する			
-	5		入力区分コード = 給与控除以外 → 申請番号を使用する	Y		
+テストケースNo.			case 1	case 2	case 3
+	No.	テストケース条件内容
+テストケース条件		public: inquiryBasicInputMain			
+	1	validateRelatedListBasicInput（個別照会）: 			
+	2	 正常	Y		
+	3	validateRelatedListBasicInput（個別照会）: 			
+	4	 DAC00323E（0件）		Y	
+	5	validateRelatedListBasicInput（個別照会）: 			
+	6	 DAC00125E（2件以上）			Y
+	7	入力区分コード: 			
+	8	 給与控除 → 申請番号（給与控除）使用			
+	9	入力区分コード: 			
+	10	 給与控除以外 → 申請番号使用	Y		
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3
-			戻り値の確認			
-	1		個別照会返却レコードが返却されること	○		
-			例外の確認			
-	2		正常終了すること	○		
-	3		BusinessValidationExceptionがスローされること		○	○
+	No.	確認項目内容	1	2	3
+		戻り値の確認			
+	1	個別照会返却レコードが返却されること	○		
+		例外の確認			
+	2	正常終了すること	○		
+	3	BusinessValidationExceptionがスローされること		○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3
-	1		モック設定値・戻り値一覧	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
+	No.	確認項目内容	1	2	3
+	1	モック設定値・戻り値一覧	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
 
 ## LSheet14
 
-テストケースNo.				case 1	case 2
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件					
-public: confirmBasicInputMain					
-			仕様2: ロジック#基本入力一覧検索結果情報取得(listResultDataBasicInput)を実行する		
-	1		listResultDataBasicInputが正常終了する	Y	
-	2		listResultDataBasicInputがBusinessValidationException(DAC00008E: 0件)をスローする		Y
-	3		listResultDataBasicInputがBusinessValidationException(DAC00009E: 上限超過)をスローする		Y
-			仕様3: 申請番号の選択（入力区分コードによる分岐）		
-	4		入力区分コード = 給与控除 → 申請番号（給与控除）を使用する		
-	5		入力区分コード = 給与控除以外 → 申請番号を使用する	Y	
+テストケースNo.			case 1	case 2
+	No.	テストケース条件内容
+テストケース条件		public: confirmBasicInputMain		
+	1	listResultDataBasicInput: 		
+	2	 正常	Y	
+	3	listResultDataBasicInput: 		
+	4	 DAC00008E（0件）		Y
+	5	listResultDataBasicInput: 		
+	6	 DAC00009E（上限超過）		Y
+	7	入力区分コード: 		
+	8	 給与控除 → 申請番号（給与控除）使用		
+	9	入力区分コード: 		
+	10	 給与控除以外 → 申請番号使用	Y	
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2
-			戻り値の確認		
-	1		確認画面ボタンメイン返却レコードが返却されること	○	
-			例外の確認		
-	2		正常終了すること	○	
-	3		BusinessValidationExceptionがスローされること		○
+	No.	確認項目内容	1	2
+		戻り値の確認		
+	1	確認画面ボタンメイン返却レコードが返却されること	○	
+		例外の確認		
+	2	正常終了すること	○	
+	3	BusinessValidationExceptionがスローされること		○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2
-	1		モック設定値・戻り値一覧	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○
+	No.	確認項目内容	1	2
+	1	モック設定値・戻り値一覧	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○
 
 ## LSheet15
 
-テストケースNo.				case 1	case 2	case 3	case 4
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件							
-public: saveDraftDetailInputMain							
-			仕様2(1): 添付ファイル処理区分1がアップロードまたは削除・アップロードの場合				
-	1		処理区分1 = アップロード/削除・アップロード → fileUtils#uploadTempFileを実行してローカル変数.添付ファイルＩＤ１に設定する		Y		Y
-	2		処理区分1 = 処理なし/削除 → fileUtils#uploadTempFileを実行しない	Y		Y	
-			仕様2(2)〜(3): 添付ファイル処理区分2,3についても同様にアップロード処理を行う				
-	3		処理区分2,3 = アップロード/削除・アップロード → fileUtils#uploadTempFileを実行してID2,3を設定する		Y		Y
-	4		処理区分2,3 = 処理なし/削除 → fileUtils#uploadTempFileを実行しない	Y		Y	
-			仕様3(1): 人件費連動情報ヘッダ更新条件Dto.添付ファイルＩＤ１〜３の設定				
-	5		処理区分 = 処理なし → 更新前Dto.添付ファイルＩＤを設定する	Y			
-	6		処理区分 = 削除 → nullを設定する			Y	
-	7		処理区分 = アップロード/削除・アップロード → ローカル変数.添付ファイルＩＤを設定する		Y		Y
-			仕様3(2): ロジック#人件費連動情報ヘッダ更新処理(modifyHeaderData)を実行する（承認状況区分: 下書保存）				
-	8		modifyHeaderDataが正常終了して人件費情報基本入力Dtoが返却される	Y	Y	Y	Y
-	9		modifyHeaderDataがAZA_DirtyUpdateExceptionをスローする				
-			仕様4(1)ウ: 入力区分コードにより入力項目リストを設定する				
-	10		入力区分コード = 給与支給 → 給与支給の入力項目（10件）をローカル変数.入力項目リストに設定する	Y			
-	11		入力区分コード = 給与控除 → 給与控除の入力項目（29件）をローカル変数.入力項目リストに設定する		Y		
-	12		入力区分コード = 会負担健保 → 会負担健保の入力項目（6件）をローカル変数.入力項目リストに設定する			Y	
-	13		入力区分コード = 会負担年金 → 会負担年金の入力項目（6件）をローカル変数.入力項目リストに設定する				Y
-	14		入力区分コード = 預貯金 → 預貯金の入力項目（10件）をローカル変数.入力項目リストに設定する				
+テストケースNo.			case 1	case 2	case 3	case 4
+	No.	テストケース条件内容
+テストケース条件		public: saveDraftDetailInputMain				
+	1	処理区分1: 				
+	2	 アップロード/削除・アップロード → uploadTempFile実行		Y		Y
+	3	処理区分1: 				
+	4	 処理なし/削除 → uploadTempFile実行しない	Y		Y	
+	5	処理区分2,3: 				
+	6	 アップロード/削除・アップロード → uploadTempFile実行		Y		Y
+	7	処理区分2,3: 				
+	8	 処理なし/削除 → uploadTempFile実行しない	Y		Y	
+	9	添付ファイルID1〜3: 				
+	10	 処理なし → 更新前Dto値使用	Y			
+	11	添付ファイルID1〜3: 				
+	12	 削除 → null設定			Y	
+	13	添付ファイルID1〜3: 				
+	14	 アップロード/削除・アップロード → ローカル変数ID使用		Y		Y
+	15	modifyHeaderData: 				
+	16	 正常終了	Y	Y	Y	Y
+	17	modifyHeaderData: 				
+	18	 AZA_DirtyUpdateException				
+	19	入力区分コード: 				
+	20	 給与支給 → 入力項目10件設定	Y			
+	21	入力区分コード: 				
+	22	 給与控除 → 入力項目29件設定		Y		
+	23	入力区分コード: 				
+	24	 会負担健保 → 入力項目6件設定			Y	
+	25	入力区分コード: 				
+	26	 会負担年金 → 入力項目6件設定				Y
+	27	入力区分コード: 				
+	28	 預貯金 → 入力項目10件設定				
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4
-			戻り値の確認				
-	1		人件費情報基本入力Dtoが返却されること	○	○	○	○
-			モック呼び出し確認				
-	2		fileUtils#uploadTempFileが必要な箇所のみ呼ばれること		○		○
-			例外の確認				
-	3		正常終了すること	○	○	○	○
-	4		AZA_DirtyUpdateExceptionがスローされること				
+	No.	確認項目内容	1	2	3	4
+		戻り値の確認				
+	1	人件費情報基本入力Dtoが返却されること	○	○	○	○
+		モック呼び出し確認				
+	2	fileUtils#uploadTempFileが必要な箇所のみ呼ばれること		○		○
+		例外の確認				
+	3	正常終了すること	○	○	○	○
+	4	AZA_DirtyUpdateExceptionがスローされること				
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4
-	1		モック設定値・戻り値一覧	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
+	No.	確認項目内容	1	2	3	4
+	1	モック設定値・戻り値一覧	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
 
 ## LSheet16
 
-テストケースNo.				case 1	case 2	case 3
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件						
-public: applyConfirmMain						
-			仕様1: ロジック#確認画面関連チェック(validateRelatedConfirm)を実行する（処理モード: 登録）			
-	1		validateRelatedConfirmが正常終了する	Y		
-	2		validateRelatedConfirmがBusinessValidationExceptionをスローする		Y	
-			仕様4(3): 入力区分コードが定数.入力区分.給与支給・給与控除以外の場合			
-	3		入力区分コード ≠ 給与支給・給与控除 → ローカル変数.入力区分にそのままの入力区分コードを設定する	Y		
-			仕様5(2): ローカル変数.申請番号がnull/空文字以外の場合			
-	4		申請番号 ≠ null/空文字 → ローカル変数.再申請必要フラグにtrueを設定する			Y
-			仕様5(3): ローカル変数.申請番号がnull/空文字の場合			
-	5		申請番号 = null/空文字 → ワークフローUtils#申請(workflowUtils#apply)を実行して申請承認情報応答Dtoを取得し、申請番号を設定する	Y		
-			仕様6(2): ロジック#人件費連動情報ヘッダ更新処理(modifyHeaderData)を実行する（承認状況区分: 承認依頼中）			
-	6		modifyHeaderDataが正常終了する	Y		Y
-	7		modifyHeaderDataがAZA_DirtyUpdateExceptionをスローする			
-			仕様7: ローカル変数.再申請必要フラグがtrueの場合			
-	8		再申請必要フラグ = true → ワークフローUtils#再申請(workflowUtils#reapply)を実行する			Y
-	9		再申請必要フラグ = false → workflowUtils#reapplyを実行しない	Y		
+テストケースNo.			case 1	case 2	case 3
+	No.	テストケース条件内容
+テストケース条件		public: applyConfirmMain			
+	1	validateRelatedConfirm（登録）: 			
+	2	 正常	Y		
+	3	validateRelatedConfirm（登録）: 			
+	4	 BusinessValidationException		Y	
+	5	入力区分コード: 			
+	6	 給与支給・給与控除以外 → そのまま設定	Y		
+	7	申請番号: 			
+	8	 null/空文字 → workflowUtils#apply実行	Y		
+	9	申請番号: 			
+	10	 not null/空文字以外 → 再申請フラグ=true			Y
+	11	modifyHeaderData（承認依頼中）: 			
+	12	 正常終了	Y		Y
+	13	modifyHeaderData（承認依頼中）: 			
+	14	 AZA_DirtyUpdateException			
+	15	再申請フラグ: 			
+	16	 true → workflowUtils#reapply実行			Y
+	17	再申請フラグ: 			
+	18	 false → workflowUtils#reapply実行しない	Y		
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3
-			戻り値の確認			
-	1		申請ボタンメイン返却レコードが返却されること	○		○
-			例外の確認			
-	2		正常終了すること	○		○
-	3		BusinessValidationExceptionがスローされること		○	
-	4		AZA_DirtyUpdateExceptionがスローされること			
+	No.	確認項目内容	1	2	3
+		戻り値の確認			
+	1	申請ボタンメイン返却レコードが返却されること	○		○
+		例外の確認			
+	2	正常終了すること	○		○
+	3	BusinessValidationExceptionがスローされること		○	
+	4	AZA_DirtyUpdateExceptionがスローされること			
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3
-	1		モック設定値・戻り値一覧	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
+	No.	確認項目内容	1	2	3
+	1	モック設定値・戻り値一覧	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
 
 ## LSheet17
 
-テストケースNo.				case 1	case 2
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件					
-public: inquiryConfirmMain					
-			仕様1: DAO#人件費明細情報取得（分岐なし）		
-	1		DAO#人件費明細情報取得が正常終了する	Y	
+テストケースNo.			case 1	case 2
+	No.	テストケース条件内容
+テストケース条件		public: inquiryConfirmMain		
+	1	DAO人件費明細情報取得: 		
+	2	 正常終了	Y	
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2
-			戻り値の確認		
-	1		人件費情報明細入力Dtoが返却されること	○	
-			例外の確認		
-	2		正常終了すること	○	
+	No.	確認項目内容	1	2
+		戻り値の確認		
+	1	人件費情報明細入力Dtoが返却されること	○	
+		例外の確認		
+	2	正常終了すること	○	
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2
-	1		モック設定値・戻り値一覧	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○
+	No.	確認項目内容	1	2
+	1	モック設定値・戻り値一覧	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○
 
 ## LSheet18
 
-テストケースNo.				case 1	case 2
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件					
-public: withdrawConfirmMain					
-			仕様1: ロジック#確認画面関連チェック(validateRelatedConfirm)を実行する（処理モード: 承認依頼取下、confirmListDetailDtoList: null）		
-	1		validateRelatedConfirmが正常終了する（処理モード=承認依頼取下のためチェックなし）	Y	
-			仕様2(2): 入力区分コードの設定（ローカル変数.更新条件）		
-	2		入力区分コード = 給与支給・給与控除 → 更新条件に定数.入力区分.給与支給を設定する（給与支給→給与控除の順で両方更新）	Y	
-	3		入力区分コード = 給与支給・給与控除以外 → 更新条件にそのままの入力区分コードを設定する		Y
-			仕様2(3): 人件費連動情報ヘッダリポジトリ.更新(update)を実行する（承認状況区分: 差戻）		
-	4		更新件数 ≥ 1 → 正常終了する	Y	Y
-	5		更新件数 = 0 → AZA_DirtyUpdateExceptionをスローする		
-			仕様3(1): 入力区分コードが定数.入力区分.給与支給・給与控除の場合、給与控除側も更新する（承認状況区分: 下書保存）		
-	6		入力区分コード = 給与支給・給与控除 → 給与控除の人件費連動情報ヘッダを下書保存で更新する	Y	
-	7		入力区分コード = 給与支給・給与控除以外 → 給与控除側の更新をスキップする		Y
+テストケースNo.			case 1	case 2
+	No.	テストケース条件内容
+テストケース条件		public: withdrawConfirmMain		
+	1	validateRelatedConfirm（承認依頼取下）: 		
+	2	 正常	Y	
+	3	入力区分コード: 		
+	4	 給与支給・給与控除 → 給与支給で更新（給与控除も対象）	Y	
+	5	入力区分コード: 		
+	6	 給与支給・給与控除以外 → そのまま設定		Y
+	7	ヘッダ更新（差戻）: 		
+	8	 更新件数 ≥ 1 → 正常	Y	Y
+	9	ヘッダ更新（差戻）: 		
+	10	 更新件数 = 0 → AZA_DirtyUpdateException		
+	11	入力区分コード: 		
+	12	 給与支給・給与控除 → 給与控除側も下書保存で更新	Y	
+	13	入力区分コード: 		
+	14	 給与支給・給与控除以外 → 給与控除側更新スキップ		Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2
-			戻り値の確認		
-	1		承認依頼取下ボタンメイン返却レコードが返却されること	○	○
-			例外の確認		
-	2		正常終了すること	○	○
-	3		AZA_DirtyUpdateExceptionがスローされること		
+	No.	確認項目内容	1	2
+		戻り値の確認		
+	1	承認依頼取下ボタンメイン返却レコードが返却されること	○	○
+		例外の確認		
+	2	正常終了すること	○	○
+	3	AZA_DirtyUpdateExceptionがスローされること		
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2
-	1		モック設定値・戻り値一覧	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○
+	No.	確認項目内容	1	2
+	1	モック設定値・戻り値一覧	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○
 
 ## LSheet19
 
-テストケースNo.				case 1	case 2
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件					
-public: confirmInquiryMain					
-			仕様1(1)〜(2): 検索条件を設定してローカル変数.人件費情報入力リポジトリ.検索(select)を実行する		
-	1		有効レコードが取得できる（1件以上）	Y	
-	2		有効レコードが0件 → 論理削除処理をスキップする		Y
+テストケースNo.			case 1	case 2
+	No.	テストケース条件内容
+テストケース条件		public: confirmInquiryMain		
+	1	人件費情報入力select: 		
+	2	 1件以上 → 論理削除処理実行	Y	
+	3	人件費情報入力select: 		
+	4	 0件 → 論理削除処理スキップ		Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2
-			戻り値の確認		
-	1		確認ボタンメイン返却レコードが返却されること	○	○
-			例外の確認		
-	2		正常終了すること	○	○
+	No.	確認項目内容	1	2
+		戻り値の確認		
+	1	確認ボタンメイン返却レコードが返却されること	○	○
+		例外の確認		
+	2	正常終了すること	○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2
-	1		モック設定値・戻り値一覧	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○
+	No.	確認項目内容	1	2
+	1	モック設定値・戻り値一覧	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○
 
 ## LSheet20
 
-テストケースNo.				case 1	case 2	case 3	case 4
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件							
-private①: validateRelatedSearchInput							
-			仕様1: 対象年月（From）と対象年月（To）の両方が設定されているかチェックする				
-	1		対象年月（From）= null → チェックをスキップする	Y			
-	2		対象年月（To）= null → チェックをスキップする		Y		
-	3		対象年月（From）≠ null かつ 対象年月（To）≠ null → チェックを実施する			Y	Y
-			仕様1(1): 対象年月（From）> 対象年月（To）の場合				
-	4		対象年月（From）≤ 対象年月（To） → DAC00315Eをエラーリストに追加しない			Y	
-	5		対象年月（From）> 対象年月（To） → DAC00315E（対象年月(To)は対象年月(From)以降の年月を入力してください）をエラーリストに追加する				Y
-			仕様2: エラーリストが1件以上の場合、BusinessValidationExceptionをスローする				
-	6		エラーリスト = 0件 → BusinessValidationExceptionをスローしない	Y	Y	Y	
-	7		エラーリスト ≥ 1件 → BusinessValidationExceptionをスローする				Y
+テストケースNo.			case 1	case 2	case 3	case 4
+	No.	テストケース条件内容
+テストケース条件		private①: validateRelatedSearchInput				
+	1	対象年月From: 				
+	2	 null → チェックスキップ	Y			
+	3	対象年月To: 				
+	4	 null → チェックスキップ		Y		
+	5	From ≤ To: 				
+	6	 エラーなし			Y	
+	7	From > To: 				
+	8	 DAC00315E追加				Y
+	9	エラーリスト: 				
+	10	 0件 → 正常終了	Y	Y	Y	
+	11	エラーリスト: 				
+	12	 1件以上 → BusinessValidationException				Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4
-			例外の確認				
-	1		正常終了すること（エラーなし）	○	○	○	
-	2		BusinessValidationExceptionがスローされること				○
+	No.	確認項目内容	1	2	3	4
+		例外の確認				
+	1	正常終了すること（エラーなし）	○	○	○	
+	2	BusinessValidationExceptionがスローされること				○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4
-	1		モック設定値・戻り値一覧	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
+	No.	確認項目内容	1	2	3	4
+	1	モック設定値・戻り値一覧	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
 
 ## LSheet21
 
-テストケースNo.				case 1	case 2	case 3	case 4	case 5	case 6
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件									
-private②: validateRelatedResultInput									
-			仕様1: パラメータ.ボタン種別が定数.ボタン種別.次画面/照会/承認依頼取下の場合、選択行チェックを行う						
-	1		ボタン種別 = 次画面かつ一覧Dtoリスト = null/0件 → DAC00124E（対象の情報が選択されていません）をエラーリストに追加する	Y					
-	2		ボタン種別 = 照会かつ一覧Dtoリスト = 0件 → DAC00124Eをエラーリストに追加する		Y				
-	3		ボタン種別 = 承認依頼取下かつ一覧Dtoリスト ≥ 2件 → DAC00125E（対象の情報が複数選択されています）をエラーリストに追加する			Y			
-	4		ボタン種別 = 次画面かつ一覧Dtoリスト = 1件 → 選択行チェックOK				Y		
-	5		ボタン種別 = 照会かつ一覧Dtoリスト = 1件 → 選択行チェックOK					Y	
-	6		ボタン種別 = 承認依頼取下かつ一覧Dtoリスト = 1件 → 選択行チェックOK						Y
-			仕様2(1): ボタン種別 = 次画面の場合の承認状況チェック						
-	7		承認状況 = null → DAC00173Eをエラーリストに追加しない（エラーなし）				Y		
-	8		承認状況 = 下書保存 → DAC00173Eをエラーリストに追加しない（エラーなし）						
-	9		承認状況 = 差戻 → DAC00173Eをエラーリストに追加しない（エラーなし）						
-	10		承認状況 = 承認依頼中（null/下書保存/差戻以外） → DAC00173E（次画面へ遷移できません）をエラーリストに追加する						
-			仕様2(2): ボタン種別 = 承認依頼取下の場合の承認状況チェック						
-	11		承認状況 = 承認依頼中 → DAC00178Eをエラーリストに追加しない（エラーなし）						Y
-	12		承認状況 = 承認依頼中以外（例: 下書保存） → DAC00178E（承認状況が承認依頼中でない場合、承認取下できません）をエラーリストに追加する			Y			
-			仕様3: エラーリストが1件以上の場合、BusinessValidationExceptionをスローする						
-	13		エラーリスト = 0件 → BusinessValidationExceptionをスローしない				Y	Y	Y
-	14		エラーリスト ≥ 1件 → BusinessValidationExceptionをスローする	Y	Y	Y			
+テストケースNo.			case 1	case 2	case 3	case 4	case 5	case 6
+	No.	テストケース条件内容
+テストケース条件		private②: validateRelatedResultInput						
+	1	ボタン種別=次画面 / 一覧Dto: 						
+	2	 null/0件 → DAC00124E追加	Y					
+	3	ボタン種別=照会 / 一覧Dto: 						
+	4	 0件 → DAC00124E追加		Y				
+	5	ボタン種別=承認依頼取下 / 一覧Dto: 						
+	6	 ≥2件 → DAC00125E追加			Y			
+	7	ボタン種別=次画面 / 一覧Dto: 						
+	8	 1件 → 選択行チェックOK				Y		
+	9	ボタン種別=照会 / 一覧Dto: 						
+	10	 1件 → 選択行チェックOK					Y	
+	11	ボタン種別=承認依頼取下 / 一覧Dto: 						
+	12	 1件 → 選択行チェックOK						Y
+	13	承認状況（次画面）: 						
+	14	 null/下書保存/差戻 → DAC00173E追加しない				Y		
+	15	承認状況（次画面）: 						
+	16	 承認依頼中 → DAC00173E追加						
+	17	承認状況（承認依頼取下）: 						
+	18	 承認依頼中 → DAC00178E追加しない						Y
+	19	承認状況（承認依頼取下）: 						
+	20	 承認依頼中以外 → DAC00178E追加			Y			
+	21	エラーリスト: 						
+	22	 0件 → 正常終了				Y	Y	Y
+	23	エラーリスト: 						
+	24	 1件以上 → BusinessValidationException	Y	Y	Y			
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4	5	6
-			例外の確認						
-	1		正常終了すること（エラーなし）				○	○	○
-	2		BusinessValidationExceptionがスローされること	○	○	○			
+	No.	確認項目内容	1	2	3	4	5	6
+		例外の確認						
+	1	正常終了すること（エラーなし）				○	○	○
+	2	BusinessValidationExceptionがスローされること	○	○	○			
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4	5	6
-	1		モック設定値・戻り値一覧	○	○	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○
+	No.	確認項目内容	1	2	3	4	5	6
+	1	モック設定値・戻り値一覧	○	○	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○
 
 ## LSheet22
 
-テストケースNo.				case 1	case 2	case 3
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件						
-private③: getConfirmInfo						
-			仕様1(1): DAO#基本入力ヘッダ情報取得を実行して人件費情報基本入力Dtoリストを取得する			
-	1		人件費情報基本入力Dtoリストが1件以上取得できる	Y		
-			仕様1(2): 人件費情報基本入力Dtoリストが0件の場合			
-	2		人件費情報基本入力Dtoリスト = null → AZA_DirtyUpdateExceptionをスローする		Y	
-	3		人件費情報基本入力Dtoリスト = 0件 → AZA_DirtyUpdateExceptionをスローする			Y
+テストケースNo.			case 1	case 2	case 3
+	No.	テストケース条件内容
+テストケース条件		private③: getConfirmInfo			
+	1	基本入力DtoリストDAO: 			
+	2	 1件以上 → 正常	Y		
+	3	基本入力DtoリストDAO: 			
+	4	 null → AZA_DirtyUpdateException		Y	
+	5	基本入力DtoリストDAO: 			
+	6	 0件 → AZA_DirtyUpdateException			Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3
-			戻り値の確認			
-	1		基本入力Dto・明細Dto・申請承認情報Dtoが返却されること	○		
-			例外の確認			
-	2		正常終了すること	○		
-	3		AZA_DirtyUpdateExceptionがスローされること		○	○
+	No.	確認項目内容	1	2	3
+		戻り値の確認			
+	1	基本入力Dto・明細Dto・申請承認情報Dtoが返却されること	○		
+		例外の確認			
+	2	正常終了すること	○		
+	3	AZA_DirtyUpdateExceptionがスローされること		○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3
-	1		モック設定値・戻り値一覧	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
+	No.	確認項目内容	1	2	3
+	1	モック設定値・戻り値一覧	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
 
 ## LSheet23
 
-テストケースNo.				case 1	case 2	case 3
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件						
-private④: searchListResultInput						
-			仕様2(1): 取得した一覧明細Dtoリストが0件の場合			
-	1		一覧明細Dtoリスト = null/0件 → DAC00008E（条件に該当するデータはありません）をBusinessValidationExceptionでスローする		Y	
-	2		一覧明細Dtoリスト ≥ 1件 → エラーなし	Y		
-			仕様2(2): 取得した一覧明細Dtoリストの件数が上限件数を超過する場合			
-	3		件数 > 定数.共通定数.一覧画面表示上限件数 → DAC00009E（検索結果が%1件を超えました）をBusinessValidationExceptionでスローする			Y
-	4		件数 ≤ 上限件数 → エラーなし	Y		
+テストケースNo.			case 1	case 2	case 3
+	No.	テストケース条件内容
+テストケース条件		private④: searchListResultInput			
+	1	一覧明細Dtoリスト: 			
+	2	 1件以上 → 正常	Y		
+	3	一覧明細Dtoリスト: 			
+	4	 null/0件 → DAC00008E		Y	
+	5	件数 > 上限件数 → DAC00009E			Y
+	6	件数 ≤ 上限件数 → 正常	Y		
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3
-			戻り値の確認			
-	1		一覧明細Dtoリストが返却されること	○		
-			例外の確認			
-	2		正常終了すること	○		
-	3		DAC00008E BusinessValidationExceptionがスローされること		○	
-	4		DAC00009E BusinessValidationExceptionがスローされること			○
+	No.	確認項目内容	1	2	3
+		戻り値の確認			
+	1	一覧明細Dtoリストが返却されること	○		
+		例外の確認			
+	2	正常終了すること	○		
+	3	DAC00008E BusinessValidationExceptionがスローされること		○	
+	4	DAC00009E BusinessValidationExceptionがスローされること			○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3
-	1		モック設定値・戻り値一覧	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
+	No.	確認項目内容	1	2	3
+	1	モック設定値・戻り値一覧	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
 
 ## LSheet24
 
-テストケースNo.				case 1	case 2	case 3
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件						
-private⑤: listResultDataBasicInput						
-			仕様2: 取得した一覧明細Dtoリストが0件の場合			
-	1		一覧明細Dtoリスト = null/0件 → DAC00008E（条件に該当するデータはありません）をBusinessValidationExceptionでスローする		Y	
-	2		一覧明細Dtoリスト ≥ 1件 → エラーなし	Y		
-			仕様3: 取得した一覧明細Dtoリストの件数が上限件数を超過する場合			
-	3		件数 > 定数.共通定数.一覧画面表示上限件数 → DAC00009E（検索結果が%1件を超えました）をBusinessValidationExceptionでスローする			Y
-	4		件数 ≤ 上限件数 → エラーなし	Y		
+テストケースNo.			case 1	case 2	case 3
+	No.	テストケース条件内容
+テストケース条件		private⑤: listResultDataBasicInput			
+	1	一覧明細Dtoリスト: 			
+	2	 1件以上 → 正常	Y		
+	3	一覧明細Dtoリスト: 			
+	4	 null/0件 → DAC00008E		Y	
+	5	件数 > 上限件数 → DAC00009E			Y
+	6	件数 ≤ 上限件数 → 正常	Y		
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3
-			戻り値の確認			
-	1		一覧明細Dtoリストが返却されること	○		
-			例外の確認			
-	2		正常終了すること	○		
-	3		DAC00008E BusinessValidationExceptionがスローされること		○	
-	4		DAC00009E BusinessValidationExceptionがスローされること			○
+	No.	確認項目内容	1	2	3
+		戻り値の確認			
+	1	一覧明細Dtoリストが返却されること	○		
+		例外の確認			
+	2	正常終了すること	○		
+	3	DAC00008E BusinessValidationExceptionがスローされること		○	
+	4	DAC00009E BusinessValidationExceptionがスローされること			○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3
-	1		モック設定値・戻り値一覧	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
+	No.	確認項目内容	1	2	3
+	1	モック設定値・戻り値一覧	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
 
 ## LSheet25
 
-テストケースNo.				case 1	case 2	case 3	case 4	case 5	case 6
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件									
-private⑥: validateSingleBasicInput									
-			仕様1: 給与個所コードの存在チェック						
-	1		給与個所コード = null/未設定 → チェックをスキップする	Y					
-	2		給与個所コードあり、masterData#getCodeJoho = null → DAC00007E（指定したコードは存在しません）をエラーリストに追加する		Y				
-			仕様2: 業種コードの存在チェック						
-	3		業種コード = null/未設定 → チェックをスキップする	Y					
-	4		業種コードあり、masterData#getGyoshuJoho = null → DAC00007Eをエラーリストに追加する		Y		Y		
-			仕様3: 所属コードの存在チェック						
-	5		所属コード = null/未設定 → チェックをスキップする	Y					
-	6		所属コードあり、masterData#getSoshikiJoho = null → DAC00007Eをエラーリストに追加する		Y			Y	
-			仕様4: エラーリストが1件以上の場合、BusinessValidationExceptionをスローする						
-	7		エラーリスト = 0件 → BusinessValidationExceptionをスローしない	Y		Y			Y
-	8		エラーリスト ≥ 1件 → BusinessValidationExceptionをスローする		Y		Y	Y	
+テストケースNo.			case 1	case 2	case 3	case 4	case 5	case 6
+	No.	テストケース条件内容
+テストケース条件		private⑥: validateSingleBasicInput						
+	1	給与個所コード: 						
+	2	 null/未設定 → スキップ	Y					
+	3	給与個所コード: 						
+	4	 あり / getCodeJoho = null → DAC00007E追加		Y				
+	5	業種コード: 						
+	6	 null/未設定 → スキップ	Y					
+	7	業種コード: 						
+	8	 あり / getGyoshuJoho = null → DAC00007E追加		Y		Y		
+	9	所属コード: 						
+	10	 null/未設定 → スキップ	Y					
+	11	所属コード: 						
+	12	 あり / getSoshikiJoho = null → DAC00007E追加		Y			Y	
+	13	エラーリスト: 						
+	14	 0件 → 正常終了	Y		Y			Y
+	15	エラーリスト: 						
+	16	 1件以上 → BusinessValidationException		Y		Y	Y	
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4	5	6
-			例外の確認						
-	1		正常終了すること（エラーなし）	○		○			○
-	2		BusinessValidationExceptionがスローされること		○		○	○	
+	No.	確認項目内容	1	2	3	4	5	6
+		例外の確認						
+	1	正常終了すること（エラーなし）	○		○			○
+	2	BusinessValidationExceptionがスローされること		○		○	○	
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4	5	6
-	1		モック設定値・戻り値一覧	○	○	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○
+	No.	確認項目内容	1	2	3	4	5	6
+	1	モック設定値・戻り値一覧	○	○	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○
 
 ## LSheet26
 
-テストケースNo.				case 1	case 2	case 3	case 4	case 5	case 6
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件									
-private⑦: validateRelatedBasicInput									
-			仕様1: ボタン種別 = 登録の場合、必須チェックを行う						
-	1		ボタン種別 = 照会/表示 → 必須チェックをスキップする	Y					
-	2		ボタン種別 = 登録かつ必須項目がすべて設定あり → エラーなし		Y				
-	3		ボタン種別 = 登録かつ必須項目が未設定 → DAC00143E（必須入力項目が未入力です）をエラーリストに追加する			Y			
-			仕様2: ボタン種別 = 登録/照会/表示の場合、業種コードと所属コードの関連チェックを行う						
-	4		業種コードまたは所属コード = null → 関連チェックをスキップする				Y		
-	5		業種コード・所属コードあり、masterData#getSoshikiGyoshuJoho = null → DAC00172E（業種コードと所属コードの組み合わせが正しくありません）をエラーリストに追加する			Y		Y	
-	6		業種コード・所属コードあり、masterData#getSoshikiGyoshuJohoに値あり → エラーなし	Y	Y				
-			仕様3: ボタン種別 = 登録/照会 かつエラー = 0件の場合、人件費連動情報ヘッダの存在チェックを行う						
-	7		ボタン種別 = 表示 → チェックをスキップする				Y		
-	8		人件費連動情報ヘッダ = null/0件 → DAC00008Eをスローする						Y
-	9		人件費連動情報ヘッダあり → チェックOK	Y	Y				
-			仕様3(2): 人件費連動情報明細の存在チェックを行う						
-	10		人件費連動情報明細 = null/0件 → DAC00008Eをスローする						Y
-	11		人件費連動情報明細あり → チェックOK	Y	Y				
-			仕様4: ボタン種別 = 登録 かつエラー = 0件の場合、人件費情報入力の存在チェックを行う						
-	12		ボタン種別 = 照会/表示 → チェックをスキップする	Y					
-	13		ボタン種別 = 登録かつ人件費情報入力 = null/0件 → エラーなし（登録可能）		Y				
-	14		ボタン種別 = 登録かつ人件費情報入力 ≥ 1件（登録済み） → DAC00314Eをスローする						
-			仕様5: エラーリストが1件以上の場合、BusinessValidationExceptionをスローする						
-	15		エラーリスト = 0件 → BusinessValidationExceptionをスローしない	Y	Y		Y		
-	16		エラーリスト ≥ 1件 → BusinessValidationExceptionをスローする			Y		Y	Y
+テストケースNo.			case 1	case 2	case 3	case 4	case 5	case 6
+	No.	テストケース条件内容
+テストケース条件		private⑦: validateRelatedBasicInput						
+	1	ボタン種別: 						
+	2	 照会/表示 → 必須チェックスキップ	Y					
+	3	ボタン種別: 						
+	4	 登録 / 必須項目あり → エラーなし		Y				
+	5	ボタン種別: 						
+	6	 登録 / 必須項目未設定 → DAC00143E追加			Y			
+	7	業種コード/所属コード: 						
+	8	 null → 関連チェックスキップ				Y		
+	9	getSoshikiGyoshuJoho: 						
+	10	 null → DAC00172E追加			Y		Y	
+	11	getSoshikiGyoshuJoho: 						
+	12	 あり → エラーなし	Y	Y				
+	13	ボタン種別: 						
+	14	 表示 → ヘッダ存在チェックスキップ				Y		
+	15	人件費連動情報ヘッダ: 						
+	16	 null/0件 → DAC00008E						Y
+	17	人件費連動情報ヘッダ: 						
+	18	 あり → チェックOK	Y	Y				
+	19	人件費連動情報明細: 						
+	20	 null/0件 → DAC00008E						Y
+	21	人件費連動情報明細: 						
+	22	 あり → チェックOK	Y	Y				
+	23	ボタン種別: 						
+	24	 照会/表示 → 入力存在チェックスキップ	Y					
+	25	ボタン種別: 						
+	26	 登録 / 人件費情報入力: null/0件 → 登録可能		Y				
+	27	ボタン種別: 						
+	28	 登録 / 人件費情報入力: ≥1件 → DAC00314E						
+	29	エラーリスト: 						
+	30	 0件 → 正常終了	Y	Y		Y		
+	31	エラーリスト: 						
+	32	 1件以上 → BusinessValidationException			Y		Y	Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4	5	6
-			例外の確認						
-	1		正常終了すること（エラーなし）	○	○		○		
-	2		BusinessValidationExceptionがスローされること			○		○	○
+	No.	確認項目内容	1	2	3	4	5	6
+		例外の確認						
+	1	正常終了すること（エラーなし）	○	○		○		
+	2	BusinessValidationExceptionがスローされること			○		○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4	5	6
-	1		モック設定値・戻り値一覧	○	○	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○
+	No.	確認項目内容	1	2	3	4	5	6
+	1	モック設定値・戻り値一覧	○	○	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○
 
 ## LSheet27
 
-テストケースNo.				case 1	case 2	case 3	case 4
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件							
-private⑧: validateRelatedListBasicInput							
-			仕様1: ボタン種別 = 修正/個別照会/削除の場合、選択行チェックを行う				
-	1		ボタン種別 = 修正かつ一覧Dtoリスト = null/0件 → DAC00323E（選択してください）をエラーリストに追加する	Y			
-	2		ボタン種別 = 個別照会かつ一覧Dtoリスト = 0件 → DAC00323Eをエラーリストに追加する		Y		
-	3		ボタン種別 = 削除かつ一覧Dtoリスト ≥ 2件 → DAC00125E（複数選択されています）をエラーリストに追加する			Y	
-	4		ボタン種別 = 修正かつ一覧Dtoリスト = 1件 → チェックOK				Y
-			仕様2: エラーリストが1件以上の場合、BusinessValidationExceptionをスローする				
-	5		エラーリスト = 0件 → BusinessValidationExceptionをスローしない				Y
-	6		エラーリスト ≥ 1件 → BusinessValidationExceptionをスローする	Y	Y	Y	
+テストケースNo.			case 1	case 2	case 3	case 4
+	No.	テストケース条件内容
+テストケース条件		private⑧: validateRelatedListBasicInput				
+	1	ボタン種別=修正 / 一覧Dto: 				
+	2	 null/0件 → DAC00323E追加	Y			
+	3	ボタン種別=個別照会 / 一覧Dto: 				
+	4	 0件 → DAC00323E追加		Y		
+	5	ボタン種別=削除 / 一覧Dto: 				
+	6	 ≥2件 → DAC00125E追加			Y	
+	7	ボタン種別=修正 / 一覧Dto: 				
+	8	 1件 → チェックOK				Y
+	9	エラーリスト: 				
+	10	 0件 → 正常終了				Y
+	11	エラーリスト: 				
+	12	 1件以上 → BusinessValidationException	Y	Y	Y	
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4
-			例外の確認				
-	1		正常終了すること（エラーなし）				○
-	2		BusinessValidationExceptionがスローされること	○	○	○	
+	No.	確認項目内容	1	2	3	4
+		例外の確認				
+	1	正常終了すること（エラーなし）				○
+	2	BusinessValidationExceptionがスローされること	○	○	○	
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4
-	1		モック設定値・戻り値一覧	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
+	No.	確認項目内容	1	2	3	4
+	1	モック設定値・戻り値一覧	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
 
 ## LSheet28
 
-テストケースNo.				case 1	case 2	case 3
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件						
-private⑨: getShinseiShoninJoho						
-			仕様1(1): パラメータ.申請番号がnullの場合			
-	1		申請番号 = null → DAA_ShinseiShoninJohoDtoのインスタンスを生成し、申請業務コードに定数.申請業務コード定義.人件費情報入力を設定する	Y		
-			仕様1(2): パラメータ.申請番号がnull以外の場合			
-	2		申請番号 ≠ null → ワークフローUtils#申請承認情報取得を実行して申請承認情報Dtoを取得する		Y	Y
-			仕様1(3): ワークフローUtils#申請承認ルート表示情報取得を実行して申請・承認ルート表示取得情報Dtoを取得する			
-	3		申請業務コードと申請番号（任意）を引数に承認ルートDtoを取得する（申請番号 = nullの場合も含む）	Y	Y	Y
-			仕様2: 戻り値（DAC2015_GetShinseiShoninJohoResponseRecord）を返却する			
-	4		申請承認情報Dtoと申請・承認ルート表示取得情報Dtoが返却される	Y	Y	Y
+テストケースNo.			case 1	case 2	case 3
+	No.	テストケース条件内容
+テストケース条件		private⑨: getShinseiShoninJoho			
+	1	申請番号: 			
+	2	 null → ShinseiShoninJohoDtoインスタンス生成	Y		
+	3	申請番号: 			
+	4	 not null → workflowUtils#申請承認情報取得実行		Y	Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3
-			戻り値の確認			
-	1		申請承認情報Dtoと申請・承認ルート表示取得情報Dtoが返却されること	○	○	○
-			例外の確認			
-	2		正常終了すること	○	○	○
+	No.	確認項目内容	1	2	3
+		戻り値の確認			
+	1	申請承認情報Dtoと申請・承認ルート表示取得情報Dtoが返却されること	○	○	○
+		例外の確認			
+	2	正常終了すること	○	○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3
-	1		モック設定値・戻り値一覧	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
+	No.	確認項目内容	1	2	3
+	1	モック設定値・戻り値一覧	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
 
 ## LSheet29
 
-テストケースNo.				case 1	case 2	case 3	case 4
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件							
-private⑩: dispNameBasicInput							
-			仕様1: 給与個所コードの名称取得				
-	1		給与個所コード = null/未設定 → 空文字を設定する	Y			
-	2		給与個所コードあり、masterData#getCodeJoho = null → 空文字を設定する		Y		
-			仕様2: 業種の名称取得				
-	3		業種コードあり、masterData#getGyoshuJoho = null → 空文字を設定する		Y		
-			仕様3: 所属の名称取得				
-	4		所属コードあり、masterData#getSoshikiJoho = null → 空文字を設定する		Y		
+テストケースNo.			case 1	case 2	case 3	case 4
+	No.	テストケース条件内容
+テストケース条件		private⑩: dispNameBasicInput				
+	1	給与個所コード: 				
+	2	 null/未設定 → 空文字設定	Y			
+	3	給与個所コード: 				
+	4	 あり / getCodeJoho = null → 空文字設定		Y		
+	5	業種コード: 				
+	6	 あり / getGyoshuJoho = null → 空文字設定		Y		
+	7	所属コード: 				
+	8	 あり / getSoshikiJoho = null → 空文字設定		Y		
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4
-			戻り値の確認				
-	1		給与個所名称・業種名称・所属名称のリスト（3件）が返却されること	○	○	○	○
-	2		名称取得できない場合は空文字が設定されること	○	○		
-			例外の確認				
-	3		正常終了すること	○	○	○	○
+	No.	確認項目内容	1	2	3	4
+		戻り値の確認				
+	1	給与個所名称・業種名称・所属名称のリスト（3件）が返却されること	○	○	○	○
+	2	名称取得できない場合は空文字が設定されること	○	○		
+		例外の確認				
+	3	正常終了すること	○	○	○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4
-	1		モック設定値・戻り値一覧	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
+	No.	確認項目内容	1	2	3	4
+	1	モック設定値・戻り値一覧	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
 
 ## LSheet30
 
-テストケースNo.				case 1	case 2	case 3	case 4
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件							
-private⑪: modifyHeaderData							
-			仕様1〜2: 給与支給・給与控除更新フラグを設定する				
-	1		入力区分コード = 給与支給・給与控除 → フラグ = true	Y			
-	2		入力区分コード = 給与支給（単体） → フラグ = true		Y		
-	3		入力区分コード = 給与控除（単体） → フラグ = true			Y	
-	4		入力区分コード = 給与支給・給与控除以外 → フラグ = false				Y
-			仕様3: 採番対象の伝票番号を特定する				
-	5		入力区分コード ≠ 給与控除 → Dto.伝票番号をローカル変数.伝票番号に設定する	Y	Y		Y
-	6		入力区分コード = 給与控除 → Dto.伝票番号（給与控除）をローカル変数.伝票番号に設定する			Y	
-			仕様3: 伝票番号の採番判定				
-	7		承認状況 = 下書保存 かつ 伝票番号 = null → dateUtils#getKaikeiNendo → numberingUtils#getNextNoで採番する	Y			
-	8		承認状況 = 承認依頼中 かつ 伝票番号 = null/空文字 → 採番する		Y		
-	9		伝票番号が設定済み（null/空文字以外）→ 採番しない			Y	Y
-			仕様4: DAO#人件費連動情報ヘッダ更新を実行する				
-	10		更新件数 = 1 → 正常終了する	Y	Y	Y	Y
-	11		更新件数 = 0 → AZA_DirtyUpdateExceptionをスローする				
-			仕様5: 給与支給・給与控除更新フラグがtrueの場合、給与控除側のヘッダも更新する				
-	12		フラグ = true → DAO#人件費連動情報ヘッダ更新を給与控除側でも実行する	Y	Y	Y	
-	13		フラグ = false → 給与控除側の更新をスキップする				Y
-			仕様6: 戻り値（人件費情報基本入力Dto）を返却する				
-	14		排他カウンタを+1した人件費情報基本入力Dtoが返却される	Y	Y	Y	Y
+テストケースNo.			case 1	case 2	case 3	case 4
+	No.	テストケース条件内容
+テストケース条件		private⑪: modifyHeaderData				
+	1	入力区分コード: 				
+	2	 給与支給・給与控除 → 更新フラグ=true	Y			
+	3	入力区分コード: 				
+	4	 給与支給（単体）→ 更新フラグ=true		Y		
+	5	入力区分コード: 				
+	6	 給与控除（単体）→ 更新フラグ=true			Y	
+	7	入力区分コード: 				
+	8	 給与支給・給与控除以外 → 更新フラグ=false				Y
+	9	入力区分コード: 				
+	10	 給与控除以外 → Dto.伝票番号使用	Y	Y		Y
+	11	入力区分コード: 				
+	12	 給与控除 → Dto.伝票番号（給与控除）使用			Y	
+	13	承認状況=下書保存 / 伝票番号=null → 採番	Y			
+	14	承認状況=承認依頼中 / 伝票番号=null/空文字 → 採番		Y		
+	15	伝票番号: 				
+	16	 設定済み → 採番しない			Y	Y
+	17	ヘッダ更新: 				
+	18	 更新件数=1 → 正常	Y	Y	Y	Y
+	19	ヘッダ更新: 				
+	20	 更新件数=0 → AZA_DirtyUpdateException				
+	21	更新フラグ: 				
+	22	 true → 給与控除側ヘッダも更新	Y	Y	Y	
+	23	更新フラグ: 				
+	24	 false → 給与控除側更新スキップ				Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4
-			戻り値の確認				
-	1		排他カウンタを+1した人件費情報基本入力Dtoが返却されること	○	○	○	○
-			例外の確認				
-	2		正常終了すること	○	○	○	○
-	3		AZA_DirtyUpdateExceptionがスローされること				
+	No.	確認項目内容	1	2	3	4
+		戻り値の確認				
+	1	排他カウンタを+1した人件費情報基本入力Dtoが返却されること	○	○	○	○
+		例外の確認				
+	2	正常終了すること	○	○	○	○
+	3	AZA_DirtyUpdateExceptionがスローされること				
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4
-	1		モック設定値・戻り値一覧	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
+	No.	確認項目内容	1	2	3	4
+	1	モック設定値・戻り値一覧	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○
 
 ## LSheet31
 
-テストケースNo.				case 1	case 2	case 3	case 4	case 5	case 6	case 7	case 8
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件											
-private⑫: modifyNyuryokuData											
-			仕様2: 人件費連動情報明細を検索してローカル変数.連動明細情報に設定する								
-	1		人件費連動情報明細が取得できる（連動明細あり）					Y	Y	Y	Y
-	2		人件費連動情報明細が取得できない（連動明細なし）	Y	Y	Y	Y				
-			仕様3(2): 処理モード = 登録の場合の更新区分判定								
-	3		連動明細なし かつ 金額 = null/0 → 更新区分 = null（更新しない）	Y							
-	4		連動明細なし かつ 金額 ≠ null/0 → 更新区分 = 登録		Y						
-	5		連動明細あり かつ 金額 = 連動明細.金額 → 更新区分 = null（更新しない）					Y			
-	6		連動明細あり かつ 金額 ≠ 連動明細.金額 → 更新区分 = 登録						Y		
-			仕様3(3): 処理モード = 修正の場合の更新区分判定								
-	7		連動明細なし かつ 金額 = null/0 かつ 入力情報なし → 更新区分 = null			Y					
-	8		連動明細なし かつ 金額 = null/0 かつ 入力情報あり → 更新区分 = 修正				Y				
-	9		連動明細なし かつ 金額 ≠ null/0 かつ 入力情報なし → 更新区分 = 登録		Y						
-	10		連動明細なし かつ 金額 ≠ null/0 かつ 入力情報あり → 更新区分 = 修正							Y	
-	11		連動明細あり かつ 金額 = 連動明細.金額 かつ 入力情報なし → 更新区分 = null					Y			
-	12		連動明細あり かつ 金額 = 連動明細.金額 かつ 入力情報あり → 更新区分 = 修正								Y
-	13		連動明細あり かつ 金額 ≠ 連動明細.金額 かつ 入力情報なし → 更新区分 = 登録		Y				Y		
-	14		連動明細あり かつ 金額 ≠ 連動明細.金額 かつ 入力情報あり → 更新区分 = 修正							Y	Y
-			仕様4(1): 更新区分 = 登録の場合、論理削除レコードチェックを行う								
-	15		論理削除レコードあり → 更新区分を登録から修正に変更する（アーキレビュー指摘№16）		Y				Y		
-	16		論理削除レコードなし → 更新区分は登録のまま								
-			仕様4(2): 更新区分 = 登録の場合（論理削除なし）、人件費情報入力の登録を行う								
-	17		人件費情報入力リポジトリ.insert処理が実行される		Y				Y		
-			仕様4(3): 更新区分 = 修正の場合、人件費情報入力の更新を行う								
-	18		人件費情報入力リポジトリ.update処理が実行される（削除区分 = 有効、金額 = ローカル変数.金額）				Y			Y	Y
-			仕様5: 更新区分 = 登録または修正 かつ 連動明細情報なしの場合、人件費連動情報明細も登録する								
-	19		連動明細情報なし かつ 更新区分 = 登録/修正 → 人件費連動情報明細リポジトリ.insert処理が実行される（金額 = null）		Y		Y				
-	20		連動明細情報あり → 人件費連動情報明細のinsert処理をスキップする						Y	Y	Y
+テストケースNo.			case 1	case 2	case 3	case 4	case 5	case 6	case 7	case 8
+	No.	テストケース条件内容
+テストケース条件		private⑫: modifyNyuryokuData								
+	1	連動明細: 								
+	2	 あり					Y	Y	Y	Y
+	3	連動明細: 								
+	4	 なし	Y	Y	Y	Y				
+	5	登録モード / 連動明細なし / 金額=null/0 → 更新区分=null	Y							
+	6	登録モード / 連動明細なし / 金額≠null/0 → 更新区分=登録		Y						
+	7	登録モード / 連動明細あり / 金額=連動明細金額 → 更新区分=null					Y			
+	8	登録モード / 連動明細あり / 金額≠連動明細金額 → 更新区分=登録						Y		
+	9	修正モード / 連動明細なし / 金額=null/0 / 入力情報なし → 更新区分=null			Y					
+	10	修正モード / 連動明細なし / 金額=null/0 / 入力情報あり → 更新区分=修正				Y				
+	11	修正モード / 連動明細なし / 金額≠null/0 / 入力情報なし → 更新区分=登録		Y						
+	12	修正モード / 連動明細なし / 金額≠null/0 / 入力情報あり → 更新区分=修正							Y	
+	13	修正モード / 連動明細あり / 金額=連動明細金額 / 入力情報なし → 更新区分=null					Y			
+	14	修正モード / 連動明細あり / 金額=連動明細金額 / 入力情報あり → 更新区分=修正								Y
+	15	修正モード / 連動明細あり / 金額≠連動明細金額 / 入力情報なし → 更新区分=登録		Y				Y		
+	16	修正モード / 連動明細あり / 金額≠連動明細金額 / 入力情報あり → 更新区分=修正							Y	Y
+	17	更新区分=登録 / 論理削除レコードあり → 修正に変更		Y				Y		
+	18	更新区分=登録 / 論理削除レコードなし → insertのまま								
+	19	更新区分=登録 → 人件費情報入力リポジトリ.insert実行		Y				Y		
+	20	更新区分=修正 → 人件費情報入力リポジトリ.update実行				Y			Y	Y
+	21	連動明細なし / 更新区分=登録/修正 → 連動明細リポジトリ.insert実行		Y		Y				
+	22	連動明細あり → 連動明細リポジトリ.insertスキップ						Y	Y	Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4	5	6	7	8
-			DB操作の確認								
-	1		insert処理が実行されること		○				○		
-	2		update処理が実行されること				○			○	○
-	3		insert/update処理が実行されないこと	○		○		○			
-			例外の確認								
-	4		正常終了すること	○	○	○	○	○	○	○	○
+	No.	確認項目内容	1	2	3	4	5	6	7	8
+		DB操作の確認								
+	1	insert処理が実行されること		○				○		
+	2	update処理が実行されること				○			○	○
+	3	insert/update処理が実行されないこと	○		○		○			
+		例外の確認								
+	4	正常終了すること	○	○	○	○	○	○	○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4	5	6	7	8
-	1		モック設定値・戻り値一覧	○	○	○	○	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○	○	○
+	No.	確認項目内容	1	2	3	4	5	6	7	8
+	1	モック設定値・戻り値一覧	○	○	○	○	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○	○	○
 
 ## LSheet32
 
-テストケースNo.				case 1	case 2	case 3	case 4	case 5
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件								
-private⑬: getTenpuFileShoriKbn								
-			仕様1: マトリクスに従い添付ファイルの処理区分を判定する					
-	1		更新前ID = null かつ 添付ファイルID = null かつ アップロードファイル = null → 定数.添付ファイル処理区分.処理なしを返却する	Y				
-	2		更新前ID = null かつ 添付ファイルID = null かつ アップロードファイル = あり → 定数.添付ファイル処理区分.アップロードを返却する		Y			
-	3		更新前ID = あり かつ 添付ファイルID = null かつ アップロードファイル = null → 定数.添付ファイル処理区分.削除を返却する			Y		
-	4		更新前ID = あり かつ 添付ファイルID = null かつ アップロードファイル = あり → 定数.添付ファイル処理区分.削除・アップロードを返却する				Y	
-	5		更新前ID = あり かつ 添付ファイルID = あり かつ アップロードファイル = null → 定数.添付ファイル処理区分.処理なしを返却する					Y
+テストケースNo.			case 1	case 2	case 3	case 4	case 5
+	No.	テストケース条件内容
+テストケース条件		private⑬: getTenpuFileShoriKbn					
+	1	更新前ID=null / 添付ファイルID=null / アップロード=null → 処理なし	Y				
+	2	更新前ID=null / 添付ファイルID=null / アップロード=あり → アップロード		Y			
+	3	更新前ID=あり / 添付ファイルID=null / アップロード=null → 削除			Y		
+	4	更新前ID=あり / 添付ファイルID=null / アップロード=あり → 削除・アップロード				Y	
+	5	更新前ID=あり / 添付ファイルID=あり / アップロード=null → 処理なし					Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4	5
-			戻り値の確認					
-	1		定数.添付ファイル処理区分.処理なしが返却されること	○				○
-	2		定数.添付ファイル処理区分.アップロードが返却されること		○			
-	3		定数.添付ファイル処理区分.削除が返却されること			○		
-	4		定数.添付ファイル処理区分.削除・アップロードが返却されること				○	
-			例外の確認					
-	5		正常終了すること	○	○	○	○	○
+	No.	確認項目内容	1	2	3	4	5
+		戻り値の確認					
+	1	定数.添付ファイル処理区分.処理なしが返却されること	○				○
+	2	定数.添付ファイル処理区分.アップロードが返却されること		○			
+	3	定数.添付ファイル処理区分.削除が返却されること			○		
+	4	定数.添付ファイル処理区分.削除・アップロードが返却されること				○	
+		例外の確認					
+	5	正常終了すること	○	○	○	○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4	5
-	1		モック設定値・戻り値一覧	○	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○
+	No.	確認項目内容	1	2	3	4	5
+	1	モック設定値・戻り値一覧	○	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○
 
 ## LSheet33
 
-テストケースNo.				case 1	case 2	case 3	case 4	case 5	case 6
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件									
-private⑭: validateRelatedConfirm									
-			仕様: 処理モードによる分岐						
-	1		処理モード = 承認依頼取下 → チェックなし（処理終了）	Y					
-	2		処理モード = 照会 → チェックなし（処理終了）		Y				
-	3		処理モード = 登録 かつ confirmListDetailDtoList = null/0件 → チェックなし（処理終了）			Y			
-	4		処理モード = 登録 かつ confirmListDetailDtoList ≥ 1件 → チェックを実施する				Y	Y	Y
-			仕様1(2)ア: 処理モード = 登録の場合、入力区分 = 給与支給または給与控除の金額チェックを行う						
-	5		確認一覧に入力区分 = 給与支給/給与控除のデータあり かつ 給与支給額合計 = 給与控除額合計 → エラーなし				Y		
-	6		確認一覧に入力区分 = 給与支給/給与控除のデータあり かつ 給与支給額合計 ≠ 給与控除額合計 → DAC00171E（給与支給額合計と給与控除額合計が一致しません）をエラーリストに追加する					Y	
-			仕様1(2)イ: 処理モード = 登録の場合、入力区分 = 預貯金の金額チェックを行う						
-	7		確認一覧に入力区分 = 預貯金のデータあり かつ 預貯金支給額合計 = 預貯金控除額合計 → エラーなし				Y		
-	8		確認一覧に入力区分 = 預貯金のデータあり かつ 預貯金支給額合計 ≠ 預貯金控除額合計 → DAC00174E（預貯金支給額合計と預貯金控除額合計が一致しません）をエラーリストに追加する						Y
-			仕様2: エラーリストが1件以上の場合、BusinessValidationExceptionをスローする						
-	9		エラーリスト = 0件 → BusinessValidationExceptionをスローしない	Y	Y	Y	Y		
-	10		エラーリスト ≥ 1件 → BusinessValidationExceptionをスローする					Y	Y
+テストケースNo.			case 1	case 2	case 3	case 4	case 5	case 6
+	No.	テストケース条件内容
+テストケース条件		private⑭: validateRelatedConfirm						
+	1	処理モード: 						
+	2	 承認依頼取下 → チェックなし	Y					
+	3	処理モード: 						
+	4	 照会 → チェックなし		Y				
+	5	処理モード: 						
+	6	 登録 / confirmListDetailDtoList=null/0件 → チェックなし			Y			
+	7	処理モード: 						
+	8	 登録 / confirmListDetailDtoList≥1件 → チェック実施				Y	Y	Y
+	9	給与支給額合計 = 給与控除額合計 → エラーなし				Y		
+	10	給与支給額合計 ≠ 給与控除額合計 → DAC00171E追加					Y	
+	11	預貯金支給額合計 = 預貯金控除額合計 → エラーなし				Y		
+	12	預貯金支給額合計 ≠ 預貯金控除額合計 → DAC00174E追加						Y
+	13	エラーリスト: 						
+	14	 0件 → 正常終了	Y	Y	Y	Y		
+	15	エラーリスト: 						
+	16	 1件以上 → BusinessValidationException					Y	Y
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3	4	5	6
-			例外の確認						
-	1		正常終了すること（エラーなし）	○	○	○	○		
-	2		BusinessValidationExceptionがスローされること					○	○
+	No.	確認項目内容	1	2	3	4	5	6
+		例外の確認						
+	1	正常終了すること（エラーなし）	○	○	○	○		
+	2	BusinessValidationExceptionがスローされること					○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3	4	5	6
-	1		モック設定値・戻り値一覧	○	○	○	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○
+	No.	確認項目内容	1	2	3	4	5	6
+	1	モック設定値・戻り値一覧	○	○	○	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○	○	○	○
 
 ## LSheet34
 
-テストケースNo.				case 1	case 2	case 3
-	No.	テストケース（省略）	テストケース条件内容
-テストケース条件						
-private⑮: getMeisaiKingaku						
-			仕様1: ローカル変数.検索条件に各パラメータ（削除区分 = 有効、支給日、業種コード、所属コード等）を設定する			
-	1		検索条件が正しく設定される	Y	Y	Y
-			仕様2: 人件費情報入力リポジトリ.find（select）を実行する			
-	2		人件費情報入力リポジトリ.findの結果あり（1件以上）→ 金額をローカル変数.金額に設定する	Y		
-	3		人件費情報入力リポジトリ.findの結果なし（null/0件）→ 人件費連動情報明細リポジトリ.findを実行する		Y	Y
-			仕様3: 人件費情報入力の結果なしの場合、人件費連動情報明細リポジトリ.find（select）を実行する			
-	4		人件費連動情報明細リポジトリ.findの結果あり（1件以上）→ 金額をローカル変数.金額に設定する		Y	
-	5		人件費連動情報明細リポジトリ.findの結果なし（null/0件）→ ローカル変数.金額はnullのまま			Y
-			仕様4: ローカル変数.金額がnullの場合、0を設定する			
-	6		ローカル変数.金額 = null → 0（BigDecimal.ZERO）を設定する			Y
-	7		ローカル変数.金額 ≠ null → そのまま	Y	Y	
+テストケースNo.			case 1	case 2	case 3
+	No.	テストケース条件内容
+テストケース条件		private⑮: getMeisaiKingaku			
+	1	人件費情報入力リポジトリ.find: 			
+	2	 1件以上 → 金額設定	Y		
+	3	人件費情報入力リポジトリ.find: 			
+	4	 null/0件 → 連動明細リポジトリ.find実行		Y	Y
+	5	連動明細リポジトリ.find: 			
+	6	 1件以上 → 金額設定		Y	
+	7	連動明細リポジトリ.find: 			
+	8	 null/0件 → 金額=null			Y
+	9	金額: 			
+	10	 null → 0設定			Y
+	11	金額: 			
+	12	 not null → そのまま	Y	Y	
 
 ### 【セクション②】確認項目
-	No.		確認項目内容	1	2	3
-			戻り値の確認			
-	1		金額（BigDecimal）が返却されること	○	○	
-	2		0（BigDecimal.ZERO）が返却されること			○
-			例外の確認			
-	3		正常終了すること	○	○	○
+	No.	確認項目内容	1	2	3
+		戻り値の確認			
+	1	金額（BigDecimal）が返却されること	○	○	
+	2	0（BigDecimal.ZERO）が返却されること			○
+		例外の確認			
+	3	正常終了すること	○	○	○
 
 ### 【セクション③】エビデンス
-	No.		確認項目内容	1	2	3
-	1		モック設定値・戻り値一覧	○	○	○
-	2		スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
+	No.	確認項目内容	1	2	3
+	1	モック設定値・戻り値一覧	○	○	○
+	2	スローされた例外の型・メッセージ（例外ケースのみ）	○	○	○
