@@ -1,0 +1,508 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryMpr">
+
+  <!-- =========================================================== -->
+  <!-- 人件費情報入力一覧検索結果取得                                    -->
+  <!-- =========================================================== -->
+  <select id="getSearchResultList"
+    parameterType="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntrySearchDto"
+    resultType="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryListDetailDto">
+    <bind name="DAA_CommonsCns"
+      value="@java.lang.Class@forName('jp.or.hokuren.daa.def.DAA_CommonsCns')"/>
+    <bind name="SAKZYO_KBN_YUKO" value="DAA_CommonsCns.getField('SAKZYO_KBN_YUKO').get(null)"/>
+    <bind name="DAC2015_LaborCostInfoEntryCns"
+      value="@java.lang.Class@forName('jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryCns')"/>
+    <bind name="SHONINJO_KBN_MISHUSEI"    value="DAC2015_LaborCostInfoEntryCns.getField('SHONINJO_KBN_MISHUSEI').get(null)"/>
+    <bind name="SHONINJO_KBN_SASHIMODOSHI" value="DAC2015_LaborCostInfoEntryCns.getField('SHONINJO_KBN_SASHIMODOSHI').get(null)"/>
+    <bind name="SHONINJO_KBN_SHITAGAKI_HOZON" value="DAC2015_LaborCostInfoEntryCns.getField('SHONINJO_KBN_SHITAGAKI_HOZON').get(null)"/>
+    <bind name="SHONINJO_KBN_SHONINIRAICHU" value="DAC2015_LaborCostInfoEntryCns.getField('SHONINJO_KBN_SHONINIRAICHU').get(null)"/>
+    <bind name="SHONINJO_KBN_SHONINZUMI"  value="DAC2015_LaborCostInfoEntryCns.getField('SHONINJO_KBN_SHONINZUMI').get(null)"/>
+    select
+        H.DEMPYO_NO                          as dempyoNo
+      , H.SHINSEI_NO                         as shinseiNo
+      , H.SHONINJO_KBN                       as shoninJokyoKbn
+      , case H.SHONINJO_KBN
+          when '${SHONINJO_KBN_MISHUSEI}'        then '未処理'
+          when '${SHONINJO_KBN_SASHIMODOSHI}'    then '差戻し'
+          when '${SHONINJO_KBN_SHITAGAKI_HOZON}' then '下書き保存'
+          when '${SHONINJO_KBN_SHONINIRAICHU}'   then '承認依頼中'
+          when '${SHONINJO_KBN_SHONINZUMI}'      then '承認済み'
+          else H.SHONINJO_KBN
+        end                                  as shoninJokyo
+      , H.KOSHINBI                           as koshinbi
+      , H.KEIRBI                             as keiribi
+      , H.KOSHINSHA                          as koshinsha
+      , H.SHIKYUBI                           as shikyubi
+      , H.NYURYOKU_KBN                       as nyuryokuKbnCd
+      , H.HAITA_CNT                          as haitaCnt
+      , H.DEMPYO_NO_KYUYO_KOJO              as dempyoNoKyuyoKojo
+      , H.SHINSEI_NO_KYUYO_KOJO             as shinseiNoKyuyoKojo
+      , H.HAITA_CNT_KYUYO_KOJO             as haitaCntKyuyoKojo
+      , (select count(1)
+           from DAC213_JINKENHI_JOHO_NYURYOKU M
+          where M.SHIKYUBI = H.SHIKYUBI
+            and M.NYURYOKU_KBN = H.NYURYOKU_KBN)   as rendoDataSokensu
+      , (select count(1)
+           from DAC213_JINKENHI_JOHO_NYURYOKU M
+          where M.SHIKYUBI = H.SHIKYUBI
+            and M.NYURYOKU_KBN = H.NYURYOKU_KBN
+            and M.SHUSEI_FLG = '1')                 as shuseiSokensu
+    from
+        DAA301_JINKENHI_RENDO_JOHO_HEADER H
+    where
+        H.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
+        <if test="taishoNengetsuFrom != null">
+          and H.SHIKYUBI >= #{taishoNengetsuFrom}
+        </if>
+        <if test="taishoNengetsuTo != null">
+          and H.SHIKYUBI &lt;= #{taishoNengetsuTo}
+        </if>
+        <if test="shoninJokyoMishusei or shoninJokyoSashimodoshi or shoninJokyoShitagakiHozon or shoninJokyoShoninIraichu or shoninJokyoShoninzumi">
+          and H.SHONINJO_KBN in
+          <foreach open="(" separator="," close=")">
+            <if test="shoninJokyoMishusei">
+              '${SHONINJO_KBN_MISHUSEI}'
+            </if>
+            <if test="shoninJokyoSashimodoshi">
+              ,'${SHONINJO_KBN_SASHIMODOSHI}'
+            </if>
+            <if test="shoninJokyoShitagakiHozon">
+              ,'${SHONINJO_KBN_SHITAGAKI_HOZON}'
+            </if>
+            <if test="shoninJokyoShoninIraichu">
+              ,'${SHONINJO_KBN_SHONINIRAICHU}'
+            </if>
+            <if test="shoninJokyoShoninzumi">
+              ,'${SHONINJO_KBN_SHONINZUMI}'
+            </if>
+          </foreach>
+        </if>
+    order by
+        H.SHIKYUBI desc
+      , H.NYURYOKU_KBN asc
+  </select>
+
+  <!-- =========================================================== -->
+  <!-- 人件費情報基本入力一覧取得                                        -->
+  <!-- =========================================================== -->
+  <select id="getLaborCostInfoEntryBasicInputList"
+    parameterType="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryBasicInputSearchDto"
+    resultType="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryBasicInputListDetailDto">
+    <bind name="DAA_CommonsCns"
+      value="@java.lang.Class@forName('jp.or.hokuren.daa.def.DAA_CommonsCns')"/>
+    <bind name="SAKZYO_KBN_YUKO" value="DAA_CommonsCns.getField('SAKZYO_KBN_YUKO').get(null)"/>
+    select
+        N.SHIKYUBI                           as shikyubi
+      , N.NYURYOKU_KBN                       as nyuryokuKbnCd
+      , N.KYUYO_KBN                          as kyuyoKbnCd
+      , N.KYUYO_KASHO_CD                     as kyuyoKashoCd
+      , N.KAMOKU_BUNRUI_CD                   as kamokuBunruiCd
+      , N.KAMOKU_KBN_CD                      as kamokuKbnCd
+      , N.GYOSHU_CD                          as gyoshuCd
+      , N.SHOZOKU_CD                         as shozokuCd
+      , N.KOSHINSHA                          as koshinsha
+      , N.KOSHINBI                           as koshinbi
+      , N.SHIHARASAKI_KBN                    as shiharaisakiKbn
+      , N.SHIHARASAKI_CD                     as shiharaisakiCd
+      , N.SHIHARAI_YOTEBI                    as shiharaiYoteibi
+    from
+        DAC213_JINKENHI_JOHO_NYURYOKU N
+    where
+        N.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
+        and N.SHIKYUBI = #{shikyubi}
+        and N.NYURYOKU_KBN = #{listDetailNyuryokuKbnCd}
+        <if test="nyuryokuKbnCd != null and nyuryokuKbnCd != ''">
+          and N.NYURYOKU_KBN = #{nyuryokuKbnCd}
+        </if>
+        <if test="kyuyoKbnCd != null and kyuyoKbnCd != ''">
+          and N.KYUYO_KBN = #{kyuyoKbnCd}
+        </if>
+        <if test="kyuyoKashoCd != null and kyuyoKashoCd != ''">
+          and N.KYUYO_KASHO_CD = #{kyuyoKashoCd}
+        </if>
+        <if test="kamokuBunruiCd != null and kamokuBunruiCd != ''">
+          and N.KAMOKU_BUNRUI_CD = #{kamokuBunruiCd}
+        </if>
+        <if test="kamokuKbnCd != null and kamokuKbnCd != ''">
+          and N.KAMOKU_KBN_CD = #{kamokuKbnCd}
+        </if>
+        <if test="gyoshuCd != null and gyoshuCd != ''">
+          and N.GYOSHU_CD = #{gyoshuCd}
+        </if>
+        <if test="shozokuCd != null and shozokuCd != ''">
+          and N.SHOZOKU_CD = #{shozokuCd}
+        </if>
+    order by
+        N.NYURYOKU_KBN asc
+      , N.KYUYO_KBN asc
+      , N.KYUYO_KASHO_CD asc
+      , N.KAMOKU_BUNRUI_CD asc
+      , N.KAMOKU_KBN_CD asc
+      , N.GYOSHU_CD asc
+      , N.SHOZOKU_CD asc
+  </select>
+
+  <!-- =========================================================== -->
+  <!-- 人件費情報基本入力取得                                           -->
+  <!-- =========================================================== -->
+  <select id="getLaborCostInfoEntryBasicInput"
+    parameterType="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryListDetailDto"
+    resultType="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryBasicInputDto">
+    <bind name="DAA_CommonsCns"
+      value="@java.lang.Class@forName('jp.or.hokuren.daa.def.DAA_CommonsCns')"/>
+    <bind name="SAKZYO_KBN_YUKO" value="DAA_CommonsCns.getField('SAKZYO_KBN_YUKO').get(null)"/>
+    select
+        H.SHIKYUBI                           as shikyubi
+      , H.TENPU_FILE_ID_1                    as tenpuFileId1
+      , H.TENPU_FILE_ID_2                    as tenpuFileId2
+      , H.TENPU_FILE_ID_3                    as tenpuFileId3
+      , H.TENPU_FILE_SUU                     as tenpuFileSuu
+      , H.SANSHO_URL                         as sanshoUrl
+      , H.HAITA_CNT                          as haitaCnt
+      , H.HAITA_CNT_KYUYO_KOJO             as haitaCntKyuyoKojo
+    from
+        DAA301_JINKENHI_RENDO_JOHO_HEADER H
+    where
+        H.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
+        and H.DEMPYO_NO = #{dempyoNo}
+  </select>
+
+  <!-- =========================================================== -->
+  <!-- 人件費連動情報ヘッダ更新                                          -->
+  <!-- =========================================================== -->
+  <update id="updateJinkenhiRendoJohoHeader"
+    parameterType="jp.or.hokuren.dac.view.dac2015.DAC2015_JinkenhiRendoJohoHeaderDto">
+    update DAA301_JINKENHI_RENDO_JOHO_HEADER
+    set
+        LSTUPD_DTM               = CURRENT TIMESTAMP
+      , LSTUPD_USER_ID           = #{lstupdUserId}
+      , HAITA_CNT                = #{haitaCnt}
+      , SHONINJO_KBN             = #{shoninJokyoKbn}
+      , NYURYOKU_USER_ID         = #{nyuryokuUserId}
+      , TENPU_FILE_ID_1          = #{tenpuFileId1}
+      , TENPU_FILE_ID_2          = #{tenpuFileId2}
+      , TENPU_FILE_ID_3          = #{tenpuFileId3}
+      , SANSHO_URL               = #{sanshoUrl}
+      , SHINSEI_NO               = #{shinseiNo}
+      , SHINSEI_IRAISHA_USER_ID  = #{shoninIraishaUserId}
+    where
+        DEMPYO_NO = #{dempyoNo}
+        and HAITA_CNT = #{haitaCnt}
+  </update>
+
+  <!-- =========================================================== -->
+  <!-- 人件費情報明細入力情報取得                                        -->
+  <!-- =========================================================== -->
+  <select id="getLaborCostDetailInfo"
+    parameterType="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryBasicInputListDetailDto"
+    resultType="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryDetailInputDto">
+    <bind name="DAA_CommonsCns"
+      value="@java.lang.Class@forName('jp.or.hokuren.daa.def.DAA_CommonsCns')"/>
+    <bind name="SAKZYO_KBN_YUKO" value="DAA_CommonsCns.getField('SAKZYO_KBN_YUKO').get(null)"/>
+    <bind name="DAC2015_LaborCostInfoEntryCns"
+      value="@java.lang.Class@forName('jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryCns')"/>
+    select
+        max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1010' then M.KINGAKU end) as kyuyoShikyuKihonKyu
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1010' then M.HAITA_CNT end) as kyuyoShikyuKihonKyuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1020' then M.KINGAKU end) as kyuyoShikyuSeikatsuHoshoKyu
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1020' then M.HAITA_CNT end) as kyuyoShikyuSeikatsuhoshoKyuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1030' then M.KINGAKU end) as kyuyoShikyuShokiKyu
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1030' then M.HAITA_CNT end) as kyuyoShikyuShokiKyuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1040' then M.KINGAKU end) as kyuyoShikyuNinchiShoreiFu
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1040' then M.HAITA_CNT end) as kyuyoShikyuNinchiShoreiFuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1050' then M.KINGAKU end) as kyuyoShikyuShokunoCateShoreiFu
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1050' then M.HAITA_CNT end) as kyuyoShikyuShokunoCateShoreiFuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1060' then M.KINGAKU end) as kyuyoShikyuJidoKinmu
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1060' then M.HAITA_CNT end) as kyuyoShikyuJidoKinmuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1070' then M.KINGAKU end) as kyuyoShikyuJidoTokubetsuKinmu
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1070' then M.HAITA_CNT end) as kyuyoShikyuJidoTokubetsuKinmuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1080' then M.KINGAKU end) as kyuyoShikyuTsukinkotsuHi
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1080' then M.HAITA_CNT end) as kyuyoShikyuTsukinkotsuHiHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1090' then M.KINGAKU end) as kyuyoShikyuSonotaTeate
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1090' then M.HAITA_CNT end) as kyuyoShikyuSonotaTeateHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1100' then M.KINGAKU end) as kyuyoShikyuZangyo
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1100' then M.HAITA_CNT end) as kyuyoShikyuZangyoHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2010' then M.KINGAKU end) as kyuyoKojoKenkoHokenryo
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2010' then M.HAITA_CNT end) as kyuyoKojoKenkoHokenryoHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2020' then M.KINGAKU end) as kyuyoKojoKaigoHokenryo
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2020' then M.HAITA_CNT end) as kyuyoKojoKaigoHokenryoHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2030' then M.KINGAKU end) as kyuyoKojoKoseiNenkinHokenryo
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2030' then M.HAITA_CNT end) as kyuyoKojoKoseiNenkinHokenryoHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2040' then M.KINGAKU end) as kyuyoKojoKoyoHokenryo
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2040' then M.HAITA_CNT end) as kyuyoKojoKoyoHokenryoHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2050' then M.KINGAKU end) as kyuyoKojoShakaiHoken
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2050' then M.HAITA_CNT end) as kyuyoKojoShakaiHokenHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2060' then M.KINGAKU end) as kyuyoKojoShotokuZei
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2060' then M.HAITA_CNT end) as kyuyoKojoShotokuZeiHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2070' then M.KINGAKU end) as kyuyoKojoJuminZei
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2070' then M.HAITA_CNT end) as kyuyoKojoJuminZeiHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2080' then M.KINGAKU end) as kyuyoKojoShakaiHokenTaseiChu
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2080' then M.HAITA_CNT end) as kyuyoKojoShakaiHokenTaseiChuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2090' then M.KINGAKU end) as kyuyoKojoKyosai
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2090' then M.HAITA_CNT end) as kyuyoKojoKyosaiHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2100' then M.KINGAKU end) as kyuyoKojoRodoKumiai
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2100' then M.HAITA_CNT end) as kyuyoKojoRodoKumiaiHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2110' then M.KINGAKU end) as kyuyoKojoJutakuKashitsukekinHenkai
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2110' then M.HAITA_CNT end) as kyuyoKojoJutakuKashitsukekinHenkaiHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2120' then M.KINGAKU end) as kyuyoKojoTanshinfuninHiyo
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2120' then M.HAITA_CNT end) as kyuyoKojoTanshinfuninHiyoHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2130' then M.KINGAKU end) as kyuyoKojoSenryoShohi
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2130' then M.HAITA_CNT end) as kyuyoKojoSenryoShohiHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2140' then M.KINGAKU end) as kyuyoKojoHonkaiJutakuKashitsukekinhenkai
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2140' then M.HAITA_CNT end) as kyuyoKojoHonkaiJutakuKashitsukekinHenkaiHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2150' then M.KINGAKU end) as kyuyoKojoFukushiKikin
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2150' then M.HAITA_CNT end) as kyuyoKojoFukushiKikinHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2160' then M.KINGAKU end) as kyuyoKojoSonotaKojo
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2160' then M.HAITA_CNT end) as kyuyoKojoSonotaKojoHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2170' then M.KINGAKU end) as kyuyoKojoZaisan1
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2170' then M.HAITA_CNT end) as kyuyoKojoZaisan1HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2180' then M.KINGAKU end) as kyuyoKojoZaisan2
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2180' then M.HAITA_CNT end) as kyuyoKojoZaisan2HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2190' then M.KINGAKU end) as kyuyoKojoZaisan3
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2190' then M.HAITA_CNT end) as kyuyoKojoZaisan3HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2200' then M.KINGAKU end) as kyuyoKojoZaisan4
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2200' then M.HAITA_CNT end) as kyuyoKojoZaisan4HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2210' then M.KINGAKU end) as kyuyoKojoZaisan5
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2210' then M.HAITA_CNT end) as kyuyoKojoZaisan5HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2220' then M.KINGAKU end) as kyuyoKojoZaisan6
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2220' then M.HAITA_CNT end) as kyuyoKojoZaisan6HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2230' then M.KINGAKU end) as kyuyoKojoGaibuZaisanKeiseiKakekin
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2230' then M.HAITA_CNT end) as kyuyoKojoGaibuZaisanKeiseiKakekinHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2240' then M.KINGAKU end) as kyuyoKojoShoreikin
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2240' then M.HAITA_CNT end) as kyuyoKojoShoreikinHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2250' then M.KINGAKU end) as kyuyoKojoKyuyoKashitsuke
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2250' then M.HAITA_CNT end) as kyuyoKojoKyuyoKashitsukeHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2260' then M.KINGAKU end) as kyuyoKojoSonotaKojoSub
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2260' then M.HAITA_CNT end) as kyuyoKojoSonotaKojoSubHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3010' then M.KINGAKU end) as sashihikiShiharaiGaku
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3010' then M.HAITA_CNT end) as sashihikiShiharaiGakuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3020' then M.KINGAKU end) as sashihikiSonotaShiharai
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3020' then M.HAITA_CNT end) as sashihikiSonotaShiharaiHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3030' then M.KINGAKU end) as sashihikiFurikomiGaku
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3030' then M.HAITA_CNT end) as sashihikiFurikomiGakuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3040' then M.KINGAKU end) as sashihikiSonotaFuritsuke
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3040' then M.HAITA_CNT end) as sashihikiSonotaFuritsukeHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4010' then M.KINGAKU end) as kaifutanKenpoHokenryoKihoKenpo
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4010' then M.HAITA_CNT end) as kaifutanKenpoHokenryoKihoKenpoHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4020' then M.KINGAKU end) as kaifutanKenpoHokenryoKaigoHoken
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4020' then M.HAITA_CNT end) as kaifutanKenpoHokenryoKaigoHokenHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4030' then M.KINGAKU end) as kaifutanKenpoHokenryoKoyoHoken
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4030' then M.HAITA_CNT end) as kaifutanKenpoHokenryoKoyoHokenHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4040' then M.KINGAKU end) as kaifutanKenpoHokenryoRodoSaigaiHoken
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4040' then M.HAITA_CNT end) as kaifutanKenpoHokenryoRodoSaigaiHokenHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4050' then M.KINGAKU end) as kaifutanKenpoHokenryoTaisyokuKyufukinKyoshutsu
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4050' then M.HAITA_CNT end) as kaifutanKenpoHokenryoTaisyokuKyufukinKyoshutsuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4060' then M.KINGAKU end) as kaifutanKenpoHokenryoKyosai
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4060' then M.HAITA_CNT end) as kaifutanKenpoHokenryoKyosaiHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5010' then M.KINGAKU end) as kaifutanNenkinHokenryoKoseiNenkin
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5010' then M.HAITA_CNT end) as kaifutanNenkinHokenryoKoseiNenkinHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5020' then M.KINGAKU end) as kaifutanNenkinHokenryoKigyoNenkin
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5020' then M.HAITA_CNT end) as kaifutanNenkinHokenryoKigyoNenkinHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5030' then M.KINGAKU end) as kaifutanNenkinHokenryoTaisyokuIchijikingaku
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5030' then M.HAITA_CNT end) as kaifutanNenkinHokenryoTaisyokuIchijikingakuHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5040' then M.KINGAKU end) as kaifutanNenkinHokenryoTaisyokuNenkin
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5040' then M.HAITA_CNT end) as kaifutanNenkinHokenryoTaisyokuNenkinHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5050' then M.KINGAKU end) as kaifutanNenkinHokenryoNenkinFutan
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5050' then M.HAITA_CNT end) as kaifutanNenkinHokenryoNenkinFutanHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5060' then M.KINGAKU end) as kaifutanNenkinHokenryoKyosai
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5060' then M.HAITA_CNT end) as kaifutanNenkinHokenryoKyosaiHaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6010' then M.KINGAKU end) as yochokin1
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6010' then M.HAITA_CNT end) as yochokin1HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6020' then M.KINGAKU end) as yochokin2
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6020' then M.HAITA_CNT end) as yochokin2HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6030' then M.KINGAKU end) as yochokin3
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6030' then M.HAITA_CNT end) as yochokin3HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6040' then M.KINGAKU end) as yochokin4
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6040' then M.HAITA_CNT end) as yochokin4HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7010' then M.KINGAKU end) as yochokin5
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7010' then M.HAITA_CNT end) as yochokin5HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7020' then M.KINGAKU end) as yochokin6
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7020' then M.HAITA_CNT end) as yochokin6HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7030' then M.KINGAKU end) as yochokin7
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7030' then M.HAITA_CNT end) as yochokin7HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7040' then M.KINGAKU end) as yochokin8
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7040' then M.HAITA_CNT end) as yochokin8HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '8010' then M.KINGAKU end) as yochokin9
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '8010' then M.HAITA_CNT end) as yochokin9HaitaCnt
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '8020' then M.KINGAKU end) as yochokin10
+      , max(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '8020' then M.HAITA_CNT end) as yochokin10HaitaCnt
+    from
+        DAC213_JINKENHI_JOHO_NYURYOKU N
+        inner join DAA301_JINKENHI_RENDO_JOHO_MEISAI M
+          on  N.SHIKYUBI = M.SHIKYUBI
+          and N.NYURYOKU_KBN = M.NYURYOKU_KBN
+          and N.KYUYO_KBN = M.KYUYO_KBN
+          and N.KYUYO_KASHO_CD = M.KYUYO_KASHO_CD
+          and N.JINKENHI_KAMOKU_BUNRUI_CD = M.JINKENHI_KAMOKU_BUNRUI_CD
+          and N.JINKENHI_KAMOKU_KBN = M.JINKENHI_KAMOKU_KBN
+          and N.GYOSHU_CD = M.GYOSHU_CD
+          and N.SHOZOKU_CD = M.SHOZOKU_CD
+          and M.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
+    where
+        N.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
+        and N.SHIKYUBI = #{shikyubi}
+        and N.NYURYOKU_KBN = #{nyuryokuKbnCd}
+        and N.KYUYO_KBN = #{kyuyoKbnCd}
+        and N.KYUYO_KASHO_CD = #{kyuyoKashoCd}
+        and N.JINKENHI_KAMOKU_BUNRUI_CD = #{kamokuBunruiCd}
+        and N.JINKENHI_KAMOKU_KBN = #{kamokuKbnCd}
+        and N.GYOSHU_CD = #{gyoshuCd}
+        and N.SHOZOKU_CD = #{shozokuCd}
+    group by
+        N.SHIKYUBI
+      , N.NYURYOKU_KBN
+      , N.KYUYO_KBN
+      , N.KYUYO_KASHO_CD
+      , N.JINKENHI_KAMOKU_BUNRUI_CD
+      , N.JINKENHI_KAMOKU_KBN
+      , N.GYOSHU_CD
+      , N.SHOZOKU_CD
+    FETCH FIRST 1 ROWS ONLY
+  </select>
+
+  <!-- =========================================================== -->
+  <!-- 人件費情報連動一覧取得                                           -->
+  <!-- =========================================================== -->
+  <select id="getLaborCostInfoRendoList"
+    parameterType="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoRendoListSearchDto"
+    resultType="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoRendoListCsvDto">
+    <bind name="DAA_CommonsCns"
+      value="@java.lang.Class@forName('jp.or.hokuren.daa.def.DAA_CommonsCns')"/>
+    <bind name="SAKZYO_KBN_YUKO" value="DAA_CommonsCns.getField('SAKZYO_KBN_YUKO').get(null)"/>
+    select
+        N.SHIKYUBI                           as shikyubi
+      , N.NYURYOKU_KBN                       as nyuryokuKbnCd
+      , N.KYUYO_KBN                          as kyuyoKbnCd
+      , N.KYUYO_KASHO_CD                     as kyuyoKashoCd
+      , N.JINKENHI_KAMOKU_BUNRUI_CD          as kamokuBunruiCd
+      , N.JINKENHI_KAMOKU_KBN                as kamokuKbnCd
+      , N.GYOSHU_CD                          as gyoshuCd
+      , N.SHOZOKU_CD                         as shozokuCd
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1010' then M.KINGAKU else 0 end) as kyuyoShikyuKihonKyu
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1020' then M.KINGAKU else 0 end) as kyuyoShikyuSeikatsuhoshoKyu
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1030' then M.KINGAKU else 0 end) as kyuyoShikyuShokiKyu
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1040' then M.KINGAKU else 0 end) as kyuyoShikyuNinchiShoreiFu
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1050' then M.KINGAKU else 0 end) as kyuyoShikyuShokunoCateShoreiFu
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1060' then M.KINGAKU else 0 end) as kyuyoShikyuJidoKinmu
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1070' then M.KINGAKU else 0 end) as kyuyoShikyuJidoTokubetsuKinmu
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1080' then M.KINGAKU else 0 end) as kyuyoShikyuTsukinkotsuHi
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1090' then M.KINGAKU else 0 end) as kyuyoShikyuSonotaTeate
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '1100' then M.KINGAKU else 0 end) as kyuyoShikyuZangyo
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2010' then M.KINGAKU else 0 end) as kyuyoKojoKenkoHokenryo
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2020' then M.KINGAKU else 0 end) as kyuyoKojoKaigoHokenryo
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2030' then M.KINGAKU else 0 end) as kyuyoKojoKoseiNenkinHokenryo
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2040' then M.KINGAKU else 0 end) as kyuyoKojoKoyoHokenryo
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2050' then M.KINGAKU else 0 end) as kyuyoKojoShakaiHoken
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2060' then M.KINGAKU else 0 end) as kyuyoKojoShotokuZei
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2070' then M.KINGAKU else 0 end) as kyuyoKojoJuminZei
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2080' then M.KINGAKU else 0 end) as kyuyoKojoShakaiHokenTaseiChu
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2090' then M.KINGAKU else 0 end) as kyuyoKojoKyosai
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2100' then M.KINGAKU else 0 end) as kyuyoKojoRodoKumiai
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2110' then M.KINGAKU else 0 end) as kyuyoKojoJutakuKashitsukekinHenkai
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2120' then M.KINGAKU else 0 end) as kyuyoKojoTanshinfuninHiyo
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2130' then M.KINGAKU else 0 end) as kyuyoKojoSenryoShohi
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2140' then M.KINGAKU else 0 end) as kyuyoKojoHonkaiJutakuKashitsukekinhenkai
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2150' then M.KINGAKU else 0 end) as kyuyoKojoFukushiKikin
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2160' then M.KINGAKU else 0 end) as kyuyoKojoSonotaKojo
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2170' then M.KINGAKU else 0 end) as kyuyoKojoZaisan1
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2180' then M.KINGAKU else 0 end) as kyuyoKojoZaisan2
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2190' then M.KINGAKU else 0 end) as kyuyoKojoZaisan3
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2200' then M.KINGAKU else 0 end) as kyuyoKojoZaisan4
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2210' then M.KINGAKU else 0 end) as kyuyoKojoZaisan5
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2220' then M.KINGAKU else 0 end) as kyuyoKojoZaisan6
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2230' then M.KINGAKU else 0 end) as kyuyoKojoGaibuZaisanKeiseiKakekin
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2240' then M.KINGAKU else 0 end) as kyuyoKojoShoreikin
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2250' then M.KINGAKU else 0 end) as kyuyoKojoKyuyoKashitsuke
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '2260' then M.KINGAKU else 0 end) as kyuyoKojoSonotaKojoSub
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3010' then M.KINGAKU else 0 end) as sashihikiShiharaiGaku
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3020' then M.KINGAKU else 0 end) as sashihikiSonotaShiharai
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3030' then M.KINGAKU else 0 end) as sashihikiFurikomiGaku
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '3040' then M.KINGAKU else 0 end) as sashihikiSonotaFuritsuke
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4010' then M.KINGAKU else 0 end) as kaifutanKenpoHokenryoKihoKenpo
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4020' then M.KINGAKU else 0 end) as kaifutanKenpoHokenryoKaigoHoken
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4030' then M.KINGAKU else 0 end) as kaifutanKenpoHokenryoKoyoHoken
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4040' then M.KINGAKU else 0 end) as kaifutanKenpoHokenryoRodoSaigaiHoken
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4050' then M.KINGAKU else 0 end) as kaifutanKenpoHokenryoTaisyokuKyufukinKyoshutsu
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '4060' then M.KINGAKU else 0 end) as kaifutanKenpoHokenryoKyosai
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5010' then M.KINGAKU else 0 end) as kaifutanNenkinHokenryoKoseiNenkin
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5020' then M.KINGAKU else 0 end) as kaifutanNenkinHokenryoKigyoNenkin
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5030' then M.KINGAKU else 0 end) as kaifutanNenkinHokenryoTaisyokuIchijikingaku
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5040' then M.KINGAKU else 0 end) as kaifutanNenkinHokenryoTaisyokuNenkin
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5050' then M.KINGAKU else 0 end) as kaifutanNenkinHokenryoNenkinFutan
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '5060' then M.KINGAKU else 0 end) as kaifutanNenkinHokenryoKyosai
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6010' then M.KINGAKU else 0 end) as yochokin1
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6020' then M.KINGAKU else 0 end) as yochokin2
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6030' then M.KINGAKU else 0 end) as yochokin3
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '6040' then M.KINGAKU else 0 end) as yochokin4
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7010' then M.KINGAKU else 0 end) as yochokin5
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7020' then M.KINGAKU else 0 end) as yochokin6
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7030' then M.KINGAKU else 0 end) as yochokin7
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '7040' then M.KINGAKU else 0 end) as yochokin8
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '8010' then M.KINGAKU else 0 end) as yochokin9
+      , sum(case when M.JINKENHI_JOHO_NYURYOKU_KOMOKU_CD = '8020' then M.KINGAKU else 0 end) as yochokin10
+    from
+        DAC213_JINKENHI_JOHO_NYURYOKU N
+        inner join DAA301_JINKENHI_RENDO_JOHO_MEISAI M
+          on  N.SHIKYUBI = M.SHIKYUBI
+          and N.NYURYOKU_KBN = M.NYURYOKU_KBN
+          and N.KYUYO_KBN = M.KYUYO_KBN
+          and N.KYUYO_KASHO_CD = M.KYUYO_KASHO_CD
+          and N.JINKENHI_KAMOKU_BUNRUI_CD = M.JINKENHI_KAMOKU_BUNRUI_CD
+          and N.JINKENHI_KAMOKU_KBN = M.JINKENHI_KAMOKU_KBN
+          and N.GYOSHU_CD = M.GYOSHU_CD
+          and N.SHOZOKU_CD = M.SHOZOKU_CD
+          and M.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
+    where
+        N.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
+        and N.SHIKYUBI = #{basicInputSearchDto.shikyubi}
+        and N.NYURYOKU_KBN = #{basicInputSearchDto.listDetailNyuryokuKbnCd}
+        <if test="basicInputSelectionList != null and basicInputSelectionList.size() > 0">
+          and (N.NYURYOKU_KBN, N.KYUYO_KBN, N.KYUYO_KASHO_CD,
+               N.JINKENHI_KAMOKU_BUNRUI_CD, N.JINKENHI_KAMOKU_KBN, N.GYOSHU_CD, N.SHOZOKU_CD) in
+          <foreach item="item" collection="basicInputSelectionList" open="(" separator="," close=")">
+            (#{item.nyuryokuKbnCd}, #{item.kyuyoKbnCd}, #{item.kyuyoKashoCd},
+             #{item.kamokuBunruiCd}, #{item.kamokuKbnCd}, #{item.gyoshuCd}, #{item.shozokuCd})
+          </foreach>
+        </if>
+    group by
+        N.SHIKYUBI
+      , N.NYURYOKU_KBN
+      , N.KYUYO_KBN
+      , N.KYUYO_KASHO_CD
+      , N.JINKENHI_KAMOKU_BUNRUI_CD
+      , N.JINKENHI_KAMOKU_KBN
+      , N.GYOSHU_CD
+      , N.SHOZOKU_CD
+    order by
+        N.NYURYOKU_KBN asc
+      , N.KYUYO_KBN asc
+      , N.KYUYO_KASHO_CD asc
+      , N.JINKENHI_KAMOKU_BUNRUI_CD asc
+      , N.JINKENHI_KAMOKU_KBN asc
+      , N.GYOSHU_CD asc
+      , N.SHOZOKU_CD asc
+  </select>
+
+  <!-- =========================================================== -->
+  <!-- 取引先マスタ情報取得                                             -->
+  <!-- =========================================================== -->
+  <select id="getTorhkskMstInfo"
+    parameterType="jp.or.hokuren.dac.view.dac2015.DAC2015_TorhkskMstSearchDto"
+    resultType="jp.or.hokuren.dac.view.dac2015.DAC2015_TorhkskMstJohoDto">
+    <bind name="DAA_CommonsCns"
+      value="@java.lang.Class@forName('jp.or.hokuren.daa.def.DAA_CommonsCns')"/>
+    <bind name="SAKZYO_KBN_YUKO" value="DAA_CommonsCns.getField('SAKZYO_KBN_YUKO').get(null)"/>
+    select
+        T.TORHKSK_CD                         as torhkskCd
+      , T.TORHKSK_RYAKMEI_KJ                 as torhkskRyakmeiKj
+    from
+        V_AQA021_TORHKSK_MST T
+    where
+        T.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
+        and T.TORHKSK_CD = #{torhkskCd}
+        and #{taishoDate} between T.TEKIYO_KAISHIBI and T.TEKIYO_SHURYOBI
+    FETCH FIRST 1 ROWS ONLY
+  </select>
+
+</mapper>

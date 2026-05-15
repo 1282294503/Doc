@@ -1,0 +1,1205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="jakarta.faces.core"
+  xmlns:h="jakarta.faces.html"
+  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:aw="http://hokuren.or.jp/awa"
+  template="/AWA_layoutTemplate.xhtml">
+
+  <ui:param name="ctl" value="#{dac2015ctl}" />
+
+  <f:metadata>
+    <aw:InitAction
+      action="#{dac2015ctl.init}"
+      initialized="#{dac2015ctl.initialized}" />
+  </f:metadata>
+
+  <ui:define name="title">人件費情報入力</ui:define>
+
+  <ui:define name="body">
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns"           var="MessageNo" />
+    <p:importConstants type="jp.or.hokuren.dac.def.DAC_MessageNoCns"           var="DacMessageNo" />
+    <p:importConstants type="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryCns" var="Dac2015Cns" />
+
+    <h:form id="dac2015Form">
+
+      <!-- エラーメッセージパネル -->
+      <p:panel
+        id="errorMessagePanel"
+        header="エラー情報"
+        styleClass="error left"
+        rendered="#{fn:length(facesContext.messageList) > 0}">
+        <p:messages
+          id="errorMessages"
+          closable="false"
+          showIcon="false"
+          styleClass="bullet" />
+      </p:panel>
+
+      <!-- 操作メッセージ -->
+      <p:outputPanel id="operationMessagePanel" styleClass="box center"
+        rendered="#{fn:length(dac2015ctl.operationMessageList) > 0}">
+        <ui:repeat value="#{dac2015ctl.operationMessageList}" var="msg">
+          <p>#{msg}</p>
+        </ui:repeat>
+      </p:outputPanel>
+
+      <!-- ========================================================= -->
+      <!-- 検索画面                                                    -->
+      <!-- ========================================================= -->
+      <p:outputPanel id="searchScreenPanel"
+        rendered="#{dac2015ctl.gamenSeniKbn == Dac2015Cns.GAMEN_SENI_SHOKAI and dac2015ctl.processModeKbn == null}">
+
+        <!-- 検索条件入力パネル -->
+        <p:panel
+          id="searchConditionPanel"
+          header="検索条件"
+          toggleable="true"
+          toggleSpeed="100"
+          styleClass="fit">
+
+          <p:panelGrid columns="0" layout="tabular">
+
+            <!-- 対象年月From -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel for="taishoNengetsuFrom" value="対象年月" />
+              </p:column>
+              <p:column style="width: 80%">
+                <p:inputMask
+                  id="taishoNengetsuFrom"
+                  value="#{dac2015ctl.searchDto.taishoNengetsuFrom}"
+                  mask="9999/99"
+                  placeholder="YYYY/MM"
+                  autocomplete="off"
+                  size="10">
+                  <aw:TrimConverter />
+                </p:inputMask>
+                <p:outputLabel value="　〜　" />
+                <p:inputMask
+                  id="taishoNengetsuTo"
+                  value="#{dac2015ctl.searchDto.taishoNengetsuTo}"
+                  mask="9999/99"
+                  placeholder="YYYY/MM"
+                  autocomplete="off"
+                  size="10">
+                  <aw:TrimConverter />
+                </p:inputMask>
+              </p:column>
+            </p:row>
+
+            <!-- 承認状況 -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel value="承認状況" />
+              </p:column>
+              <p:column style="width: 80%">
+                <p:selectBooleanCheckbox
+                  id="shoninJokyoMishusei"
+                  value="#{dac2015ctl.searchDto.shoninJokyoMishusei}"
+                  itemLabel="未処理" />
+                <p:selectBooleanCheckbox
+                  id="shoninJokyoSashimodoshi"
+                  value="#{dac2015ctl.searchDto.shoninJokyoSashimodoshi}"
+                  itemLabel="差戻し"
+                  style="margin-left: 10px" />
+                <p:selectBooleanCheckbox
+                  id="shoninJokyoShitagakiHozon"
+                  value="#{dac2015ctl.searchDto.shoninJokyoShitagakiHozon}"
+                  itemLabel="下書き保存"
+                  style="margin-left: 10px" />
+                <p:selectBooleanCheckbox
+                  id="shoninJokyoShoninIraichu"
+                  value="#{dac2015ctl.searchDto.shoninJokyoShoninIraichu}"
+                  itemLabel="承認依頼中"
+                  style="margin-left: 10px" />
+                <p:selectBooleanCheckbox
+                  id="shoninJokyoShoninzumi"
+                  value="#{dac2015ctl.searchDto.shoninJokyoShoninzumi}"
+                  itemLabel="承認済み"
+                  style="margin-left: 10px" />
+              </p:column>
+            </p:row>
+
+          </p:panelGrid>
+
+          <!-- ボタンエリア -->
+          <f:facet name="footer">
+            <!-- クリアボタン -->
+            <p:commandButton
+              id="searchClearButton"
+              value="クリア"
+              styleClass="ui-button-secondary"
+              actionListener="#{dac2015ctl.clear}"
+              update="searchConditionPanel searchResultPanel"
+              process="@this" />
+            <!-- 検索ボタン -->
+            <p:commandButton
+              id="searchButton"
+              value="検索"
+              actionListener="#{dac2015ctl.search}"
+              update="errorMessagePanel searchResultPanel"
+              process="@form"
+              style="margin-left: 5px" />
+          </f:facet>
+
+        </p:panel>
+
+        <!-- 検索結果一覧パネル -->
+        <p:panel
+          id="searchResultPanel"
+          header="検索結果"
+          styleClass="fit"
+          rendered="#{fn:length(dac2015ctl.listDetailDtoList) > 0}">
+
+          <p:dataTable
+            id="searchResultTable"
+            value="#{dac2015ctl.listDetailDtoList}"
+            var="row"
+            selection="#{dac2015ctl.selectedListDetailDto}"
+            selectionMode="single"
+            rowKey="#{row.selectionId}"
+            styleClass="noWrap"
+            paginator="true"
+            rows="20"
+            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+            rowsPerPageTemplate="10,20,50"
+            currentPageReportTemplate="{startRecord}-{endRecord} / {totalRecords}件">
+
+            <p:column headerText="支給日" style="width: 100px">
+              <h:outputText value="#{row.shikyubi}">
+                <f:convertDateTime pattern="yyyy/MM/dd" />
+              </h:outputText>
+            </p:column>
+            <p:column headerText="入力区分" style="width: 80px">
+              <h:outputText value="#{row.nyuryokuKbnMeisho}" />
+            </p:column>
+            <p:column headerText="承認状況" style="width: 100px">
+              <h:outputText value="#{row.shoninJokyo}" />
+            </p:column>
+            <p:column headerText="更新日" style="width: 100px">
+              <h:outputText value="#{row.koshinbi}">
+                <f:convertDateTime pattern="yyyy/MM/dd" />
+              </h:outputText>
+            </p:column>
+            <p:column headerText="更新者" style="width: 100px">
+              <h:outputText value="#{row.koshinsha}" />
+            </p:column>
+            <p:column headerText="連動データ総件数" style="width: 120px; text-align: right">
+              <h:outputText value="#{row.rendoDataSokensu}" />
+            </p:column>
+            <p:column headerText="修正総件数" style="width: 100px; text-align: right">
+              <h:outputText value="#{row.shuseiSokensu}" />
+            </p:column>
+            <p:column headerText="伝票No" style="width: 120px">
+              <h:outputText value="#{row.dempyoNo}" />
+            </p:column>
+            <p:column headerText="申請No" style="width: 120px">
+              <h:outputText value="#{row.shinseiNo}" />
+            </p:column>
+            <p:column headerText="操作" style="width: 220px">
+              <!-- 修正・申請ボタン（未処理・差戻し・下書き保存のみ） -->
+              <p:commandButton
+                value="修正・申請"
+                styleClass="ui-button-secondary"
+                style="margin: 2px"
+                rendered="#{row.shoninJokyoKbn == Dac2015Cns.SHONINJO_KBN_MISHUSEI
+                          or row.shoninJokyoKbn == Dac2015Cns.SHONINJO_KBN_SASHIMODOSHI
+                          or row.shoninJokyoKbn == Dac2015Cns.SHONINJO_KBN_SHITAGAKI_HOZON}"
+                actionListener="#{dac2015ctl.nextInput}"
+                update="@form"
+                process="@this">
+                <f:setPropertyActionListener
+                  value="#{row}"
+                  target="#{dac2015ctl.selectedListDetailDto}" />
+              </p:commandButton>
+              <!-- 取下ボタン（承認依頼中のみ） -->
+              <p:commandButton
+                value="取下"
+                styleClass="ui-button-secondary"
+                style="margin: 2px"
+                rendered="#{row.shoninJokyoKbn == Dac2015Cns.SHONINJO_KBN_SHONINIRAICHU}"
+                actionListener="#{dac2015ctl.withdrawInput}"
+                update="@form"
+                process="@this">
+                <f:setPropertyActionListener
+                  value="#{row}"
+                  target="#{dac2015ctl.selectedListDetailDto}" />
+              </p:commandButton>
+              <!-- 照会ボタン（全状況） -->
+              <p:commandButton
+                value="照会"
+                styleClass="ui-button-secondary"
+                style="margin: 2px"
+                actionListener="#{dac2015ctl.inquiryInput}"
+                update="@form"
+                process="@this">
+                <f:setPropertyActionListener
+                  value="#{row}"
+                  target="#{dac2015ctl.selectedListDetailDto}" />
+              </p:commandButton>
+            </p:column>
+
+          </p:dataTable>
+
+        </p:panel>
+
+      </p:outputPanel>
+
+      <!-- ========================================================= -->
+      <!-- 基本入力画面                                                 -->
+      <!-- ========================================================= -->
+      <p:outputPanel id="basicInputScreenPanel"
+        rendered="#{dac2015ctl.gamenSeniKbn == Dac2015Cns.GAMEN_SENI_NYURYOKU and dac2015ctl.processModeKbn == null}">
+
+        <!-- ヘッダ情報パネル -->
+        <p:panel
+          id="basicInputHeaderPanel"
+          header="基本情報"
+          styleClass="fit">
+
+          <p:panelGrid columns="0" layout="tabular">
+
+            <!-- 支給日 -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel for="shikyubi" value="支給日">
+                  <span class="required">(*)</span>
+                </p:outputLabel>
+              </p:column>
+              <p:column style="width: 80%">
+                <p:datePicker
+                  id="shikyubi"
+                  value="#{dac2015ctl.basicInputDto.shikyubi}"
+                  pattern="yyyy/MM/dd"
+                  mask="true"
+                  placeholder="yyyy/MM/dd"
+                  autocomplete="off">
+                  <aw:RequiredValidator
+                    msgKnrNum="#{MessageNo.DAA00000E}"
+                    msgEmbedStr1="支給日" />
+                </p:datePicker>
+              </p:column>
+            </p:row>
+
+            <!-- 入力区分 -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel for="basicInputNyuryokuKbn" value="入力区分">
+                  <span class="required">(*)</span>
+                </p:outputLabel>
+              </p:column>
+              <p:column style="width: 80%">
+                <p:selectOneMenu
+                  id="basicInputNyuryokuKbn"
+                  value="#{dac2015ctl.basicInputSearchDto.nyuryokuKbnCd}"
+                  style="width: 200px">
+                  <f:selectItem itemValue="" itemLabel="-- 選択 --" />
+                  <f:selectItems
+                    value="#{dac2015ctl.basicInputNyuryokuKbnObjectList}"
+                    var="item"
+                    itemValue="#{item.code}"
+                    itemLabel="#{item.codeName}" />
+                </p:selectOneMenu>
+              </p:column>
+            </p:row>
+
+            <!-- 添付ファイル -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel value="添付ファイル" />
+              </p:column>
+              <p:column style="width: 80%">
+                <p:fileUpload
+                  id="tenpuFile1"
+                  value="#{dac2015ctl.basicInputDto.tenpuFile1}"
+                  mode="simple"
+                  skinSimple="true"
+                  allowTypes="/(\.|\/)(pdf|xlsx|xls|csv)$/"
+                  style="margin-bottom: 5px" />
+                <p:fileUpload
+                  id="tenpuFile2"
+                  value="#{dac2015ctl.basicInputDto.tenpuFile2}"
+                  mode="simple"
+                  skinSimple="true"
+                  allowTypes="/(\.|\/)(pdf|xlsx|xls|csv)$/"
+                  style="margin-bottom: 5px" />
+                <p:fileUpload
+                  id="tenpuFile3"
+                  value="#{dac2015ctl.basicInputDto.tenpuFile3}"
+                  mode="simple"
+                  skinSimple="true"
+                  allowTypes="/(\.|\/)(pdf|xlsx|xls|csv)$/" />
+              </p:column>
+            </p:row>
+
+            <!-- 参照URL -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel for="sanshoUrl" value="参照URL" />
+              </p:column>
+              <p:column style="width: 80%">
+                <p:inputText
+                  id="sanshoUrl"
+                  value="#{dac2015ctl.basicInputDto.sanshoUrl}"
+                  autocomplete="off"
+                  maxlength="300"
+                  size="60">
+                  <aw:TrimConverter />
+                </p:inputText>
+              </p:column>
+            </p:row>
+
+          </p:panelGrid>
+
+        </p:panel>
+
+        <!-- 基本入力検索条件パネル -->
+        <p:panel
+          id="basicInputSearchPanel"
+          header="明細検索条件"
+          toggleable="true"
+          toggleSpeed="100"
+          styleClass="fit">
+
+          <p:panelGrid columns="0" layout="tabular">
+
+            <!-- 給与区分 -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel for="kyuyoKbnCd" value="給与区分" />
+              </p:column>
+              <p:column style="width: 80%">
+                <p:selectOneMenu
+                  id="kyuyoKbnCd"
+                  value="#{dac2015ctl.basicInputSearchDto.kyuyoKbnCd}"
+                  style="width: 200px">
+                  <f:selectItem itemValue="" itemLabel="-- すべて --" />
+                  <f:selectItems
+                    value="#{dac2015ctl.kyuyoKbnObjectList}"
+                    var="item"
+                    itemValue="#{item.code}"
+                    itemLabel="#{item.codeName}" />
+                </p:selectOneMenu>
+              </p:column>
+            </p:row>
+
+            <!-- 給与箇所 -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel for="kyuyoKashoCd" value="給与箇所" />
+              </p:column>
+              <p:column style="width: 80%">
+                <p:inputText
+                  id="kyuyoKashoCd"
+                  value="#{dac2015ctl.basicInputSearchDto.kyuyoKashoCd}"
+                  autocomplete="off"
+                  maxlength="5"
+                  size="8"
+                  styleClass="singleByte">
+                  <aw:TrimConverter />
+                </p:inputText>
+                <p:outputLabel
+                  id="kyuyoKashoMeisho"
+                  value="　#{dac2015ctl.basicInputSearchDto.kyuyoKashoMeisho}" />
+              </p:column>
+            </p:row>
+
+            <!-- 科目分類 -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel for="kamokuBunruiCd" value="科目分類" />
+              </p:column>
+              <p:column style="width: 80%">
+                <p:selectOneMenu
+                  id="kamokuBunruiCd"
+                  value="#{dac2015ctl.basicInputSearchDto.kamokuBunruiCd}"
+                  style="width: 200px">
+                  <f:selectItem itemValue="" itemLabel="-- すべて --" />
+                  <f:selectItems
+                    value="#{dac2015ctl.kamokuBunruiObjectList}"
+                    var="item"
+                    itemValue="#{item.code}"
+                    itemLabel="#{item.codeName}" />
+                </p:selectOneMenu>
+              </p:column>
+            </p:row>
+
+            <!-- 科目区分 -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel for="kamokuKbnCd" value="科目区分" />
+              </p:column>
+              <p:column style="width: 80%">
+                <p:selectOneMenu
+                  id="kamokuKbnCd"
+                  value="#{dac2015ctl.basicInputSearchDto.kamokuKbnCd}"
+                  style="width: 200px">
+                  <f:selectItem itemValue="" itemLabel="-- すべて --" />
+                  <f:selectItems
+                    value="#{dac2015ctl.kamokuKbnObjectList}"
+                    var="item"
+                    itemValue="#{item.code}"
+                    itemLabel="#{item.codeName}" />
+                </p:selectOneMenu>
+              </p:column>
+            </p:row>
+
+            <!-- 業種 -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel for="gyoshuCd" value="業種" />
+              </p:column>
+              <p:column style="width: 80%">
+                <p:inputText
+                  id="gyoshuCd"
+                  value="#{dac2015ctl.basicInputSearchDto.gyoshuCd}"
+                  autocomplete="off"
+                  maxlength="3"
+                  size="5"
+                  styleClass="singleByte">
+                  <aw:TrimConverter />
+                </p:inputText>
+                <p:outputLabel
+                  id="gyoshuMeisho"
+                  value="　#{dac2015ctl.basicInputSearchDto.gyoshuMeisho}" />
+              </p:column>
+            </p:row>
+
+            <!-- 所属 -->
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel for="shozokuCd" value="所属" />
+              </p:column>
+              <p:column style="width: 80%">
+                <p:inputText
+                  id="shozokuCd"
+                  value="#{dac2015ctl.basicInputSearchDto.shozokuCd}"
+                  autocomplete="off"
+                  maxlength="8"
+                  size="12"
+                  styleClass="singleByte">
+                  <aw:TrimConverter />
+                </p:inputText>
+                <p:outputLabel
+                  id="shozokuMeisho"
+                  value="　#{dac2015ctl.basicInputSearchDto.shozokuMeisho}" />
+              </p:column>
+            </p:row>
+
+          </p:panelGrid>
+
+          <!-- ボタンエリア -->
+          <f:facet name="footer">
+            <!-- 検索ボタン -->
+            <p:commandButton
+              id="basicInputSearchButton"
+              value="検索"
+              actionListener="#{dac2015ctl.searchBasicInput}"
+              update="errorMessagePanel basicInputListPanel"
+              process="@form"
+              style="margin-left: 5px" />
+          </f:facet>
+
+        </p:panel>
+
+        <!-- 基本入力一覧パネル -->
+        <p:panel
+          id="basicInputListPanel"
+          header="明細一覧"
+          styleClass="fit"
+          rendered="#{fn:length(dac2015ctl.basicInputListDetailDtoList) > 0}">
+
+          <p:dataTable
+            id="basicInputListTable"
+            value="#{dac2015ctl.basicInputListDetailDtoList}"
+            var="row"
+            selection="#{dac2015ctl.selectedBasicInputListDetailDto}"
+            selectionMode="single"
+            rowKey="#{row.selectionId}"
+            styleClass="noWrap"
+            paginator="true"
+            rows="20"
+            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+            rowsPerPageTemplate="10,20,50"
+            currentPageReportTemplate="{startRecord}-{endRecord} / {totalRecords}件">
+
+            <p:column headerText="入力区分" style="width: 80px">
+              <h:outputText value="#{row.nyuryokuKbnMeisho}" />
+            </p:column>
+            <p:column headerText="給与区分" style="width: 80px">
+              <h:outputText value="#{row.kyuyoKbnMeisho}" />
+            </p:column>
+            <p:column headerText="給与箇所" style="width: 120px">
+              <h:outputText value="#{row.kyuyoKashoCd}" />
+              <h:outputText value="　#{row.kyuyoKashoMeisho}" />
+            </p:column>
+            <p:column headerText="科目分類" style="width: 80px">
+              <h:outputText value="#{row.kamokuBunruiMeisho}" />
+            </p:column>
+            <p:column headerText="科目区分" style="width: 80px">
+              <h:outputText value="#{row.kamokuKbnMeisho}" />
+            </p:column>
+            <p:column headerText="業種" style="width: 60px">
+              <h:outputText value="#{row.gyoshuCd}" />
+            </p:column>
+            <p:column headerText="所属" style="width: 100px">
+              <h:outputText value="#{row.shozokuCd}" />
+            </p:column>
+            <p:column headerText="更新者" style="width: 100px">
+              <h:outputText value="#{row.koshinsha}" />
+            </p:column>
+            <p:column headerText="更新日" style="width: 100px">
+              <h:outputText value="#{row.koshinbi}">
+                <f:convertDateTime pattern="yyyy/MM/dd" />
+              </h:outputText>
+            </p:column>
+            <p:column headerText="操作" style="width: 220px">
+              <!-- 登録ボタン -->
+              <p:commandButton
+                value="登録"
+                styleClass="ui-button-secondary"
+                style="margin: 2px"
+                actionListener="#{dac2015ctl.registBasicInput}"
+                update="@form"
+                process="@form">
+                <f:setPropertyActionListener
+                  value="#{row}"
+                  target="#{dac2015ctl.selectedBasicInputListDetailDto}" />
+              </p:commandButton>
+              <!-- 修正ボタン -->
+              <p:commandButton
+                value="修正"
+                styleClass="ui-button-secondary"
+                style="margin: 2px"
+                actionListener="#{dac2015ctl.modifyBasicInput}"
+                update="@form"
+                process="@form">
+                <f:setPropertyActionListener
+                  value="#{row}"
+                  target="#{dac2015ctl.selectedBasicInputListDetailDto}" />
+              </p:commandButton>
+              <!-- 削除ボタン -->
+              <p:commandButton
+                value="削除"
+                styleClass="ui-button-secondary"
+                style="margin: 2px"
+                actionListener="#{dac2015ctl.deleteBasicInput}"
+                update="@form"
+                process="@form">
+                <f:setPropertyActionListener
+                  value="#{row}"
+                  target="#{dac2015ctl.selectedBasicInputListDetailDto}" />
+              </p:commandButton>
+              <!-- 照会ボタン -->
+              <p:commandButton
+                value="照会"
+                styleClass="ui-button-secondary"
+                style="margin: 2px"
+                actionListener="#{dac2015ctl.inquiryBasicInput}"
+                update="@form"
+                process="@form">
+                <f:setPropertyActionListener
+                  value="#{row}"
+                  target="#{dac2015ctl.selectedBasicInputListDetailDto}" />
+              </p:commandButton>
+            </p:column>
+
+          </p:dataTable>
+
+        </p:panel>
+
+        <!-- ボタンエリア（基本入力） -->
+        <div class="buttonArea">
+          <!-- 戻るボタン -->
+          <p:commandButton
+            id="backToSearchButton"
+            value="戻る"
+            styleClass="ui-button-secondary"
+            actionListener="#{dac2015ctl.backToSearch}"
+            update="@form"
+            process="@this" />
+        </div>
+
+      </p:outputPanel>
+
+      <!-- ========================================================= -->
+      <!-- 明細入力画面（登録・修正・削除モード）                          -->
+      <!-- ========================================================= -->
+      <p:outputPanel id="detailInputScreenPanel"
+        rendered="#{dac2015ctl.gamenSeniKbn == Dac2015Cns.GAMEN_SENI_NYURYOKU and dac2015ctl.processModeKbn != null
+                  and dac2015ctl.processModeKbn != Dac2015Cns.PROCESS_MODE_INQUIRY}">
+
+        <!-- 明細ヘッダ情報パネル -->
+        <p:panel
+          id="detailHeaderPanel"
+          header="明細入力ヘッダ情報"
+          styleClass="fit">
+
+          <p:panelGrid columns="0" layout="tabular">
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel value="支給日" />
+              </p:column>
+              <p:column style="width: 30%">
+                <h:outputText value="#{dac2015ctl.selectedBasicInputListDetailDto.shikyubi}">
+                  <f:convertDateTime pattern="yyyy/MM/dd" />
+                </h:outputText>
+              </p:column>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel value="入力区分" />
+              </p:column>
+              <p:column style="width: 30%">
+                <h:outputText value="#{dac2015ctl.selectedBasicInputListDetailDto.nyuryokuKbnMeisho}" />
+              </p:column>
+            </p:row>
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel value="給与区分" />
+              </p:column>
+              <p:column style="width: 30%">
+                <h:outputText value="#{dac2015ctl.selectedBasicInputListDetailDto.kyuyoKbnMeisho}" />
+              </p:column>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel value="給与箇所" />
+              </p:column>
+              <p:column style="width: 30%">
+                <h:outputText value="#{dac2015ctl.selectedBasicInputListDetailDto.kyuyoKashoCd}" />
+                <h:outputText value="　#{dac2015ctl.selectedBasicInputListDetailDto.kyuyoKashoMeisho}" />
+              </p:column>
+            </p:row>
+            <p:row>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel value="業種" />
+              </p:column>
+              <p:column style="width: 30%">
+                <h:outputText value="#{dac2015ctl.selectedBasicInputListDetailDto.gyoshuCd}" />
+                <h:outputText value="　#{dac2015ctl.selectedBasicInputListDetailDto.gyoshuMeisho}" />
+              </p:column>
+              <p:column style="width: 20%; height: 25px">
+                <p:outputLabel value="所属" />
+              </p:column>
+              <p:column style="width: 30%">
+                <h:outputText value="#{dac2015ctl.selectedBasicInputListDetailDto.shozokuCd}" />
+                <h:outputText value="　#{dac2015ctl.selectedBasicInputListDetailDto.shozokuMeisho}" />
+              </p:column>
+            </p:row>
+          </p:panelGrid>
+
+        </p:panel>
+
+        <!-- 給与支給パネル -->
+        <p:panel
+          id="kyuyoShikyuPanel"
+          header="給与支給"
+          styleClass="fit">
+
+          <p:panelGrid columns="4" style="width: 100%">
+
+            <!-- 基本給 -->
+            <p:outputLabel for="kyuyoShikyuKihonKyu" value="基本給" />
+            <p:inputNumber
+              id="kyuyoShikyuKihonKyu"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuKihonKyu}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoShikyuKihonKyuHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoShikyuKihonKyuHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuKihonKyuHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 生活保障給 -->
+            <p:outputLabel for="kyuyoShikyuSeikatsuHoshoKyu" value="生活保障給" />
+            <p:inputNumber
+              id="kyuyoShikyuSeikatsuHoshoKyu"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuSeikatsuhoshoKyu}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoShikyuSeikatsuhoshoKyuHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoShikyuSeikatsuhoshoKyuHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuSeikatsuhoshoKyuHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 職位給 -->
+            <p:outputLabel for="kyuyoShikyuShokiKyu" value="職位給" />
+            <p:inputNumber
+              id="kyuyoShikyuShokiKyu"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuShokiKyu}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoShikyuShokiKyuHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoShikyuShokiKyuHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuShokiKyuHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 認知奨励付 -->
+            <p:outputLabel for="kyuyoShikyuNinchiShoreiFu" value="認知奨励付" />
+            <p:inputNumber
+              id="kyuyoShikyuNinchiShoreiFu"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuNinchiShoreiFu}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoShikyuNinchiShoreiFuHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoShikyuNinchiShoreiFuHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuNinchiShoreiFuHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 職能カテゴリー奨励付 -->
+            <p:outputLabel for="kyuyoShikyuShokunoCateShoreiFu" value="職能カテゴリー奨励付" />
+            <p:inputNumber
+              id="kyuyoShikyuShokunoCateShoreiFu"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuShokunoCateShoreiFu}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoShikyuShokunoCateShoreiFuHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoShikyuShokunoCateShoreiFuHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuShokunoCateShoreiFuHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 時間外勤務 -->
+            <p:outputLabel for="kyuyoShikyuJidoKinmu" value="時間外勤務" />
+            <p:inputNumber
+              id="kyuyoShikyuJidoKinmu"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuJidoKinmu}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoShikyuJidoKinmuHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoShikyuJidoKinmuHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuJidoKinmuHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 時間外特別勤務 -->
+            <p:outputLabel for="kyuyoShikyuJidoTokubetsuKinmu" value="時間外特別勤務" />
+            <p:inputNumber
+              id="kyuyoShikyuJidoTokubetsuKinmu"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuJidoTokubetsuKinmu}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoShikyuJidoTokubetsuKinmuHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoShikyuJidoTokubetsuKinmuHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuJidoTokubetsuKinmuHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 通勤交通費 -->
+            <p:outputLabel for="kyuyoShikyuTsukinkotsuHi" value="通勤交通費" />
+            <p:inputNumber
+              id="kyuyoShikyuTsukinkotsuHi"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuTsukinkotsuHi}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoShikyuTsukinkotsuHiHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoShikyuTsukinkotsuHiHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuTsukinkotsuHiHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- その他手当 -->
+            <p:outputLabel for="kyuyoShikyuSonotaTeate" value="その他手当" />
+            <p:inputNumber
+              id="kyuyoShikyuSonotaTeate"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuSonotaTeate}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoShikyuSonotaTeateHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoShikyuSonotaTeateHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuSonotaTeateHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 残業 -->
+            <p:outputLabel for="kyuyoShikyuZangyo" value="残業" />
+            <p:inputNumber
+              id="kyuyoShikyuZangyo"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuZangyo}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoShikyuZangyoHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoShikyuZangyoHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoShikyuZangyoHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+          </p:panelGrid>
+
+        </p:panel>
+
+        <!-- 給与控除パネル（主要項目のみ表示、その他は省略） -->
+        <p:panel
+          id="kyuyoKojoPanel"
+          header="給与控除"
+          styleClass="fit"
+          toggleable="true"
+          toggleSpeed="100">
+
+          <p:panelGrid columns="4" style="width: 100%">
+
+            <!-- 健康保険料 -->
+            <p:outputLabel for="kyuyoKojoKenkoHokenryo" value="健康保険料" />
+            <p:inputNumber
+              id="kyuyoKojoKenkoHokenryo"
+              value="#{dac2015ctl.detailInputDto.kyuyoKojoKenkoHokenryo}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoKojoKenkoHokenryoHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoKojoKenkoHokenryoHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoKojoKenkoHokenryoHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 介護保険料 -->
+            <p:outputLabel for="kyuyoKojoKaigoHokenryo" value="介護保険料" />
+            <p:inputNumber
+              id="kyuyoKojoKaigoHokenryo"
+              value="#{dac2015ctl.detailInputDto.kyuyoKojoKaigoHokenryo}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoKojoKaigoHokenryoHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoKojoKaigoHokenryoHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoKojoKaigoHokenryoHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 厚生年金保険料 -->
+            <p:outputLabel for="kyuyoKojoKoseiNenkinHokenryo" value="厚生年金保険料" />
+            <p:inputNumber
+              id="kyuyoKojoKoseiNenkinHokenryo"
+              value="#{dac2015ctl.detailInputDto.kyuyoKojoKoseiNenkinHokenryo}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoKojoKoseiNenkinHokenryoHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoKojoKoseiNenkinHokenryoHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoKojoKoseiNenkinHokenryoHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 所得税 -->
+            <p:outputLabel for="kyuyoKojoShotokuZei" value="所得税" />
+            <p:inputNumber
+              id="kyuyoKojoShotokuZei"
+              value="#{dac2015ctl.detailInputDto.kyuyoKojoShotokuZei}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoKojoShotokuZeiHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoKojoShotokuZeiHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoKojoShotokuZeiHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+            <!-- 住民税 -->
+            <p:outputLabel for="kyuyoKojoJuminZei" value="住民税" />
+            <p:inputNumber
+              id="kyuyoKojoJuminZei"
+              value="#{dac2015ctl.detailInputDto.kyuyoKojoJuminZei}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="15"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+            <p:outputLabel for="kyuyoKojoJuminZeiHaitaCnt" value="配当件数" />
+            <p:inputNumber
+              id="kyuyoKojoJuminZeiHaitaCnt"
+              value="#{dac2015ctl.detailInputDto.kyuyoKojoJuminZeiHaitaCnt}"
+              decimalPlaces="0"
+              thousandSeparator=","
+              size="10"
+              readonly="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}" />
+
+          </p:panelGrid>
+
+        </p:panel>
+
+        <!-- ボタンエリア（明細入力） -->
+        <div class="buttonArea">
+          <!-- 下書き保存ボタン（照会・削除モード以外） -->
+          <p:commandButton
+            id="saveDraftDetailInputButton"
+            value="下書き保存"
+            styleClass="ui-button-secondary"
+            rendered="#{dac2015ctl.processModeKbn != Dac2015Cns.PROCESS_MODE_DELETE}"
+            actionListener="#{dac2015ctl.saveDraftDetailInput}"
+            update="@form"
+            process="@form" />
+          <!-- 確認ボタン（削除モード以外） -->
+          <p:commandButton
+            id="confirmDetailInputButton"
+            value="確認"
+            rendered="#{dac2015ctl.processModeKbn != Dac2015Cns.PROCESS_MODE_DELETE}"
+            actionListener="#{dac2015ctl.confirmBasicInput}"
+            update="@form"
+            process="@form"
+            style="margin-left: 5px" />
+          <!-- 削除確認ボタン（削除モードのみ） -->
+          <p:commandButton
+            id="confirmDeleteButton"
+            value="削除確認"
+            rendered="#{dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_DELETE}"
+            actionListener="#{dac2015ctl.confirmBasicInput}"
+            update="@form"
+            process="@form" />
+          <!-- 戻るボタン -->
+          <p:commandButton
+            id="backToBasicInputButton"
+            value="戻る"
+            styleClass="ui-button-secondary"
+            actionListener="#{dac2015ctl.backToBasicInput}"
+            update="@form"
+            process="@this"
+            style="margin-left: 5px" />
+        </div>
+
+      </p:outputPanel>
+
+      <!-- ========================================================= -->
+      <!-- 確認画面                                                    -->
+      <!-- ========================================================= -->
+      <p:outputPanel id="confirmScreenPanel"
+        rendered="#{dac2015ctl.gamenSeniKbn == Dac2015Cns.GAMEN_SENI_KAKUNIN
+                  and dac2015ctl.processModeKbn != Dac2015Cns.PROCESS_MODE_INQUIRY}">
+
+        <!-- 確認一覧パネル -->
+        <p:panel
+          id="confirmListPanel"
+          header="確認一覧"
+          styleClass="fit">
+
+          <p:dataTable
+            id="confirmListTable"
+            value="#{dac2015ctl.basicInputListDetailDtoList}"
+            var="row"
+            styleClass="noWrap"
+            paginator="true"
+            rows="20">
+
+            <p:column headerText="入力区分" style="width: 80px">
+              <h:outputText value="#{row.nyuryokuKbnMeisho}" />
+            </p:column>
+            <p:column headerText="給与区分" style="width: 80px">
+              <h:outputText value="#{row.kyuyoKbnMeisho}" />
+            </p:column>
+            <p:column headerText="給与箇所" style="width: 120px">
+              <h:outputText value="#{row.kyuyoKashoCd}" />
+              <h:outputText value="　#{row.kyuyoKashoMeisho}" />
+            </p:column>
+            <p:column headerText="科目分類" style="width: 80px">
+              <h:outputText value="#{row.kamokuBunruiMeisho}" />
+            </p:column>
+            <p:column headerText="科目区分" style="width: 80px">
+              <h:outputText value="#{row.kamokuKbnMeisho}" />
+            </p:column>
+            <p:column headerText="業種" style="width: 60px">
+              <h:outputText value="#{row.gyoshuCd}" />
+            </p:column>
+            <p:column headerText="所属" style="width: 100px">
+              <h:outputText value="#{row.shozokuCd}" />
+            </p:column>
+            <p:column headerText="支払先区分" style="width: 80px">
+              <h:outputText value="#{row.shiharaisakiKbn}" />
+            </p:column>
+            <p:column headerText="支払先" style="width: 120px">
+              <h:outputText value="#{row.shiharaisakiCd}" />
+              <h:outputText value="　#{row.shiharaisakiMeisho}" />
+            </p:column>
+            <p:column headerText="支払予定日" style="width: 100px">
+              <h:outputText value="#{row.shiharaiYoteibi}">
+                <f:convertDateTime pattern="yyyy/MM/dd" />
+              </h:outputText>
+            </p:column>
+
+          </p:dataTable>
+
+        </p:panel>
+
+        <!-- 申請承認情報パネル（申請モード） -->
+        <p:panel
+          id="confirmShinseiPanel"
+          header="申請情報"
+          styleClass="fit"
+          rendered="#{dac2015ctl.shoninRouteInputDto != null}">
+
+          <p:panelGrid columns="2">
+            <p:outputLabel value="承認者" />
+            <h:outputText value="#{dac2015ctl.shoninRouteInputDto.shoninsha}" />
+          </p:panelGrid>
+
+        </p:panel>
+
+        <!-- ボタンエリア（確認） -->
+        <div class="buttonArea">
+          <!-- 申請ボタン -->
+          <p:commandButton
+            id="applyConfirmButton"
+            value="申請"
+            actionListener="#{dac2015ctl.applyConfirm}"
+            update="@form"
+            process="@form" />
+          <!-- 戻るボタン -->
+          <p:commandButton
+            id="backFromConfirmButton"
+            value="戻る"
+            styleClass="ui-button-secondary"
+            actionListener="#{dac2015ctl.backToBasicInput}"
+            update="@form"
+            process="@this"
+            style="margin-left: 5px" />
+        </div>
+
+      </p:outputPanel>
+
+      <!-- ========================================================= -->
+      <!-- 個別確認（照会）画面                                          -->
+      <!-- ========================================================= -->
+      <p:outputPanel id="inquiryConfirmScreenPanel"
+        rendered="#{dac2015ctl.gamenSeniKbn == Dac2015Cns.GAMEN_SENI_KAKUNIN
+                  and dac2015ctl.processModeKbn == Dac2015Cns.PROCESS_MODE_INQUIRY}">
+
+        <!-- 照会情報パネル -->
+        <p:panel
+          id="inquiryInfoPanel"
+          header="承認状況確認"
+          styleClass="fit">
+
+          <p:panelGrid columns="2">
+            <p:outputLabel value="申請No" />
+            <h:outputText value="#{dac2015ctl.headerDto.shinseiNo}" />
+            <p:outputLabel value="承認状況" />
+            <h:outputText value="#{dac2015ctl.selectedListDetailDto.shoninJokyo}" />
+          </p:panelGrid>
+
+        </p:panel>
+
+        <!-- 申請承認情報パネル -->
+        <p:panel
+          id="shinseiShoninInfoPanel"
+          header="申請承認情報"
+          styleClass="fit"
+          rendered="#{dac2015ctl.shinseiShoninJohoDto != null}">
+
+          <p:panelGrid columns="2">
+            <p:outputLabel value="申請者" />
+            <h:outputText value="#{dac2015ctl.shinseiShoninJohoDto.shinseiUserId}" />
+            <p:outputLabel value="申請日時" />
+            <h:outputText value="#{dac2015ctl.shinseiShoninJohoDto.shinseiDtm}">
+              <f:convertDateTime pattern="yyyy/MM/dd HH:mm:ss" />
+            </h:outputText>
+          </p:panelGrid>
+
+        </p:panel>
+
+        <!-- ボタンエリア（個別確認） -->
+        <div class="buttonArea">
+          <!-- 承認ボタン（承認依頼中のみ） -->
+          <p:commandButton
+            id="confirmInquiryButton"
+            value="承認"
+            rendered="#{dac2015ctl.selectedListDetailDto.shoninJokyoKbn == Dac2015Cns.SHONINJO_KBN_SHONINIRAICHU}"
+            actionListener="#{dac2015ctl.confirmInquiry}"
+            update="@form"
+            process="@form" />
+          <!-- 取下ボタン（承認依頼中のみ） -->
+          <p:commandButton
+            id="withdrawConfirmButton"
+            value="取下"
+            styleClass="ui-button-secondary"
+            rendered="#{dac2015ctl.selectedListDetailDto.shoninJokyoKbn == Dac2015Cns.SHONINJO_KBN_SHONINIRAICHU}"
+            actionListener="#{dac2015ctl.withdrawConfirm}"
+            update="@form"
+            process="@form"
+            style="margin-left: 5px" />
+          <!-- 戻るボタン -->
+          <p:commandButton
+            id="backFromInquiryButton"
+            value="戻る"
+            styleClass="ui-button-secondary"
+            actionListener="#{dac2015ctl.backToSearch}"
+            update="@form"
+            process="@this"
+            style="margin-left: 5px" />
+        </div>
+
+      </p:outputPanel>
+
+    </h:form>
+
+  </ui:define>
+
+</ui:composition>
