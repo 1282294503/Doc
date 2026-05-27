@@ -26,17 +26,19 @@
  
  
       <!-- エラーメッセージパネル -->
-      <p:panel
-        id="errorMessagePanel"
-        header="エラー情報"
-        styleClass="error left"
-        rendered="#{fn:length(facesContext.messageList) > 0}">
-        <p:messages
-          id="errorMessages"
-          closable="false"
-          showIcon="false"
-          styleClass="bullet" />
-      </p:panel>
+      <h:panelGroup id="errorMessageWrapper" layout="block">
+        <p:panel
+          id="errorMessagePanel"
+          header="エラー情報"
+          styleClass="error left"
+          rendered="#{fn:length(facesContext.messageList) > 0}">
+          <p:messages
+            id="errorMessages"
+            closable="false"
+            showIcon="false"
+            styleClass="bullet" />
+        </p:panel>
+      </h:panelGroup>
  
       <!-- 画面名 -->
       <p:outputLabel value="手数料配分計算書出力" styleClass="screenTitle" />
@@ -84,18 +86,31 @@
               </p:outputLabel>
             </p:column>
             <p:column style="width: 80%">
-              <p:inputText
+              <p:datePicker
                 id="kijunNengetsu"
                 value="#{dac2024ctl.searchConditionDto.kijunNengetsu}"
-                maxlength="6"
-                size="10"
+                mode="popup"
+                pattern="yyyy/MM"
+                mask="true"
+                keepInvalid="true"
                 placeholder="YYYYMM"
+                locale="ja"
+                view="month"
+                yearNavigator="true"
+                monthNavigator="true"
+                showButtonBar="true"
+                inputmode="numeric"
                 autocomplete="off"
-                styleClass="singleByte">
+                size="10">
                 <aw:RequiredValidator
                   msgKnrNum="#{MessageNo.DAA00000E}"
                   msgEmbedStr1="基準年月" />
-              </p:inputText>
+                <aw:SeirekiYmdValidator
+                  enabledMaxDate="FALSE"
+                  msgKnrNum="#{MessageNo.DAA00017E}"
+                  msgEmbedStr1="基準年月" />
+                <aw:SlashSeparatedDateFormatConverter />
+              </p:datePicker>
             </p:column>
           </p:row>
  
@@ -146,26 +161,28 @@
         </p:panelGrid>
 
         <f:facet name="footer">
-          <p:commandButton
-            id="clearButton"
-            value="クリア"
-            action="#{dac2024ctl.clear}"
-            update="conditionPanel"
-            process="@this" />
-          <p:commandButton
-            id="showButton"
-            value="表示"
-            action="#{dac2024ctl.show}"
-            update="errorMessagePanel conditionPanel"
-            process="@form" />
-          <p:commandButton
-            id="exportCsvButton"
-            value="CSV出力"
-            ajax="false">
-            <p:fileDownload
-              value="#{dac2024ctl.exportCsv()}"
-              contentDisposition="attachment" />
-          </p:commandButton>
+          <div style="text-align: center;">
+            <p:commandButton
+              id="clearButton"
+              value="クリア"
+              action="#{dac2024ctl.clear}"
+              update="conditionPanel"
+              process="@this" />
+            <p:commandButton
+              id="showButton"
+              value="表示"
+              action="#{dac2024ctl.show}"
+              update="errorMessageWrapper conditionPanel"
+              process="@form" />
+            <p:commandButton
+              id="exportCsvButton"
+              value="CSV出力"
+              ajax="false">
+              <p:fileDownload
+                value="#{dac2024ctl.exportCsv()}"
+                contentDisposition="attachment" />
+            </p:commandButton>
+          </div>
         </f:facet>
 
       </p:panel>
