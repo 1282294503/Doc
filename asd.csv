@@ -9,22 +9,21 @@
   xmlns:ui="jakarta.faces.facelets"
   xmlns:aw="http://hokuren.or.jp/awa"
   template="/AWA_layoutTemplate.xhtml">
- 
-  <ui:param name="ctl" value="#{dac2024ctl}" />
- 
+
+  <ui:param name="ctl" value="#{dac2015ctl}" />
+
   <f:metadata>
     <aw:InitAction
-      action="#{dac2024ctl.init}"
-      initialized="#{dac2024ctl.initialized}" />
+      action="#{dac2015ctl.init}"
+      initialized="#{dac2015ctl.initialized}" />
   </f:metadata>
- 
-  <ui:define name="title">手数料配分計算書出力</ui:define>
- 
+
+  <ui:define name="title">人件費情報入力</ui:define>
+
   <ui:define name="body">
-    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns"     var="MessageNo" />
-    <p:importConstants type="jp.or.hokuren.dac.view.dac2024.DAC2024_LocalCns" var="Dac2024Cns" />
- 
- 
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns" var="MessageNo" />
+    <p:importConstants type="jp.or.hokuren.dac.view.dac2015.DAC2015_LaborCostInfoEntryCns" var="Dac2015Cns" />
+
       <!-- エラーメッセージパネル -->
       <h:panelGroup id="errorMessageWrapper" layout="block">
         <p:panel
@@ -39,56 +38,37 @@
             styleClass="bullet" />
         </p:panel>
       </h:panelGroup>
- 
+
       <!-- 画面名 -->
-      <p:outputLabel value="手数料配分計算書出力" styleClass="screenTitle" />
+      <p:outputLabel value="照会" styleClass="screenTitle" />
 
       <!-- 操作メッセージ -->
       <p:outputPanel id="operationMessagePanel" styleClass="box center">
-        <p>検索条件を入力し、「CSV出力」ボタンを押してください。</p>
+        <p>#{dac2015ctl.inputOperationMessage}</p>
       </p:outputPanel>
- 
+
       <!-- 検索条件入力パネル -->
       <p:panel
         id="conditionPanel"
         header="検索条件"
         toggleable="true"
         toggleSpeed="100"
+        collapsed="#{dac2015ctl.isConditionPanelInputClosed}"
         styleClass="fit">
- 
+
         <p:panelGrid columns="0" layout="tabular">
- 
-          <!-- 出力帳票選択 -->
+
+          <!-- 対象年月 -->
           <p:row>
             <p:column style="width: 20%; height: 25px">
-              <p:outputLabel value="出力帳票" />
-            </p:column>
-            <p:column style="width: 80%">
-              <p:selectOneRadio
-                id="outputChohyoId"
-                value="#{dac2024ctl.searchConditionDto.outputChohyoId}"
-                layout="lineDirection">
-                <f:selectItem
-                  itemValue="#{Dac2024Cns.OUTPUT_CHOHYO_ID_ZENDO_KYOKEI_TESURYO_HAIBUN_KEISANSHO}"
-                  itemLabel="全道共計手数料配分計算書" />
-                <f:selectItem
-                  itemValue="#{Dac2024Cns.OUTPUT_CHOHYO_ID_KOBAI_TESURYO_HAIBUN_KEISANSHO}"
-                  itemLabel="購買手数料配分計算書" />
-              </p:selectOneRadio>
-            </p:column>
-          </p:row>
- 
-          <!-- 基準年月 -->
-          <p:row>
-            <p:column style="width: 20%; height: 25px">
-              <p:outputLabel for="kijunNengetsu" value="基準年月">
+              <p:outputLabel for="taishoNengetsuFrom" value="対象年月">
                 <span class="required">(*)</span>
               </p:outputLabel>
             </p:column>
             <p:column style="width: 80%">
               <p:inputText
-                id="kijunNengetsu"
-                value="#{dac2024ctl.searchConditionDto.kijunNengetsu}"
+                id="taishoNengetsuFrom"
+                value="#{dac2015ctl.searchDto.taishoNengetsuFrom}"
                 maxlength="6"
                 size="10"
                 placeholder="YYYYMM"
@@ -96,90 +76,157 @@
                 styleClass="singleByte">
                 <aw:RequiredValidator
                   msgKnrNum="#{MessageNo.DAA00000E}"
-                  msgEmbedStr1="基準年月" />
+                  msgEmbedStr1="対象年月（From）" />
               </p:inputText>
-            </p:column>
-          </p:row>
- 
-          <!-- 業種（業種ラベル表示フラグ=true の場合はラベルのみ） -->
-          <p:row rendered="#{dac2024ctl.industryLabelDisplayFlag}">
-            <p:column style="width: 20%; height: 25px">
-              <p:outputLabel value="業種" />
-            </p:column>
-            <p:column style="width: 80%">
-              <p:outputLabel value="#{dac2024ctl.searchConditionDto.gyoshuMei}" />
-              <h:inputHidden value="#{dac2024ctl.searchConditionDto.gyoshuCd}" />
-            </p:column>
-          </p:row>
- 
-          <!-- 業種（業種ラベル表示フラグ=false の場合は入力 + 検索ボタン） -->
-          <p:row rendered="#{not dac2024ctl.industryLabelDisplayFlag}">
-            <p:column style="width: 20%; height: 25px">
-              <p:outputLabel for="gyoshuCd" value="業種" />
-            </p:column>
-            <p:column style="width: 80%">
+              <span>　～　</span>
               <p:inputText
-                id="gyoshuCd"
-                value="#{dac2024ctl.searchConditionDto.gyoshuCd}"
+                id="taishoNengetsuTo"
+                value="#{dac2015ctl.searchDto.taishoNengetsuTo}"
+                maxlength="6"
+                size="10"
+                placeholder="YYYYMM"
                 autocomplete="off"
-                maxlength="2"
-                size="5"
                 styleClass="singleByte">
-                <aw:TrimConverter />
-                <aw:AlphanumericValidator
-                  msgKnrNum="#{MessageNo.DAA00012E}"
-                  msgEmbedStr1="業種" />
+                <aw:RequiredValidator
+                  msgKnrNum="#{MessageNo.DAA00000E}"
+                  msgEmbedStr1="対象年月（To）" />
               </p:inputText>
-              <!-- 経理部以外の場合のみ業種検索ボタンを表示する -->
-              <p:commandButton
-                id="industrySearchButton"
-                value="検索"
-                styleClass="ui-button-secondary"
-                actionListener="#{dac2024ctl.showIndustrySearch('industrySearchButton')}"
-                update="@form"
-                process="@this"
-                style="margin-left: 5px" />
-              <p:outputLabel
-                id="gyoshuMei"
-                value="　#{dac2024ctl.searchConditionDto.gyoshuMei}" />
             </p:column>
           </p:row>
- 
+
+          <!-- 承認状況 -->
+          <p:row>
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel value="承認状況" />
+            </p:column>
+            <p:column style="width: 80%">
+              <p:selectBooleanCheckbox
+                id="shoninJokyoMishusei"
+                value="#{dac2015ctl.searchDto.shoninJokyoMishusei}" />
+              <p:outputLabel for="shoninJokyoMishusei" value="未修正" style="margin-right: 10px" />
+
+              <p:selectBooleanCheckbox
+                id="shoninJokyoSashimodoshi"
+                value="#{dac2015ctl.searchDto.shoninJokyoSashimodoshi}" />
+              <p:outputLabel for="shoninJokyoSashimodoshi" value="差戻" style="margin-right: 10px" />
+
+              <p:selectBooleanCheckbox
+                id="shoninJokyoShitagakiHozon"
+                value="#{dac2015ctl.searchDto.shoninJokyoShitagakiHozon}" />
+              <p:outputLabel for="shoninJokyoShitagakiHozon" value="下書保存" style="margin-right: 10px" />
+
+              <p:selectBooleanCheckbox
+                id="shoninJokyoShoninIraichu"
+                value="#{dac2015ctl.searchDto.shoninJokyoShoninIraichu}" />
+              <p:outputLabel for="shoninJokyoShoninIraichu" value="依頼中" style="margin-right: 10px" />
+
+              <p:selectBooleanCheckbox
+                id="shoninJokyoShoninzumi"
+                value="#{dac2015ctl.searchDto.shoninJokyoShoninzumi}" />
+              <p:outputLabel for="shoninJokyoShoninzumi" value="承認済" />
+            </p:column>
+          </p:row>
+
         </p:panelGrid>
 
         <f:facet name="footer">
           <div style="text-align: center;">
             <p:commandButton
-              id="clearButton"
-              value="クリア"
-              action="#{dac2024ctl.clear}"
-              update="conditionPanel"
-              process="@this" />
-            <p:commandButton
-              id="showButton"
-              value="表示"
-              action="#{dac2024ctl.show}"
-              update="errorMessageWrapper conditionPanel"
+              id="searchButton"
+              value="照会"
+              action="#{dac2015ctl.inputSearch}"
+              update="errorMessageWrapper conditionPanel resultPanel"
               process="@form" />
             <p:commandButton
-              id="exportCsvButton"
-              value="CSV出力"
-              ajax="false">
-              <p:fileDownload
-                value="#{dac2024ctl.exportCsv()}"
-                contentDisposition="attachment" />
-            </p:commandButton>
+              id="clearButton"
+              value="クリア"
+              action="#{dac2015ctl.inputClear}"
+              update="conditionPanel resultPanel"
+              process="@this" />
           </div>
         </f:facet>
 
       </p:panel>
- 
- 
-    <!-- 業種検索ダイアログ（TODO: DAA1108が生成されたら以下のコメントを外す） -->
-    <!--
-    <ui:include src="/view/DAA1108/DAA1108_IndustrySearch.xhtml" />
-    -->
- 
+
+      <!-- 検索結果一覧パネル -->
+      <h:panelGroup id="resultPanel" layout="block">
+        <p:outputPanel rendered="#{not empty dac2015ctl.listDetailDtoList}">
+
+          <p:dataTable
+            id="resultTable"
+            var="row"
+            value="#{dac2015ctl.listDetailDtoList}"
+            selection="#{dac2015ctl.listDetailSel}"
+            rowKey="#{row}"
+            paginator="true"
+            rows="15"
+            rowsPerPageTemplate="15,30,50"
+            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+            currentPageReportTemplate="({currentPage} of {totalPages})"
+            tableStyle="width: 100%"
+            styleClass="fit">
+
+            <p:column selectionMode="multiple" style="width: 30px; text-align: center;" />
+
+            <p:column headerText="承認状況" style="width: 80px">
+              <h:outputText value="#{row.shoninJokyo}" />
+            </p:column>
+
+            <p:column headerText="更新日" style="width: 100px">
+              <h:outputText value="#{row.koshinbi}" />
+            </p:column>
+
+            <p:column headerText="経理日" style="width: 100px">
+              <h:outputText value="#{row.keiribi}" />
+            </p:column>
+
+            <p:column headerText="更新者" style="width: 120px">
+              <h:outputText value="#{row.koshinsha}" />
+            </p:column>
+
+            <p:column headerText="支給日" style="width: 100px">
+              <h:outputText value="#{row.shikyubi}" />
+            </p:column>
+
+            <p:column headerText="入力区分" style="width: 120px">
+              <h:outputText value="#{row.nyuryokuKbn}" escape="false" />
+            </p:column>
+
+            <p:column headerText="連動データ総件数" style="width: 120px; text-align: right;">
+              <h:outputText value="#{row.rendoDataSoKensu}" />
+            </p:column>
+
+            <p:column headerText="修正総件数" style="width: 100px; text-align: right;">
+              <h:outputText value="#{row.shuseiSoKensu}" />
+            </p:column>
+
+          </p:dataTable>
+
+          <!-- 検索結果表示領域ボタン -->
+          <div style="text-align: center; margin-top: 10px;">
+            <p:commandButton
+              id="nextButton"
+              value="次画面"
+              action="#{dac2015ctl.inputNext}"
+              ajax="false"
+              style="width: 110px;" />
+            <p:commandButton
+              id="inquiryButton"
+              value="個別照会"
+              action="#{dac2015ctl.inputInquiry}"
+              ajax="false"
+              style="width: 110px;" />
+            <p:commandButton
+              id="withdrawButton"
+              value="承認依頼取下"
+              action="#{dac2015ctl.inputWithdraw}"
+              ajax="false"
+              style="width: 110px;" />
+          </div>
+
+        </p:outputPanel>
+      </h:panelGroup>
+
   </ui:define>
- 
+
 </ui:composition>
