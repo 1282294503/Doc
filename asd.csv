@@ -84,22 +84,14 @@
               </p:outputLabel>
             </p:column>
             <p:column style="width: 80%">
-              <p:datePicker
+              <p:inputMask
                 id="kijunNengetsu"
                 value="#{dac2024ctl.searchConditionDto.kijunNengetsu}"
-                mode="popup"
-                pattern="yyyy/MM"
-                view="month"
-                mask="true"
-                keepInvalid="true"
+                mask="9999/99"
                 placeholder="YYYY/MM"
-                locale="ja"
-                yearNavigator="true"
-                monthNavigator="true"
-                showButtonBar="true"
-                inputmode="numeric"
                 autocomplete="off"
-                size="10">
+                size="10"
+                styleClass="singleByte">
                 <aw:RequiredValidator
                   msgKnrNum="#{MessageNo.DAA00000E}"
                   msgEmbedStr1="基準年月" />
@@ -108,7 +100,7 @@
                   msgKnrNum="#{MessageNo.DAA00017E}"
                   msgEmbedStr1="基準年月" />
                 <aw:SlashSeparatedDateFormatConverter />
-              </p:datePicker>
+              </p:inputMask>
             </p:column>
           </p:row>
  
@@ -156,40 +148,31 @@
             </p:column>
           </p:row>
  
-          <!-- ボタンエリア（panelGrid内の最終行として配置し、緑色背景上に表示する） -->
-          <p:row>
-            <p:column colspan="2" style="text-align: center; padding: 5px 0;">
-              <!-- クリアボタン -->
-              <p:commandButton
-                id="clearButton"
-                value="クリア"
-                styleClass="ui-button-secondary"
-                action="#{dac2024ctl.clear}"
-                update="conditionPanel"
-                process="@this" />
-              <!-- 表示ボタン -->
-              <p:commandButton
-                id="showButton"
-                value="表示"
-                styleClass="ui-button-secondary"
-                action="#{dac2024ctl.show}"
-                update="@form"
-                process="@form"
-                style="margin-left: 5px" />
-              <!-- CSV出力ボタン -->
-              <p:commandButton
-                id="exportCsvButton"
-                value="CSV出力"
-                style="margin-left: 5px"
-                ajax="false">
-                <p:fileDownload
-                  value="#{dac2024ctl.exportCsv()}"
-                  contentDisposition="attachment" />
-              </p:commandButton>
-            </p:column>
-          </p:row>
-
         </p:panelGrid>
+
+        <!-- ボタンエリア（緑色背景上に表示） -->
+        <p:outputPanel id="buttonArea" styleClass="group">
+          <p:commandButton
+            id="clearButton"
+            value="クリア"
+            action="#{dac2024ctl.clear}"
+            update="conditionPanel"
+            process="@this" />
+          <p:commandButton
+            id="showButton"
+            value="表示"
+            action="#{dac2024ctl.show}"
+            update="@form"
+            process="@form" />
+          <p:commandButton
+            id="exportCsvButton"
+            value="CSV出力"
+            ajax="false">
+            <p:fileDownload
+              value="#{dac2024ctl.exportCsv()}"
+              contentDisposition="attachment" />
+          </p:commandButton>
+        </p:outputPanel>
 
       </p:panel>
  
