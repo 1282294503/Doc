@@ -86,31 +86,18 @@
               </p:outputLabel>
             </p:column>
             <p:column style="width: 80%">
-              <p:datePicker
+              <p:inputText
                 id="kijunNengetsu"
                 value="#{dac2024ctl.searchConditionDto.kijunNengetsu}"
-                mode="popup"
-                pattern="yyyy/MM"
-                mask="true"
-                keepInvalid="true"
+                maxlength="6"
+                size="10"
                 placeholder="YYYYMM"
-                locale="ja"
-                view="month"
-                yearNavigator="true"
-                monthNavigator="true"
-                showButtonBar="true"
-                inputmode="numeric"
                 autocomplete="off"
-                size="10">
+                styleClass="singleByte">
                 <aw:RequiredValidator
                   msgKnrNum="#{MessageNo.DAA00000E}"
                   msgEmbedStr1="基準年月" />
-                <aw:SeirekiYmdValidator
-                  enabledMaxDate="FALSE"
-                  msgKnrNum="#{MessageNo.DAA00017E}"
-                  msgEmbedStr1="基準年月" />
-                <aw:SlashSeparatedDateFormatConverter />
-              </p:datePicker>
+              </p:inputText>
             </p:column>
           </p:row>
  
