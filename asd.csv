@@ -1,315 +1,201 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="jp.or.hokuren.dac.view.dac2024.DAC2024_OutputFeeAllocationStatementMpr">
-
-  <!-- =========================================================== -->
-  <!-- 選択可能業種コードリスト取得                                     -->
-  <!-- =========================================================== -->
-  <select id="getSelectGyoshuList"
-    parameterType="java.util.Map"
-    resultType="java.lang.String">
-    <bind name="DAA_CommonsCns"
-      value="@java.lang.Class@forName('jp.or.hokuren.daa.def.DAA_CommonsCns')"/>
-    <bind name="SAKZYO_KBN_YUKO" value="DAA_CommonsCns.getField('SAKZYO_KBN_YUKO').get(null)"/>
-    SELECT
-        GYOSHU_CD
-    FROM
-        DAA447_SOSHIKIGYOSHUMST
-    WHERE
-        SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-        AND SOSHIKI_CD = #{shozokuCd}
-        AND #{kijunbi} BETWEEN TEKIYO_KAISHIBI AND TEKIYO_SHURYOBI
-    GROUP BY
-        GYOSHU_CD
-  </select>
-
-  <!-- =========================================================== -->
-  <!-- 全道共計手数料配分計算書情報検索                                  -->
-  <!-- =========================================================== -->
-  <select id="getZendoKyokeiFeeAllocationStatementList"
-    parameterType="jp.or.hokuren.dac.view.dac2024.DAC2024_OutputFeeAllocationStatementSearchDto"
-    resultType="jp.or.hokuren.dac.view.dac2024.DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto">
-    <bind name="DAA_CommonsCns"
-      value="@java.lang.Class@forName('jp.or.hokuren.daa.def.DAA_CommonsCns')"/>
-    <bind name="SAKZYO_KBN_YUKO" value="DAA_CommonsCns.getField('SAKZYO_KBN_YUKO').get(null)"/>
-    SELECT
-        DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.TAISHO_NENGETSU
-      , DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.GYOSHU_CD
-      , DAA445_GYOSHUMST.GYOSHU_MEISHO
-      , DAA452_KAIKEIJOHOHINMOKUMST.KAIKEI_JOHO_HINMOKU_CD
-      , DAA452_KAIKEIJOHOHINMOKUMST.KAIKEI_JOHO_HINMOKU_MEISHO
-      , DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.SHUSHI_KANRI_HINMOKU_CD
-      , DAA456_SHUSHIKANRIHINMOKUMST.SHUSHI_KANRI_HINMOKU_MEISHO
-      , DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.NENSAN
-      , DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.KYOKEI_JISU
-      , DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.JIGYOSHO_CD AS HAIBUN_KASHO
-      , V_AQA011_JIGYOSHOMST.JIGYOSHO_MEI_KJ AS HAIBUN_KASHO_MEI
-      , COALESCE(DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.TORIATSUKAIDAKA_KINGAKU_GEKKEI, 0) AS TORIATSUKAIDAKA_KINGAKU_GEKKEI
-      , COALESCE(DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.TORIATSUKAIDAKA_TESURYO_GEKKEI, 0) AS TORIATSUKAIDAKA_TESURYO_GEKKEI
-      , COALESCE(DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.TORIATSUKAIDAKA_KINGAKU_RUIKEI, 0) AS TORIATSUKAIDAKA_KINGAKU_RUIKEI
-      , COALESCE(DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.TORIATSUKAIDAKA_TESURYO_RUIKEI, 0) AS TORIATSUKAIDAKA_TESURYO_RUIKEI
-    FROM
-        DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA
-    LEFT JOIN DAA445_GYOSHUMST
-        ON DAA445_GYOSHUMST.GYOSHU_CD = DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.GYOSHU_CD
-        AND #{kijunNengetsuMatsujitsu} BETWEEN DAA445_GYOSHUMST.TEKIYO_KAISHIBI AND DAA445_GYOSHUMST.TEKIYO_SHURYOBI
-        AND DAA445_GYOSHUMST.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-    LEFT JOIN DAA456_SHUSHIKANRIHINMOKUMST
-        ON DAA456_SHUSHIKANRIHINMOKUMST.SHUSHI_KANRI_HINMOKU_CD = DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.SHUSHI_KANRI_HINMOKU_CD
-        AND #{kijunNengetsuMatsujitsu} BETWEEN DAA456_SHUSHIKANRIHINMOKUMST.TEKIYO_KAISHIBI AND DAA456_SHUSHIKANRIHINMOKUMST.TEKIYO_SHURYOBI
-        AND DAA456_SHUSHIKANRIHINMOKUMST.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-    LEFT JOIN DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST
-        ON DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST.SHUSHI_KANRI_HINMOKU_DAIBUNRUI_CD = DAA456_SHUSHIKANRIHINMOKUMST.SHUSHI_KANRI_HINMOKU_DAIBUNRUI_CD
-        AND #{kijunNengetsuMatsujitsu} BETWEEN DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST.TEKIYO_KAISHIBI AND DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST.TEKIYO_SHURYOBI
-        AND DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-    LEFT JOIN DAA452_KAIKEIJOHOHINMOKUMST
-        ON DAA452_KAIKEIJOHOHINMOKUMST.KAIKEI_JOHO_HINMOKU_CD = DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST.KAIKEI_JOHO_HINMOKU_CD
-        AND #{kijunNengetsuMatsujitsu} BETWEEN DAA452_KAIKEIJOHOHINMOKUMST.TEKIYO_KAISHIBI AND DAA452_KAIKEIJOHOHINMOKUMST.TEKIYO_SHURYOBI
-        AND DAA452_KAIKEIJOHOHINMOKUMST.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-    LEFT JOIN V_AQA011_JIGYOSHOMST
-        ON V_AQA011_JIGYOSHOMST.JIGYOSHO_CD = DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.JIGYOSHO_CD
-        AND #{kijunNengetsuMatsujitsu} BETWEEN V_AQA011_JIGYOSHOMST.TEKIYO_KAISHIBI AND V_AQA011_JIGYOSHOMST.TEKIYO_SHURYOBI
-        AND V_AQA011_JIGYOSHOMST.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-    WHERE
-        DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-        AND DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.KIJUN_NENGETSU = #{kijunNengetsu}
-        <if test="gyoshuCd != null and gyoshuCd != ''">
-          AND DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.GYOSHU_CD = #{gyoshuCd}
-        </if>
-        <if test="(gyoshuCd == null or gyoshuCd == '') and shozokuCd != '0' and selectableGyoshuCdList != null and selectableGyoshuCdList.size() > 0">
-          AND DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.GYOSHU_CD IN
-          <foreach item="item" collection="selectableGyoshuCdList" open="(" separator="," close=")">
-            #{item}
-          </foreach>
-        </if>
-    ORDER BY
-        DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.TAISHO_NENGETSU
-      , DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.GYOSHU_CD
-      , DAA452_KAIKEIJOHOHINMOKUMST.KAIKEI_JOHO_HINMOKU_CD
-      , DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.SHUSHI_KANRI_HINMOKU_CD
-      , DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.NENSAN
-      , DAC321_HANBAIKYOKEITESURYOHAIBUNKEISANDATA.KYOKEI_JISU
-  </select>
-
-  <!-- =========================================================== -->
-  <!-- 購買手数料配分情報情報検索                                        -->
-  <!-- =========================================================== -->
-  <select id="getPurchaseFeeAllocationStatementList"
-    parameterType="jp.or.hokuren.dac.view.dac2024.DAC2024_OutputFeeAllocationStatementSearchDto"
-    resultType="jp.or.hokuren.dac.view.dac2024.DAC2024_PurchaseFeeAllocationStatementCsvDto">
-    <bind name="DAA_CommonsCns"
-      value="@java.lang.Class@forName('jp.or.hokuren.daa.def.DAA_CommonsCns')"/>
-    <bind name="SAKZYO_KBN_YUKO" value="DAA_CommonsCns.getField('SAKZYO_KBN_YUKO').get(null)"/>
-    <!-- include：共通SQL部品#組織名称取得用SQL部品 -->
-    WITH KOBAI_TESURYO_HAIBUN_KEISANSHO AS (
-        SELECT
-            DAC119_KOBAITESURYOHAIBUNJOHO.TAISHO_NENGETSU
-          , DAC119_KOBAITESURYOHAIBUNJOHO.GYOSHU_CD
-          , DAC119_KOBAITESURYOHAIBUNJOHO.TORIATSUKAI_KBN
-          , DAC119_KOBAITESURYOHAIBUNJOHO.NENSAN
-          , DAC119_KOBAITESURYOHAIBUNJOHO.TORIATSUKAI_SOSHIKI_CD
-          , DAC119_KOBAITESURYOHAIBUNJOHO.SHUSHI_KANRI_HINMOKU_DAIBUNRUI_CD
-          , DAC119_KOBAITESURYOHAIBUNJOHO.JIGYOSHO_CD AS SASHIZU_JIGYOSHO_CD
-          , COALESCE(SUM(DAC119_KOBAITESURYOHAIBUNJOHO.CHOKUSOHIN_URIAGE_GEKKEI), 0) AS CHOKUSOHIN_URIAGE_GEKKEI
-          , COALESCE(SUM(DAC119_KOBAITESURYOHAIBUNJOHO.CHOKUSOHIN_TESURYO_GEKKEI), 0) AS CHOKUSOHIN_TESURYO_GEKKEI
-          , COALESCE(SUM(DAC119_KOBAITESURYOHAIBUNJOHO.ZAIKOHIN_URIAGE_GEKKEI), 0) AS ZAIKOHIN_URIAGE_GEKKEI
-          , COALESCE(SUM(DAC119_KOBAITESURYOHAIBUNJOHO.ZAIKOHIN_TESURYO_GEKKEI), 0) AS ZAIKOHIN_TESURYO_GEKKEI
-          , COALESCE(SUM(DAC119_KOBAITESURYOHAIBUNJOHO.KYOKYUHI_GEKKEI), 0) AS KYOKYUHI_GEKKEI
-          , COALESCE(SUM(DAC119_KOBAITESURYOHAIBUNJOHO.CHOKUSOHIN_URIAGE_RUIKEI), 0) AS CHOKUSOHIN_URIAGE_RUIKEI
-          , COALESCE(SUM(DAC119_KOBAITESURYOHAIBUNJOHO.CHOKUSOHIN_TESURYO_RUIKEI), 0) AS CHOKUSOHIN_TESURYO_RUIKEI
-          , COALESCE(SUM(DAC119_KOBAITESURYOHAIBUNJOHO.ZAIKOHIN_URIAGE_RUIKEI), 0) AS ZAIKOHIN_URIAGE_RUIKEI
-          , COALESCE(SUM(DAC119_KOBAITESURYOHAIBUNJOHO.ZAIKOHIN_TESURYO_RUIKEI), 0) AS ZAIKOHIN_TESURYO_RUIKEI
-          , COALESCE(SUM(DAC119_KOBAITESURYOHAIBUNJOHO.KYOKYUHI_RUIKEI), 0) AS KYOKYUHI_RUIKEI
-        FROM
-            DAC119_KOBAITESURYOHAIBUNJOHO
-        WHERE
-            DAC119_KOBAITESURYOHAIBUNJOHO.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-            AND DAC119_KOBAITESURYOHAIBUNJOHO.KIJUN_NENGETSU = #{kijunNengetsu}
-            <if test="gyoshuCd != null and gyoshuCd != ''">
-              AND DAC119_KOBAITESURYOHAIBUNJOHO.GYOSHU_CD = #{gyoshuCd}
-            </if>
-            <if test="(gyoshuCd == null or gyoshuCd == '') and shozokuCd != '0' and selectableGyoshuCdList != null and selectableGyoshuCdList.size() > 0">
-              AND DAC119_KOBAITESURYOHAIBUNJOHO.GYOSHU_CD IN
-              <foreach item="item" collection="selectableGyoshuCdList" open="(" separator="," close=")">
-                #{item}
-              </foreach>
-            </if>
-        GROUP BY
-            DAC119_KOBAITESURYOHAIBUNJOHO.TAISHO_NENGETSU
-          , DAC119_KOBAITESURYOHAIBUNJOHO.GYOSHU_CD
-          , DAC119_KOBAITESURYOHAIBUNJOHO.TORIATSUKAI_KBN
-          , DAC119_KOBAITESURYOHAIBUNJOHO.NENSAN
-          , DAC119_KOBAITESURYOHAIBUNJOHO.TORIATSUKAI_SOSHIKI_CD
-          , DAC119_KOBAITESURYOHAIBUNJOHO.SHUSHI_KANRI_HINMOKU_DAIBUNRUI_CD
-          , DAC119_KOBAITESURYOHAIBUNJOHO.JIGYOSHO_CD
-        UNION ALL
-        SELECT
-            DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.TAISHO_NENGETSU
-          , DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.GYOSHU_CD
-          , '01' AS TORIATSUKAI_KBN
-          , DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.NENSAN
-          , DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.TORIATSUKAI_SOSHIKI_CD
-          , DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.SHUSHI_KANRI_HINMOKU_DAIBUNRUI_CD
-          , DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.JIGYOSHO_CD AS SASHIZU_JIGYOSHO_CD
-          , COALESCE(SUM(DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.CHOKUSOHIN_URIAGE_GEKKEI), 0) AS CHOKUSOHIN_URIAGE_GEKKEI
-          , COALESCE(SUM(DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.CHOKUSOHIN_TESURYO_GEKKEI), 0) AS CHOKUSOHIN_TESURYO_GEKKEI
-          , COALESCE(SUM(DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.ZAIKOHIN_URIAGE_GEKKEI), 0) AS ZAIKOHIN_URIAGE_GEKKEI
-          , COALESCE(SUM(DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.ZAIKOHIN_TESURYO_GEKKEI), 0) AS ZAIKOHIN_TESURYO_GEKKEI
-          , COALESCE(SUM(DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.KYOKYUHI_GEKKEI), 0) AS KYOKYUHI_GEKKEI
-          , COALESCE(SUM(DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.CHOKUSOHIN_URIAGE_RUIKEI), 0) AS CHOKUSOHIN_URIAGE_RUIKEI
-          , COALESCE(SUM(DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.CHOKUSOHIN_TESURYO_RUIKEI), 0) AS CHOKUSOHIN_TESURYO_RUIKEI
-          , COALESCE(SUM(DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.ZAIKOHIN_URIAGE_RUIKEI), 0) AS ZAIKOHIN_URIAGE_RUIKEI
-          , COALESCE(SUM(DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.ZAIKOHIN_TESURYO_RUIKEI), 0) AS ZAIKOHIN_TESURYO_RUIKEI
-          , COALESCE(SUM(DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.KYOKYUHI_RUIKEI), 0) AS KYOKYUHI_RUIKEI
-        FROM
-            DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA
-        WHERE
-            DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-            AND DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.KIJUN_NENGETSU = #{kijunNengetsu}
-            <if test="gyoshuCd != null and gyoshuCd != ''">
-              AND DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.GYOSHU_CD = #{gyoshuCd}
-            </if>
-            <if test="(gyoshuCd == null or gyoshuCd == '') and shozokuCd != '0' and selectableGyoshuCdList != null and selectableGyoshuCdList.size() > 0">
-              AND DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.GYOSHU_CD IN
-              <foreach item="item" collection="selectableGyoshuCdList" open="(" separator="," close=")">
-                #{item}
-              </foreach>
-            </if>
-        GROUP BY
-            DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.TAISHO_NENGETSU
-          , DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.GYOSHU_CD
-          , DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.NENSAN
-          , DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.TORIATSUKAI_SOSHIKI_CD
-          , DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.SHUSHI_KANRI_HINMOKU_DAIBUNRUI_CD
-          , DAC322_KOBAIKYOKEITESURYOHAIBUNKEISANDATA.JIGYOSHO_CD
-    )
-    SELECT
-        KOBAI_TESURYO_HAIBUN_KEISANSHO.TAISHO_NENGETSU
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.GYOSHU_CD
-      , DAA445_GYOSHUMST.GYOSHU_MEISHO
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.TORIATSUKAI_KBN
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.NENSAN
-      , TORIATSUKAI_SOSHIKI.JIGYOSHO_CD || '-' || KOBAI_TESURYO_HAIBUN_KEISANSHO.TORIATSUKAI_SOSHIKI_CD AS TORIATSUKAI_KASHO
-      , TORIATSUKAI_SOSHIKI_JIGYOSHO.SOSHIKI_MEI || ' ' || TORIATSUKAI_SOSHIKI.SOSHIKI_MEI AS TORIATSUKAI_KASHOMEI
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.SHUSHI_KANRI_HINMOKU_DAIBUNRUI_CD
-      , DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST.SHUSHI_KANRI_HINMOKU_DAIBUNRUI_MEISHO
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.SASHIZU_JIGYOSHO_CD
-      , SASHIZU_JIGYOSHO.JIGYOSHO_MEI_KJ AS SASHIZU_JIGYOSHOMEI
-      , (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI) AS SOURIAGE_GEKKEI
-      , (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_GEKKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_GEKKEI) AS SOTESURYO_GEKKEI
-      , ROUND(
-          CASE
-            WHEN (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI) = 0 THEN 0
-            ELSE (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_GEKKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_GEKKEI) / CAST(
-              (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI) AS DECIMAL
-            ) * 100
-          END
-        , 1
-        ) AS SOTESURYORITSU_GEKKEI
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.KYOKYUHI_GEKKEI AS KYOKYUHI_GEKKEI
-      , (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_GEKKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_GEKKEI - KOBAI_TESURYO_HAIBUN_KEISANSHO.KYOKYUHI_GEKKEI) AS JUNEKI_GEKKEI
-      , ROUND(
-          CASE
-            WHEN (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI) = 0 THEN 0
-            ELSE (
-              KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_GEKKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_GEKKEI - KOBAI_TESURYO_HAIBUN_KEISANSHO.KYOKYUHI_GEKKEI
-            ) / CAST(
-              (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI) AS DECIMAL
-            ) * 100
-          END
-        , 1
-        ) AS JUNEKIRITSU_GEKKEI
-      , (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_RUIKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_RUIKEI) AS SOURIAGE_RUIKEI
-      , (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_RUIKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_RUIKEI) AS SOTESURYO_RUIKEI
-      , ROUND(
-          CASE
-            WHEN (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_RUIKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_RUIKEI) = 0 THEN 0
-            ELSE (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_RUIKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_RUIKEI) / CAST(
-              (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_RUIKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_RUIKEI) AS DECIMAL
-            ) * 100
-          END
-        , 1
-        ) AS SOTESURYORITSU_RUIKEI
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.KYOKYUHI_RUIKEI AS KYOKYUHI_RUIKEI
-      , (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_RUIKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_RUIKEI - KOBAI_TESURYO_HAIBUN_KEISANSHO.KYOKYUHI_RUIKEI) AS JUNEKI_RUIKEI
-      , ROUND(
-          CASE
-            WHEN (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_RUIKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_RUIKEI) = 0 THEN 0
-            ELSE (
-              KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_RUIKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_RUIKEI - KOBAI_TESURYO_HAIBUN_KEISANSHO.KYOKYUHI_RUIKEI
-            ) / CAST(
-              (KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_RUIKEI + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_RUIKEI) AS DECIMAL
-            ) * 100
-          END
-        , 1
-        ) AS JUNEKIRITSU_RUIKEI
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI AS CHOKUSOHIN_URIAGE_GEKKEI
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_GEKKEI AS CHOKUSOHIN_TESURYO_GEKKEI
-      , ROUND(
-          CASE
-            WHEN KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI = 0 THEN 0
-            ELSE KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_GEKKEI / CAST(KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI AS DECIMAL) * 100
-          END
-        , 1
-        ) AS CHOKUSOHIN_TESURYORITSU_GEKKEI
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI AS ZAIKOHIN_URIAGE_GEKKEI
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_GEKKEI AS ZAIKOHIN_TESURYO_GEKKEI
-      , ROUND(
-          CASE
-            WHEN KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI = 0 THEN 0
-            ELSE KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_GEKKEI / CAST(KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI AS DECIMAL) * 100
-          END
-        , 1
-        ) AS ZAIKOHIN_TESURYORITSU_GEKKEI
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_RUIKEI AS CHOKUSOHIN_URIAGE_RUIKEI
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_RUIKEI AS CHOKUSOHIN_TESURYO_RUIKEI
-      , ROUND(
-          CASE
-            WHEN KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_RUIKEI = 0 THEN 0
-            ELSE KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_RUIKEI / CAST(KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_RUIKEI AS DECIMAL) * 100
-          END
-        , 1
-        ) AS CHOKUSOHIN_TESURYORITSU_RUIKEI
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_RUIKEI AS ZAIKOHIN_URIAGE_RUIKEI
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_RUIKEI AS ZAIKOHIN_TESURYO_RUIKEI
-      , ROUND(
-          CASE
-            WHEN KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_RUIKEI = 0 THEN 0
-            ELSE KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_RUIKEI / CAST(KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_RUIKEI AS DECIMAL) * 100
-          END
-        , 1
-        ) AS ZAIKOHIN_TESURYORITSU_RUIKEI
-    FROM
-        KOBAI_TESURYO_HAIBUN_KEISANSHO
-    LEFT JOIN DAA445_GYOSHUMST
-        ON DAA445_GYOSHUMST.GYOSHU_CD = KOBAI_TESURYO_HAIBUN_KEISANSHO.GYOSHU_CD
-        AND #{kijunNengetsuMatsujitsu} BETWEEN DAA445_GYOSHUMST.TEKIYO_KAISHIBI AND DAA445_GYOSHUMST.TEKIYO_SHURYOBI
-        AND DAA445_GYOSHUMST.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-    LEFT JOIN DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST
-        ON DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST.SHUSHI_KANRI_HINMOKU_DAIBUNRUI_CD = KOBAI_TESURYO_HAIBUN_KEISANSHO.SHUSHI_KANRI_HINMOKU_DAIBUNRUI_CD
-        AND #{kijunNengetsuMatsujitsu} BETWEEN DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST.TEKIYO_KAISHIBI AND DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST.TEKIYO_SHURYOBI
-        AND DAA454_SHUSHIKANRIHINMOKUDAIBUNRUIMST.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-    LEFT JOIN V_ACA201_USERDATKAINAI AS TORIATSUKAI_SOSHIKI
-        ON TORIATSUKAI_SOSHIKI.SOSHIKI_CD = KOBAI_TESURYO_HAIBUN_KEISANSHO.TORIATSUKAI_SOSHIKI_CD
-        AND #{kijunNengetsuMatsujitsu} BETWEEN TORIATSUKAI_SOSHIKI.TEKIYO_KAISHIBI AND TORIATSUKAI_SOSHIKI.TEKIYO_SHURYOBI
-        AND TORIATSUKAI_SOSHIKI.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-    LEFT JOIN V_AQA011_JIGYOSHOMST AS TORIATSUKAI_SOSHIKI_JIGYOSHO
-        ON TORIATSUKAI_SOSHIKI_JIGYOSHO.JIGYOSHO_CD = TORIATSUKAI_SOSHIKI.JIGYOSHO_CD
-        AND #{kijunNengetsuMatsujitsu} BETWEEN TORIATSUKAI_SOSHIKI_JIGYOSHO.TEKIYO_KAISHIBI AND TORIATSUKAI_SOSHIKI_JIGYOSHO.TEKIYO_SHURYOBI
-        AND TORIATSUKAI_SOSHIKI_JIGYOSHO.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-    LEFT JOIN V_AQA011_JIGYOSHOMST AS SASHIZU_JIGYOSHO
-        ON SASHIZU_JIGYOSHO.JIGYOSHO_CD = KOBAI_TESURYO_HAIBUN_KEISANSHO.SASHIZU_JIGYOSHO_CD
-        AND #{kijunNengetsuMatsujitsu} BETWEEN SASHIZU_JIGYOSHO.TEKIYO_KAISHIBI AND SASHIZU_JIGYOSHO.TEKIYO_SHURYOBI
-        AND SASHIZU_JIGYOSHO.SAKZYO_KBN = '${SAKZYO_KBN_YUKO}'
-    ORDER BY
-        KOBAI_TESURYO_HAIBUN_KEISANSHO.TAISHO_NENGETSU
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.GYOSHU_CD
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.TORIATSUKAI_KBN
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.NENSAN
-      , TORIATSUKAI_KASHO
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.SHUSHI_KANRI_HINMOKU_DAIBUNRUI_CD
-      , KOBAI_TESURYO_HAIBUN_KEISANSHO.SASHIZU_JIGYOSHO_CD
-    FETCH FIRST ${CSV_OUTPUT_MAX_CNT_SQL} ROWS ONLY
-  </select>
-
-</mapper>
+<!DOCTYPE html>
+<ui:composition
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="jakarta.faces.core"
+  xmlns:h="jakarta.faces.html"
+  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:aw="http://hokuren.or.jp/awa"
+  template="/AWA_layoutTemplate.xhtml">
+ 
+  <ui:param name="ctl" value="#{dac2024ctl}" />
+ 
+  <f:metadata>
+    <aw:InitAction
+      action="#{dac2024ctl.init}"
+      initialized="#{dac2024ctl.initialized}" />
+  </f:metadata>
+ 
+  <ui:define name="title">手数料配分計算書出力</ui:define>
+ 
+  <ui:define name="body">
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns"     var="MessageNo" />
+    <p:importConstants type="jp.or.hokuren.dac.view.dac2024.DAC2024_LocalCns" var="Dac2024Cns" />
+ 
+    <h:form id="dac2024Form">
+ 
+      <!-- エラーメッセージパネル -->
+      <p:panel
+        id="errorMessagePanel"
+        header="エラー情報"
+        styleClass="error left"
+        rendered="#{fn:length(facesContext.messageList) > 0}">
+        <p:messages
+          id="errorMessages"
+          closable="false"
+          showIcon="false"
+          styleClass="bullet" />
+      </p:panel>
+ 
+      <!-- 操作メッセージ -->
+      <p:outputPanel id="operationMessagePanel" styleClass="box center">
+        <p>検索条件を入力し、「CSV出力」ボタンを押してください。</p>
+      </p:outputPanel>
+ 
+      <!-- 検索条件入力パネル -->
+      <p:panel
+        id="conditionPanel"
+        header="検索条件"
+        toggleable="true"
+        toggleSpeed="100"
+        styleClass="fit">
+ 
+        <p:panelGrid columns="0" layout="tabular">
+ 
+          <!-- 出力帳票選択 -->
+          <p:row>
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel value="出力帳票" />
+            </p:column>
+            <p:column style="width: 80%">
+              <p:selectOneRadio
+                id="outputChohyoId"
+                value="#{dac2024ctl.searchConditionDto.outputChohyoId}"
+                layout="lineDirection">
+                <f:selectItem
+                  itemValue="#{Dac2024Cns.OUTPUT_CHOHYO_ID_ZENDO_KYOKEI_TESURYO_HAIBUN_KEISANSHO}"
+                  itemLabel="全道共計手数料配分計算書" />
+                <f:selectItem
+                  itemValue="#{Dac2024Cns.OUTPUT_CHOHYO_ID_KOBAI_TESURYO_HAIBUN_KEISANSHO}"
+                  itemLabel="購買手数料配分計算書" />
+              </p:selectOneRadio>
+            </p:column>
+          </p:row>
+ 
+          <!-- 基準年月 -->
+          <p:row>
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel for="kijunNengetsu" value="基準年月">
+                <span class="required">(*)</span>
+              </p:outputLabel>
+            </p:column>
+            <p:column style="width: 80%">
+              <p:datePicker
+                id="kijunNengetsu"
+                value="#{dac2024ctl.searchConditionDto.kijunNengetsu}"
+                mode="popup"
+                pattern="yyyy/MM"
+                view="month"
+                mask="true"
+                keepInvalid="true"
+                placeholder="YYYY/MM"
+                locale="ja"
+                yearNavigator="true"
+                monthNavigator="true"
+                showButtonBar="true"
+                inputmode="numeric"
+                autocomplete="off"
+                size="10">
+                <aw:RequiredValidator
+                  msgKnrNum="#{MessageNo.DAA00000E}"
+                  msgEmbedStr1="基準年月" />
+                <aw:SeirekiYmdValidator
+                  enabledMaxDate="FALSE"
+                  msgKnrNum="#{MessageNo.DAA00017E}"
+                  msgEmbedStr1="基準年月" />
+                <aw:SlashSeparatedDateFormatConverter />
+              </p:datePicker>
+            </p:column>
+          </p:row>
+ 
+          <!-- 業種（業種ラベル表示フラグ=true の場合はラベルのみ） -->
+          <p:row rendered="#{dac2024ctl.industryLabelDisplayFlag}">
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel value="業種" />
+            </p:column>
+            <p:column style="width: 80%">
+              <p:outputLabel value="#{dac2024ctl.searchConditionDto.gyoshuMei}" />
+              <h:inputHidden value="#{dac2024ctl.searchConditionDto.gyoshuCd}" />
+            </p:column>
+          </p:row>
+ 
+          <!-- 業種（業種ラベル表示フラグ=false の場合は入力 + 検索ボタン） -->
+          <p:row rendered="#{not dac2024ctl.industryLabelDisplayFlag}">
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel for="gyoshuCd" value="業種" />
+            </p:column>
+            <p:column style="width: 80%">
+              <p:inputText
+                id="gyoshuCd"
+                value="#{dac2024ctl.searchConditionDto.gyoshuCd}"
+                autocomplete="off"
+                maxlength="2"
+                size="5"
+                styleClass="singleByte">
+                <aw:TrimConverter />
+                <aw:AlphanumericValidator
+                  msgKnrNum="#{MessageNo.DAA00012E}"
+                  msgEmbedStr1="業種" />
+              </p:inputText>
+              <!-- 経理部以外の場合のみ業種検索ボタンを表示する -->
+              <p:commandButton
+                id="industrySearchButton"
+                value="検索"
+                styleClass="ui-button-secondary"
+                actionListener="#{dac2024ctl.showIndustrySearch('industrySearchButton')}"
+                update="@form"
+                process="@this"
+                style="margin-left: 5px" />
+              <p:outputLabel
+                id="gyoshuMei"
+                value="　#{dac2024ctl.searchConditionDto.gyoshuMei}" />
+            </p:column>
+          </p:row>
+ 
+        </p:panelGrid>
+ 
+        <!-- ボタンエリア（パネル内部に配置し、緑色背景上に表示する） -->
+        <div style="text-align: center; padding: 10px 0;">
+          <!-- クリアボタン -->
+          <p:commandButton
+            id="clearButton"
+            value="クリア"
+            styleClass="ui-button-secondary"
+            action="#{dac2024ctl.clear}"
+            update="conditionPanel"
+            process="@this" />
+          <!-- 表示ボタン -->
+          <p:commandButton
+            id="showButton"
+            value="表示"
+            styleClass="ui-button-secondary"
+            action="#{dac2024ctl.show}"
+            update="@form"
+            process="@form"
+            style="margin-left: 5px" />
+          <!-- CSV出力ボタン -->
+          <p:commandButton
+            id="exportCsvButton"
+            value="CSV出力"
+            style="margin-left: 5px"
+            ajax="false">
+            <p:fileDownload
+              value="#{dac2024ctl.exportCsv()}"
+              contentDisposition="attachment" />
+          </p:commandButton>
+        </div>
+ 
+      </p:panel>
+ 
+    </h:form>
+ 
+    <!-- 業種検索ダイアログ（TODO: DAA1108が生成されたら以下のコメントを外す） -->
+    <!--
+    <ui:include src="/view/DAA1108/DAA1108_IndustrySearch.xhtml" />
+    -->
+ 
+  </ui:define>
+ 
+</ui:composition>
