@@ -84,23 +84,18 @@
               </p:outputLabel>
             </p:column>
             <p:column style="width: 80%">
-              <p:inputMask
+              <p:inputText
                 id="kijunNengetsu"
                 value="#{dac2024ctl.searchConditionDto.kijunNengetsu}"
-                mask="9999/99"
-                placeholder="YYYY/MM"
-                autocomplete="off"
+                maxlength="6"
                 size="10"
+                placeholder="YYYYMM"
+                autocomplete="off"
                 styleClass="singleByte">
                 <aw:RequiredValidator
                   msgKnrNum="#{MessageNo.DAA00000E}"
                   msgEmbedStr1="基準年月" />
-                <aw:SeirekiYmdValidator
-                  enabledMaxDate="FALSE"
-                  msgKnrNum="#{MessageNo.DAA00017E}"
-                  msgEmbedStr1="基準年月" />
-                <aw:SlashSeparatedDateFormatConverter />
-              </p:inputMask>
+              </p:inputText>
             </p:column>
           </p:row>
  
