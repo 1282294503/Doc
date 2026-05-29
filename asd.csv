@@ -1,210 +1,194 @@
-5:00:58.306 [Default Executor-thread-3] ERROR j.s.a.w.j.ArvicioFacesExceptionHandler - jakarta.faces.component.UpdateModelException: org.apache.myfaces.view.facelets.el.ContextAwareELException: jakarta.el.ELException: Cannot convert [2026/05] of type [class java.lang.String] to [class java.lang.Integer]
-	at jakarta.faces.component.UIInput.updateModel(UIInput.java:421)
-	at jakarta.faces.component.UIInput.processUpdates(UIInput.java:351)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at org.primefaces.component.panel.Panel.processUpdates(Panel.java:149)
-	at jakarta.faces.component.UIForm.processUpdates(UIForm.java:250)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl$PhaseAwareVisitCallback.visit(PartialViewContextImpl.java:721)
-	at [internal classes]
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:880)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIForm.visitTree(UIForm.java:294)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl.processPartialExecute(PartialViewContextImpl.java:407)
-	at [internal classes]
-	at org.primefaces.context.PrimePartialViewContext.processPartial(PrimePartialViewContext.java:65)
-	at jakarta.faces.component.UIViewRoot$UpdateModelPhaseProcessor.process(UIViewRoot.java:1872)
-	at jakarta.faces.component.UIViewRoot._process(UIViewRoot.java:1702)
-	at jakarta.faces.component.UIViewRoot.processUpdates(UIViewRoot.java:967)
-	at org.apache.myfaces.lifecycle.UpdateModelValuesExecutor.execute(UpdateModelValuesExecutor.java:39)
-	at [internal classes]
-	at jakarta.faces.webapp.FacesServlet.service(FacesServlet.java:223)
-	at com.ibm.ws.webcontainer.servlet.ServletWrapper.service(ServletWrapper.java:1266)
-	at [internal classes]
-	at jp.scsk.arvicio3.web.filter.ArvicioWebFilter.process(ArvicioWebFilter.java:249)
-	at jp.scsk.arvicio3.web.filter.ArvicioWebFilter.doFilter(ArvicioWebFilter.java:150)
-	at com.ibm.ws.webcontainer.filter.FilterInstanceWrapper.doFilter(FilterInstanceWrapper.java:203)
-	at [internal classes]
-	at jp.scsk.arvicio3.component.encodefilter.EncodeFilter.doFilter(EncodeFilter.java:163)
-	at com.ibm.ws.webcontainer.filter.FilterInstanceWrapper.doFilter(FilterInstanceWrapper.java:203)
-	at [internal classes]
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
-	at java.base/java.lang.Thread.run(Thread.java:1595)
-Caused by org.apache.myfaces.view.facelets.el.ContextAwareELException: jakarta.el.ELException: Cannot convert [2026/05] of type [class java.lang.String] to [class java.lang.Integer]
-	at org.apache.myfaces.view.facelets.el.ContextAwareTagValueExpression.setValue(ContextAwareTagValueExpression.java:166)
-	at jakarta.faces.component.UIInput.updateModel(UIInput.java:403)
-	at jakarta.faces.component.UIInput.processUpdates(UIInput.java:351)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at org.primefaces.component.panel.Panel.processUpdates(Panel.java:149)
-	at jakarta.faces.component.UIForm.processUpdates(UIForm.java:250)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl$PhaseAwareVisitCallback.visit(PartialViewContextImpl.java:721)
-	at [internal classes]
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:880)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIForm.visitTree(UIForm.java:294)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl.processPartialExecute(PartialViewContextImpl.java:407)
-	at [internal classes]
-	at org.primefaces.context.PrimePartialViewContext.processPartial(PrimePartialViewContext.java:65)
-	at jakarta.faces.component.UIViewRoot$UpdateModelPhaseProcessor.process(UIViewRoot.java:1872)
-	at jakarta.faces.component.UIViewRoot._process(UIViewRoot.java:1702)
-	at jakarta.faces.component.UIViewRoot.processUpdates(UIViewRoot.java:967)
-	at org.apache.myfaces.lifecycle.UpdateModelValuesExecutor.execute(UpdateModelValuesExecutor.java:39)
-	at [internal classes]
-	at jakarta.faces.webapp.FacesServlet.service(FacesServlet.java:223)
-	at com.ibm.ws.webcontainer.servlet.ServletWrapper.service(ServletWrapper.java:1266)
-	at [internal classes]
-	at jp.scsk.arvicio3.web.filter.ArvicioWebFilter.process(ArvicioWebFilter.java:249)
-	at jp.scsk.arvicio3.web.filter.ArvicioWebFilter.doFilter(ArvicioWebFilter.java:150)
-	at com.ibm.ws.webcontainer.filter.FilterInstanceWrapper.doFilter(FilterInstanceWrapper.java:203)
-	at [internal classes]
-	at jp.scsk.arvicio3.component.encodefilter.EncodeFilter.doFilter(EncodeFilter.java:163)
-	at com.ibm.ws.webcontainer.filter.FilterInstanceWrapper.doFilter(FilterInstanceWrapper.java:203)
-	at [internal classes]
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
-	at java.base/java.lang.Thread.run(Thread.java:1595)
-Caused by jakarta.el.ELException: Cannot convert [2026/05] of type [class java.lang.String] to [class java.lang.Integer]
-	at org.apache.el.lang.ELSupport.coerceToNumber(ELSupport.java:408)
-	at [internal classes]
-	at jakarta.faces.component.UIInput.updateModel(UIInput.java:403)
-	at jakarta.faces.component.UIInput.processUpdates(UIInput.java:351)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at org.primefaces.component.panel.Panel.processUpdates(Panel.java:149)
-	at jakarta.faces.component.UIForm.processUpdates(UIForm.java:250)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl$PhaseAwareVisitCallback.visit(PartialViewContextImpl.java:721)
-	at [internal classes]
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:880)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIForm.visitTree(UIForm.java:294)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl.processPartialExecute(PartialViewContextImpl.java:407)
-	at [internal classes]
-	at org.primefaces.context.PrimePartialViewContext.processPartial(PrimePartialViewContext.java:65)
-	at jakarta.faces.component.UIViewRoot$UpdateModelPhaseProcessor.process(UIViewRoot.java:1872)
-	at jakarta.faces.component.UIViewRoot._process(UIViewRoot.java:1702)
-	at jakarta.faces.component.UIViewRoot.processUpdates(UIViewRoot.java:967)
-	at org.apache.myfaces.lifecycle.UpdateModelValuesExecutor.execute(UpdateModelValuesExecutor.java:39)
-	at [internal classes]
-	at jakarta.faces.webapp.FacesServlet.service(FacesServlet.java:223)
-	at com.ibm.ws.webcontainer.servlet.ServletWrapper.service(ServletWrapper.java:1266)
-	at [internal classes]
-	at jp.scsk.arvicio3.web.filter.ArvicioWebFilter.process(ArvicioWebFilter.java:249)
-	at jp.scsk.arvicio3.web.filter.ArvicioWebFilter.doFilter(ArvicioWebFilter.java:150)
-	at com.ibm.ws.webcontainer.filter.FilterInstanceWrapper.doFilter(FilterInstanceWrapper.java:203)
-	at [internal classes]
-	at jp.scsk.arvicio3.component.encodefilter.EncodeFilter.doFilter(EncodeFilter.java:163)
-	at com.ibm.ws.webcontainer.filter.FilterInstanceWrapper.doFilter(FilterInstanceWrapper.java:203)
-	at [internal classes]
-	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
-	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
-	at java.base/java.lang.Thread.run(Thread.java:1595)
-2026-05-27 15:00:58 [ERROR] [HP-YRD136] [99990001] [-wE9acsp4ajVvWOykTHaVKT] [d6959d49-993c-4b59-a82a-7d132a2a99cb] [Thread_run_1595]System Error
-2026-05-27 15:00:58 [ERROR] [HP-YRD136] [99990001] [-wE9acsp4ajVvWOykTHaVKT] [d6959d49-993c-4b59-a82a-7d132a2a99cb] [Thread_run_1595]jakarta.faces.component.UpdateModelException: org.apache.myfaces.view.facelets.el.ContextAwareELException: jakarta.el.ELException: Cannot convert [2026/05] of type [class java.lang.String] to [class java.lang.Integer]
-	at jakarta.faces.component.UIInput.updateModel(UIInput.java:421)
-	at jakarta.faces.component.UIInput.processUpdates(UIInput.java:351)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at org.primefaces.component.panel.Panel.processUpdates(Panel.java:149)
-	at jakarta.faces.component.UIForm.processUpdates(UIForm.java:250)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl$PhaseAwareVisitCallback.visit(PartialViewContextImpl.java:721)
-	at [internal classes]
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:880)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIForm.visitTree(UIForm.java:294)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl.processPartialExecute(PartialViewContextImpl.java:407)
-	at [internal classes]
-	at org.primefaces.context.PrimePartialViewContext.processPartial(PrimePartialViewContext.java:65)
-	at jakarta.faces.component.UIViewRoot$UpdateModelPhaseProcessor.process(UIViewRoot.java:1872)
-	at jakarta.faces.component.UIViewRoot._process(UIViewRoot.java:1702)
-	at jakarta.faces.component.UIViewRoot.processUpdates(UIViewRoot.java:967)
-	at org.apache.myfaces.lifecycle.UpdateModelValuesExecutor.execute(UpdateModelValuesExecutor.java:39)
-	at [internal classes]
-	at jakarta.faces.webapp.FacesServlet.service(FacesServlet.java:223)
-	at com.ibm.ws.webcontainer.servlet.ServletWrapper.service(ServletWrapper.java:1266)
-	at [internal classes]
-	... 34 more
-Caused by org.apache.myfaces.view.facelets.el.ContextAwareELException: jakarta.el.ELException: Cannot convert [2026/05] of type [class java.lang.String] to [class java.lang.Integer]
-	at org.apache.myfaces.view.facelets.el.ContextAwareTagValueExpression.setValue(ContextAwareTagValueExpression.java:166)
-	at jakarta.faces.component.UIInput.updateModel(UIInput.java:403)
-	at jakarta.faces.component.UIInput.processUpdates(UIInput.java:351)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at org.primefaces.component.panel.Panel.processUpdates(Panel.java:149)
-	at jakarta.faces.component.UIForm.processUpdates(UIForm.java:250)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl$PhaseAwareVisitCallback.visit(PartialViewContextImpl.java:721)
-	at [internal classes]
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:880)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIForm.visitTree(UIForm.java:294)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl.processPartialExecute(PartialViewContextImpl.java:407)
-	at [internal classes]
-	at org.primefaces.context.PrimePartialViewContext.processPartial(PrimePartialViewContext.java:65)
-	at jakarta.faces.component.UIViewRoot$UpdateModelPhaseProcessor.process(UIViewRoot.java:1872)
-	at jakarta.faces.component.UIViewRoot._process(UIViewRoot.java:1702)
-	at jakarta.faces.component.UIViewRoot.processUpdates(UIViewRoot.java:967)
-	at org.apache.myfaces.lifecycle.UpdateModelValuesExecutor.execute(UpdateModelValuesExecutor.java:39)
-	at [internal classes]
-	at jakarta.faces.webapp.FacesServlet.service(FacesServlet.java:223)
-	at com.ibm.ws.webcontainer.servlet.ServletWrapper.service(ServletWrapper.java:1266)
-	at [internal classes]
-	... 35 more
-Caused by jakarta.el.ELException: Cannot convert [2026/05] of type [class java.lang.String] to [class java.lang.Integer]
-	at org.apache.el.lang.ELSupport.coerceToNumber(ELSupport.java:408)
-	at [internal classes]
-	at jakarta.faces.component.UIInput.updateModel(UIInput.java:403)
-	at jakarta.faces.component.UIInput.processUpdates(UIInput.java:351)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at jakarta.faces.component.UIComponentBase.processUpdates(UIComponentBase.java:1427)
-	at org.primefaces.component.panel.Panel.processUpdates(Panel.java:149)
-	at jakarta.faces.component.UIForm.processUpdates(UIForm.java:250)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl$PhaseAwareVisitCallback.visit(PartialViewContextImpl.java:721)
-	at [internal classes]
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:880)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIForm.visitTree(UIForm.java:294)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at jakarta.faces.component.UIComponent.visitTree(UIComponent.java:908)
-	at jakarta.faces.component.UIComponentBase.visitTree(UIComponentBase.java:1120)
-	at org.apache.myfaces.context.servlet.PartialViewContextImpl.processPartialExecute(PartialViewContextImpl.java:407)
-	at [internal classes]
-	at org.primefaces.context.PrimePartialViewContext.processPartial(PrimePartialViewContext.java:65)
-	at jakarta.faces.component.UIViewRoot$UpdateModelPhaseProcessor.process(UIViewRoot.java:1872)
-	at jakarta.faces.component.UIViewRoot._process(UIViewRoot.java:1702)
-	at jakarta.faces.component.UIViewRoot.processUpdates(UIViewRoot.java:967)
-	at org.apache.myfaces.lifecycle.UpdateModelValuesExecutor.execute(UpdateModelValuesExecutor.java:39)
-	... 40 more
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:f="jakarta.faces.core"
+  xmlns:h="jakarta.faces.html"
+  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+  xmlns:p="http://primefaces.org/ui"
+  xmlns:ui="jakarta.faces.facelets"
+  xmlns:aw="http://hokuren.or.jp/awa"
+  template="/AWA_layoutTemplate.xhtml">
+ 
+  <ui:param name="ctl" value="#{dac2024ctl}" />
+ 
+  <f:metadata>
+    <aw:InitAction
+      action="#{dac2024ctl.init}"
+      initialized="#{dac2024ctl.initialized}" />
+  </f:metadata>
+ 
+  <ui:define name="title">手数料配分計算書出力</ui:define>
+ 
+  <ui:define name="body">
+    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns"     var="MessageNo" />
+    <p:importConstants type="jp.or.hokuren.dac.view.dac2024.DAC2024_LocalCns" var="Dac2024Cns" />
+ 
+ 
+      <!-- エラーメッセージパネル -->
+      <h:panelGroup id="errorMessageWrapper" layout="block">
+        <p:panel
+          id="errorMessagePanel"
+          header="エラー情報"
+          styleClass="error left"
+          rendered="#{fn:length(facesContext.messageList) > 0}">
+          <p:messages
+            id="errorMessages"
+            closable="false"
+            showIcon="false"
+            styleClass="bullet" />
+        </p:panel>
+      </h:panelGroup>
+ 
+      <!-- 画面名 -->
+      <p:outputLabel value="手数料配分計算書出力" styleClass="screenTitle" />
+ 
+      <!-- 操作メッセージ -->
+      <p:outputPanel id="operationMessagePanel" styleClass="box center">
+        <p>検索条件を入力し、「CSV出力」ボタンを押してください。</p>
+      </p:outputPanel>
+ 
+      <!-- 検索条件入力パネル -->
+      <p:panel
+        id="conditionPanel"
+        header="検索条件"
+        toggleable="true"
+        toggleSpeed="100"
+        styleClass="fit">
+ 
+        <p:panelGrid columns="0" layout="tabular">
+ 
+          <!-- 出力帳票選択 -->
+          <p:row>
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel value="出力帳票" />
+            </p:column>
+            <p:column style="width: 80%">
+              <p:selectOneRadio
+                id="outputChohyoId"
+                value="#{dac2024ctl.searchConditionDto.outputChohyoId}"
+                layout="lineDirection">
+                <f:selectItem
+                  itemValue="#{Dac2024Cns.OUTPUT_CHOHYO_ID_ZENDO_KYOKEI_TESURYO_HAIBUN_KEISANSHO}"
+                  itemLabel="全道共計手数料配分計算書" />
+                <f:selectItem
+                  itemValue="#{Dac2024Cns.OUTPUT_CHOHYO_ID_KOBAI_TESURYO_HAIBUN_KEISANSHO}"
+                  itemLabel="購買手数料配分計算書" />
+              </p:selectOneRadio>
+            </p:column>
+          </p:row>
+ 
+          <!-- 基準年月 -->
+          <p:row>
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel for="kijunNengetsu" value="基準年月">
+                <span class="required">(*)</span>
+              </p:outputLabel>
+            </p:column>
+            <p:column style="width: 80%">
+              <p:inputText
+                id="kijunNengetsu"
+                value="#{dac2024ctl.searchConditionDto.kijunNengetsu}"
+                maxlength="6"
+                size="10"
+                placeholder="YYYYMM"
+                autocomplete="off"
+                styleClass="singleByte">
+                <aw:TrimConverter />
+                <aw:RequiredValidator
+                  msgKnrNum="#{MessageNo.DAA00001E}"
+                  msgEmbedStr1="基準年月" />
+                <aw:YearMonthValidator
+                  msgKnrNum="#{MessageNo.DAA00001E}"
+                  msgEmbedStr1="基準年月" />
+              </p:inputText>
+            </p:column>
+          </p:row>
+ 
+          <!-- 業種（業種ラベル表示フラグ=true の場合はラベルのみ） -->
+          <p:row rendered="#{dac2024ctl.industryLabelDisplayFlag}">
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel value="業種" />
+            </p:column>
+            <p:column style="width: 80%">
+              <p:outputLabel value="#{dac2024ctl.searchConditionDto.gyoshuMei}" />
+              <h:inputHidden value="#{dac2024ctl.searchConditionDto.gyoshuCd}" />
+            </p:column>
+          </p:row>
+ 
+          <!-- 業種（業種ラベル表示フラグ=false の場合は入力 + 検索ボタン） -->
+          <p:row rendered="#{not dac2024ctl.industryLabelDisplayFlag}">
+            <p:column style="width: 20%; height: 25px">
+              <p:outputLabel for="gyoshuCd" value="業種" />
+            </p:column>
+            <p:column style="width: 80%">
+              <p:inputText
+                id="gyoshuCd"
+                value="#{dac2024ctl.searchConditionDto.gyoshuCd}"
+                autocomplete="off"
+                maxlength="2"
+                size="5"
+                styleClass="singleByte">
+                <aw:TrimConverter />
+                <aw:AlphanumericValidator
+                  msgKnrNum="#{MessageNo.DAA00012E}"
+                  msgEmbedStr1="業種" />
+                <aw:MaxStringDigitsValidator
+                  msgKnrNum="#{MessageNo.DAA00012E}"
+                  msgEmbedStr1="業種" />
+              </p:inputText>
+              <!-- 経理部以外の場合のみ業種検索ボタンを表示する -->
+              <p:commandButton
+                id="industrySearchButton"
+                value="検索"
+                styleClass="ui-button-secondary"
+                actionListener="#{dac2024ctl.showIndustrySearch('industrySearchButton')}"
+                update="@form"
+                process="@this"
+                style="margin-left: 5px" />
+              <p:outputLabel
+                id="gyoshuMei"
+                value="　#{dac2024ctl.searchConditionDto.gyoshuMei}" />
+            </p:column>
+          </p:row>
+ 
+        </p:panelGrid>
+ 
+        <p:outputPanel styleClass="center label">
+            <p:commandButton
+              id="clearButton"
+              value="クリア"
+              action="#{dac2024ctl.clear}"
+              update="conditionPanel"
+              process="@this"
+              style="margin:0 8px;"/>
+            <p:commandButton
+              id="showButton"
+              value="表示"
+              action="#{dac2024ctl.show}"
+              update="errorMessageWrapper conditionPanel"
+              process="@form"
+              style="margin:0 8px;"/>
+            <p:commandButton
+              id="exportCsvButton"
+              value="CSV出力"
+              ajax="false"
+              style="margin:0 8px;">
+              <p:fileDownload
+                value="#{dac2024ctl.exportCsv()}"
+                contentDisposition="attachment" />
+            </p:commandButton>
+        </p:outputPanel>
+ 
+      </p:panel>
+ 
+ 
+    <!-- 業種検索ダイアログ（TODO: DAA1108が生成されたら以下のコメントを外す） -->
+    <!--
+    <ui:include src="/view/DAA1108/DAA1108_IndustrySearch.xhtml" />
+    -->
+ 
+  </ui:define>
+ 
+</ui:composition>
+ 
