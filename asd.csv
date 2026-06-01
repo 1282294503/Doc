@@ -1,111 +1,20 @@
--- ============================================================
--- 共通組織ビュー
--- ソース: V_AQA011_JigyoshoMst / V_AQA012_JigyohnbMst /
---         V_AQA013_BuMst / V_AQA014_KaMst / V_AQA015_ShisetMst
--- ============================================================
-CREATE VIEW V_COMMON_SOSHIKI (
-      SOSHIKI_CD
-    , SOSHIKI_MEI_KJ
-    , JIGYOSHO_CD
-    , JIGYOHNB_CD
-    , BU_CD
-    , KA_CD
-    , SHIST_CD
-    , JYOI_SOSHIKI_CD
-    , TEKIYO_KAISHIBI
-    , TEKIYO_SHURYOBI
-) AS
--- 事業所マスタ
-SELECT
-      A.SOSHIKI_CD
-    , CAST(A.JIGYOSHO_MEI_KJ   AS VARCHAR(50))
-    , A.JIGYOSHO_CD
-    , CAST(NULL                AS CHAR(2))
-    , CAST(NULL                AS CHAR(2))
-    , CAST(NULL                AS CHAR(3))
-    , CAST(NULL                AS CHAR(3))
-    , CAST(''                  AS VARCHAR(4))
-    , A.TEKIYO_KAISHIBI
-    , A.TEKIYO_SHURYOBI
-FROM V_AQA011_JigyoshoMst A
-WHERE A.SAKZYO_KBN = '0'
-UNION ALL
--- 事業本部マスタ
-SELECT
-      A.SOSHIKI_CD
-    , CAST(A.JIGYOHNB_MEI_KJ  AS VARCHAR(50))
-    , A.JIGYOSHO_CD
-    , A.JIGYOHNB_CD
-    , CAST(NULL                AS CHAR(2))
-    , CAST(NULL                AS CHAR(3))
-    , CAST(NULL                AS CHAR(3))
-    , CAST(''                  AS VARCHAR(4))
-    , A.TEKIYO_KAISHIBI
-    , A.TEKIYO_SHURYOBI
-FROM V_AQA012_JigyohnbMst A
-WHERE A.SAKZYO_KBN = '0'
-UNION ALL
--- 部マスタ
-SELECT
-      A.SOSHIKI_CD
-    , CAST(A.BU_MEI_KJ         AS VARCHAR(50))
-    , A.JIGYOSHO_CD
-    , A.JIGYOHNB_CD
-    , A.BU_CD
-    , CAST(NULL                AS CHAR(3))
-    , CAST(NULL                AS CHAR(3))
-    , CAST(
-        CASE
-            -- ※元SQL条件「= ''」は論理逆転の可能性あり 要確認
-            --   事業本部コードが空 → 事業本部配下は不自然 → 「<> ''」では？
-            WHEN TRIM(A.JIGYOHNB_CD) = ''
-                THEN '2' || A.JIGYOHNB_CD
-            ELSE
-                '1' || A.JIGYOSHO_CD
-        END                    AS VARCHAR(4))
-    , A.TEKIYO_KAISHIBI
-    , A.TEKIYO_SHURYOBI
-FROM V_AQA013_BuMst A
-WHERE A.SAKZYO_KBN = '0'
-UNION ALL
--- 課マスタ
-SELECT
-      A.SOSHIKI_CD
-    , CAST(A.KA_MEI_KJ         AS VARCHAR(50))
-    , A.JIGYOSHO_CD
-    , A.JIGYOHNB_CD
-    , A.BU_CD
-    , A.KA_CD
-    , CAST(A.SHIST_CD          AS CHAR(3))
-    , CAST(
-        CASE
-            WHEN A.KA_KBN = '?'             -- [定数.会計コード定義.課区分.本所課]        ※要確認
-                THEN '3' || A.BU_CD
-            WHEN A.KA_KBN IN ('?', '?', '?') -- 支所課 / 支店課 / 事業所課               ※要確認
-                THEN '1' || A.JIGYOSHO_CD
-            WHEN A.KA_KBN = '?'             -- [定数.会計コード定義.課区分.施設課]        ※要確認
-                THEN '5' || A.SHIST_CD
-            WHEN A.KA_KBN IN ('?', '?')     -- 事業本部直轄課 / 販売本部課               ※要確認
-                THEN '2' || A.JIGYOHNB_CD
-            ELSE ''
-        END                    AS VARCHAR(4))
-    , A.TEKIYO_KAISHIBI
-    , A.TEKIYO_SHURYOBI
-FROM V_AQA014_KaMst A
-WHERE A.SAKZYO_KBN = '0'
-UNION ALL
--- 施設マスタ
-SELECT
-      A.SOSHIKI_CD
-    , CAST(A.SHIST_MEI_KJ      AS VARCHAR(50))
-    , A.JIGYOSHO_CD
-    , A.JIGYOHNB_CD
-    , A.BU_CD
-    , A.KA_CD
-    , CAST(A.SHIST_CD          AS CHAR(3))
-    , CAST(''                  AS VARCHAR(4))
-    , A.TEKIYO_KAISHIBI
-    , A.TEKIYO_SHURYOBI
-FROM V_AQA015_ShisetMst A
-WHERE A.SAKZYO_KBN = '0'
-;
+UND(
+  CASE WHEN (
+    KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI
+    + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI
+  ) = 0
+  THEN 0
+  ELSE
+    CAST(
+      KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_GEKKEI
+      + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_GEKKEI
+      - KOBAI_TESURYO_HAIBUN_KEISANSHO.KYOKYUHI_GEKKEI
+    AS DECIMAL(15,4) )
+    / CAST(
+      KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI
+      + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI
+    AS DECIMAL(15,4) )
+    * 100
+  END
+, 1 )
+AS c
