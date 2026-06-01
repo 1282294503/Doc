@@ -1,20 +1,26 @@
-UND(
-  CASE WHEN (
-    KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI
-    + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI
-  ) = 0
-  THEN 0
-  ELSE
-    CAST(
-      KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_TESURYO_GEKKEI
-      + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_TESURYO_GEKKEI
-      - KOBAI_TESURYO_HAIBUN_KEISANSHO.KYOKYUHI_GEKKEI
-    AS DECIMAL(15,4) )
-    / CAST(
-      KOBAI_TESURYO_HAIBUN_KEISANSHO.CHOKUSOHIN_URIAGE_GEKKEI
-      + KOBAI_TESURYO_HAIBUN_KEISANSHO.ZAIKOHIN_URIAGE_GEKKEI
-    AS DECIMAL(15,4) )
-    * 100
-  END
-, 1 )
-AS c
+お世話になっております。
+開発中に下記の不具合を確認しましたので、ご報告いたします。
+
+■ 不具合報告：純益率の計算結果が0になる件
+
+①現象
+購買手数料配分情報検索において、純益率（月計）の計算結果が期待値（例：50）ではなく、0が返される。
+
+②原因
+純益率の計算式において、分子が整数型のまま除算が行われているため、DB2の整数演算により小数部が切り捨てられ、結果が0となる。
+なお、DB2では CAST(x AS DECIMAL) はスケール0の DECIMAL(5,0) として扱われるため、分母をキャストしても小数精度が確保されない。
+
+③修正内容
+分子に * 1.0 を付与することで、小数演算を強制する形に修正した。
+
+修正前：（整数分子）/ CAST(（整数分母）AS DECIMAL) * 100
+修正後：（整数分子 * 1.0）/ CAST(（整数分母）AS DECIMAL) * 100
+
+④影響範囲
+同様の除算パターンを使用している純益率（累計）・純益率（年計）等、同SQLファイル内の他の比率計算項目にも同じ問題が存在する可能性がある。
+同ファイル内の / CAST(... AS DECIMAL) を使用している全ての比率計算箇所を一括確認・修正する予定。
+
+⑤確認結果
+純益率（月計）については修正後、期待値（50）が正しく返されることを確認済み。
+
+以上、ご確認のほどよろしくお願いいたします。
