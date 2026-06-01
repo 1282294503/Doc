@@ -1,194 +1,111 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html>
-<ui:composition
-  xmlns="http://www.w3.org/1999/xhtml"
-  xmlns:f="jakarta.faces.core"
-  xmlns:h="jakarta.faces.html"
-  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
-  xmlns:p="http://primefaces.org/ui"
-  xmlns:ui="jakarta.faces.facelets"
-  xmlns:aw="http://hokuren.or.jp/awa"
-  template="/AWA_layoutTemplate.xhtml">
- 
-  <ui:param name="ctl" value="#{dac2024ctl}" />
- 
-  <f:metadata>
-    <aw:InitAction
-      action="#{dac2024ctl.init}"
-      initialized="#{dac2024ctl.initialized}" />
-  </f:metadata>
- 
-  <ui:define name="title">手数料配分計算書出力</ui:define>
- 
-  <ui:define name="body">
-    <p:importConstants type="jp.or.hokuren.daa.def.DAA_MessageNoCns"     var="MessageNo" />
-    <p:importConstants type="jp.or.hokuren.dac.view.dac2024.DAC2024_LocalCns" var="Dac2024Cns" />
- 
- 
-      <!-- エラーメッセージパネル -->
-      <h:panelGroup id="errorMessageWrapper" layout="block">
-        <p:panel
-          id="errorMessagePanel"
-          header="エラー情報"
-          styleClass="error left"
-          rendered="#{fn:length(facesContext.messageList) > 0}">
-          <p:messages
-            id="errorMessages"
-            closable="false"
-            showIcon="false"
-            styleClass="bullet" />
-        </p:panel>
-      </h:panelGroup>
- 
-      <!-- 画面名 -->
-      <p:outputLabel value="手数料配分計算書出力" styleClass="screenTitle" />
- 
-      <!-- 操作メッセージ -->
-      <p:outputPanel id="operationMessagePanel" styleClass="box center">
-        <p>検索条件を入力し、「CSV出力」ボタンを押してください。</p>
-      </p:outputPanel>
- 
-      <!-- 検索条件入力パネル -->
-      <p:panel
-        id="conditionPanel"
-        header="検索条件"
-        toggleable="true"
-        toggleSpeed="100"
-        styleClass="fit">
- 
-        <p:panelGrid columns="0" layout="tabular">
- 
-          <!-- 出力帳票選択 -->
-          <p:row>
-            <p:column style="width: 20%; height: 25px">
-              <p:outputLabel value="出力帳票" />
-            </p:column>
-            <p:column style="width: 80%">
-              <p:selectOneRadio
-                id="outputChohyoId"
-                value="#{dac2024ctl.searchConditionDto.outputChohyoId}"
-                layout="lineDirection">
-                <f:selectItem
-                  itemValue="#{Dac2024Cns.OUTPUT_CHOHYO_ID_ZENDO_KYOKEI_TESURYO_HAIBUN_KEISANSHO}"
-                  itemLabel="全道共計手数料配分計算書" />
-                <f:selectItem
-                  itemValue="#{Dac2024Cns.OUTPUT_CHOHYO_ID_KOBAI_TESURYO_HAIBUN_KEISANSHO}"
-                  itemLabel="購買手数料配分計算書" />
-              </p:selectOneRadio>
-            </p:column>
-          </p:row>
- 
-          <!-- 基準年月 -->
-          <p:row>
-            <p:column style="width: 20%; height: 25px">
-              <p:outputLabel for="kijunNengetsu" value="基準年月">
-                <span class="required">(*)</span>
-              </p:outputLabel>
-            </p:column>
-            <p:column style="width: 80%">
-              <p:inputText
-                id="kijunNengetsu"
-                value="#{dac2024ctl.searchConditionDto.kijunNengetsu}"
-                maxlength="6"
-                size="10"
-                placeholder="YYYYMM"
-                autocomplete="off"
-                styleClass="singleByte">
-                <aw:TrimConverter />
-                <aw:RequiredValidator
-                  msgKnrNum="#{MessageNo.DAA00001E}"
-                  msgEmbedStr1="基準年月" />
-                <aw:YearMonthValidator
-                  msgKnrNum="#{MessageNo.DAA00001E}"
-                  msgEmbedStr1="基準年月" />
-              </p:inputText>
-            </p:column>
-          </p:row>
- 
-          <!-- 業種（業種ラベル表示フラグ=true の場合はラベルのみ） -->
-          <p:row rendered="#{dac2024ctl.industryLabelDisplayFlag}">
-            <p:column style="width: 20%; height: 25px">
-              <p:outputLabel value="業種" />
-            </p:column>
-            <p:column style="width: 80%">
-              <p:outputLabel value="#{dac2024ctl.searchConditionDto.gyoshuMei}" />
-              <h:inputHidden value="#{dac2024ctl.searchConditionDto.gyoshuCd}" />
-            </p:column>
-          </p:row>
- 
-          <!-- 業種（業種ラベル表示フラグ=false の場合は入力 + 検索ボタン） -->
-          <p:row rendered="#{not dac2024ctl.industryLabelDisplayFlag}">
-            <p:column style="width: 20%; height: 25px">
-              <p:outputLabel for="gyoshuCd" value="業種" />
-            </p:column>
-            <p:column style="width: 80%">
-              <p:inputText
-                id="gyoshuCd"
-                value="#{dac2024ctl.searchConditionDto.gyoshuCd}"
-                autocomplete="off"
-                maxlength="2"
-                size="5"
-                styleClass="singleByte">
-                <aw:TrimConverter />
-                <aw:AlphanumericValidator
-                  msgKnrNum="#{MessageNo.DAA00012E}"
-                  msgEmbedStr1="業種" />
-                <aw:MaxStringDigitsValidator
-                  msgKnrNum="#{MessageNo.DAA00012E}"
-                  msgEmbedStr1="業種" />
-              </p:inputText>
-              <!-- 経理部以外の場合のみ業種検索ボタンを表示する -->
-              <p:commandButton
-                id="industrySearchButton"
-                value="検索"
-                styleClass="ui-button-secondary"
-                actionListener="#{dac2024ctl.showIndustrySearch('industrySearchButton')}"
-                update="@form"
-                process="@this"
-                style="margin-left: 5px" />
-              <p:outputLabel
-                id="gyoshuMei"
-                value="　#{dac2024ctl.searchConditionDto.gyoshuMei}" />
-            </p:column>
-          </p:row>
- 
-        </p:panelGrid>
- 
-        <p:outputPanel styleClass="center label">
-            <p:commandButton
-              id="clearButton"
-              value="クリア"
-              action="#{dac2024ctl.clear}"
-              update="conditionPanel"
-              process="@this"
-              style="margin:0 8px;"/>
-            <p:commandButton
-              id="showButton"
-              value="表示"
-              action="#{dac2024ctl.show}"
-              update="errorMessageWrapper conditionPanel"
-              process="@form"
-              style="margin:0 8px;"/>
-            <p:commandButton
-              id="exportCsvButton"
-              value="CSV出力"
-              ajax="false"
-              style="margin:0 8px;">
-              <p:fileDownload
-                value="#{dac2024ctl.exportCsv()}"
-                contentDisposition="attachment" />
-            </p:commandButton>
-        </p:outputPanel>
- 
-      </p:panel>
- 
- 
-    <!-- 業種検索ダイアログ（TODO: DAA1108が生成されたら以下のコメントを外す） -->
-    <!--
-    <ui:include src="/view/DAA1108/DAA1108_IndustrySearch.xhtml" />
-    -->
- 
-  </ui:define>
- 
-</ui:composition>
- 
+-- ============================================================
+-- 共通組織ビュー
+-- ソース: V_AQA011_JigyoshoMst / V_AQA012_JigyohnbMst /
+--         V_AQA013_BuMst / V_AQA014_KaMst / V_AQA015_ShisetMst
+-- ============================================================
+CREATE VIEW V_COMMON_SOSHIKI (
+      SOSHIKI_CD
+    , SOSHIKI_MEI_KJ
+    , JIGYOSHO_CD
+    , JIGYOHNB_CD
+    , BU_CD
+    , KA_CD
+    , SHIST_CD
+    , JYOI_SOSHIKI_CD
+    , TEKIYO_KAISHIBI
+    , TEKIYO_SHURYOBI
+) AS
+-- 事業所マスタ
+SELECT
+      A.SOSHIKI_CD
+    , CAST(A.JIGYOSHO_MEI_KJ   AS VARCHAR(50))
+    , A.JIGYOSHO_CD
+    , CAST(NULL                AS CHAR(2))
+    , CAST(NULL                AS CHAR(2))
+    , CAST(NULL                AS CHAR(3))
+    , CAST(NULL                AS CHAR(3))
+    , CAST(''                  AS VARCHAR(4))
+    , A.TEKIYO_KAISHIBI
+    , A.TEKIYO_SHURYOBI
+FROM V_AQA011_JigyoshoMst A
+WHERE A.SAKZYO_KBN = '0'
+UNION ALL
+-- 事業本部マスタ
+SELECT
+      A.SOSHIKI_CD
+    , CAST(A.JIGYOHNB_MEI_KJ  AS VARCHAR(50))
+    , A.JIGYOSHO_CD
+    , A.JIGYOHNB_CD
+    , CAST(NULL                AS CHAR(2))
+    , CAST(NULL                AS CHAR(3))
+    , CAST(NULL                AS CHAR(3))
+    , CAST(''                  AS VARCHAR(4))
+    , A.TEKIYO_KAISHIBI
+    , A.TEKIYO_SHURYOBI
+FROM V_AQA012_JigyohnbMst A
+WHERE A.SAKZYO_KBN = '0'
+UNION ALL
+-- 部マスタ
+SELECT
+      A.SOSHIKI_CD
+    , CAST(A.BU_MEI_KJ         AS VARCHAR(50))
+    , A.JIGYOSHO_CD
+    , A.JIGYOHNB_CD
+    , A.BU_CD
+    , CAST(NULL                AS CHAR(3))
+    , CAST(NULL                AS CHAR(3))
+    , CAST(
+        CASE
+            -- ※元SQL条件「= ''」は論理逆転の可能性あり 要確認
+            --   事業本部コードが空 → 事業本部配下は不自然 → 「<> ''」では？
+            WHEN TRIM(A.JIGYOHNB_CD) = ''
+                THEN '2' || A.JIGYOHNB_CD
+            ELSE
+                '1' || A.JIGYOSHO_CD
+        END                    AS VARCHAR(4))
+    , A.TEKIYO_KAISHIBI
+    , A.TEKIYO_SHURYOBI
+FROM V_AQA013_BuMst A
+WHERE A.SAKZYO_KBN = '0'
+UNION ALL
+-- 課マスタ
+SELECT
+      A.SOSHIKI_CD
+    , CAST(A.KA_MEI_KJ         AS VARCHAR(50))
+    , A.JIGYOSHO_CD
+    , A.JIGYOHNB_CD
+    , A.BU_CD
+    , A.KA_CD
+    , CAST(A.SHIST_CD          AS CHAR(3))
+    , CAST(
+        CASE
+            WHEN A.KA_KBN = '?'             -- [定数.会計コード定義.課区分.本所課]        ※要確認
+                THEN '3' || A.BU_CD
+            WHEN A.KA_KBN IN ('?', '?', '?') -- 支所課 / 支店課 / 事業所課               ※要確認
+                THEN '1' || A.JIGYOSHO_CD
+            WHEN A.KA_KBN = '?'             -- [定数.会計コード定義.課区分.施設課]        ※要確認
+                THEN '5' || A.SHIST_CD
+            WHEN A.KA_KBN IN ('?', '?')     -- 事業本部直轄課 / 販売本部課               ※要確認
+                THEN '2' || A.JIGYOHNB_CD
+            ELSE ''
+        END                    AS VARCHAR(4))
+    , A.TEKIYO_KAISHIBI
+    , A.TEKIYO_SHURYOBI
+FROM V_AQA014_KaMst A
+WHERE A.SAKZYO_KBN = '0'
+UNION ALL
+-- 施設マスタ
+SELECT
+      A.SOSHIKI_CD
+    , CAST(A.SHIST_MEI_KJ      AS VARCHAR(50))
+    , A.JIGYOSHO_CD
+    , A.JIGYOHNB_CD
+    , A.BU_CD
+    , A.KA_CD
+    , CAST(A.SHIST_CD          AS CHAR(3))
+    , CAST(''                  AS VARCHAR(4))
+    , A.TEKIYO_KAISHIBI
+    , A.TEKIYO_SHURYOBI
+FROM V_AQA015_ShisetMst A
+WHERE A.SAKZYO_KBN = '0'
+;
