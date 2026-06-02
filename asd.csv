@@ -1,9 +1,8 @@
-発生箇所：DAC2024_OutputFeeAllocationStatementMpr.xml　getPurchaseFeeAllocationStatementList　JUNEKIRITSU_GEKKEI・JUNEKIRITSU_RUIKEI
-
-現象：純益率（純益÷売上×100）の計算結果が、正しい値（例：50）にならず0になる。
-
-原因：DB2において CAST(x AS DECIMAL) の精度・スケールを省略すると DECIMAL(5,0) として扱われ、スケールが0のため整数除算と同義になり結果が切り捨てられる。
-
-影響：純益率月計・累計の値が常に0となる。なお同クエリ内の他6カラム（SOTESURYORITSU・CHOKUSOHIN_TESURYORITSU・ZAIKOHIN_TESURYORITSU の月計・累計）も同様の書き方になっており、同一の問題が発生する可能性がある。
-
-対応：分子・分母ともに精度・スケールを明示したDECIMAL型にキャストし、結果を整数として返すよう修正した。
+ROUND(
+  CASE
+    WHEN (CHOKUSOHIN_URIAGE_GEKKEI + ZAIKOHIN_URIAGE_GEKKEI) = 0 THEN 0.0
+    ELSE (CHOKUSOHIN_TESURYO_GEKKEI + ZAIKOHIN_TESURYO_GEKKEI - KYOKYUHI_GEKKEI)
+      * 100.0
+      / (CHOKUSOHIN_URIAGE_GEKKEI + ZAIKOHIN_URIAGE_GEKKEI)
+  END
+, 1) AS JUNEKIRITSU_GEKKEI
