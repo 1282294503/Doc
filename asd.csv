@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.mockito.ArgumentCaptor;
+import org.primefaces.model.StreamedContent;
+
 import jakarta.enterprise.inject.Alternative;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
@@ -620,12 +623,17 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
       // --- 実行 ---
-      List<DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto> result =
-          target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
 
       // --- 検証 ---
+      // fileUtils.downloadCsv の呼び出しを検証し、渡された csvList を取得
+      ArgumentCaptor<List<DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto>> captor =
+          ArgumentCaptor.forClass((Class<List<DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto>>)(Class<?>)List.class);
+      verify(fileUtils, times(1)).downloadCsv(anyString(), captor.capture(), anyBoolean());
+      
+      // 渡された csvList を検証
       assertDtoListWithCsv(DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.class,
-          actualPath + "DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.csv", result);
+          actualPath + "DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.csv", captor.getValue());
     }
 
     /**
@@ -652,12 +660,17 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
       // --- 実行 ---
-      List<DAC2024_PurchaseFeeAllocationStatementCsvDto> result =
-          target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
 
       // --- 検証 ---
+      // fileUtils.downloadCsv の呼び出しを検証し、渡された csvList を取得
+      ArgumentCaptor<List<DAC2024_PurchaseFeeAllocationStatementCsvDto>> captor =
+          ArgumentCaptor.forClass((Class<List<DAC2024_PurchaseFeeAllocationStatementCsvDto>>)(Class<?>)List.class);
+      verify(fileUtils, times(1)).downloadCsv(anyString(), captor.capture(), anyBoolean());
+      
+      // 渡された csvList を検証
       assertDtoListWithCsv(DAC2024_PurchaseFeeAllocationStatementCsvDto.class,
-          actualPath + "DAC2024_PurchaseFeeAllocationStatementCsvDto.csv", result);
+          actualPath + "DAC2024_PurchaseFeeAllocationStatementCsvDto.csv", captor.getValue());
     }
 
     /**
@@ -784,12 +797,17 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
       // --- 実行 ---
-      List<DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto> result =
-          target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
 
       // --- 検証 ---
+      // fileUtils.downloadCsv の呼び出しを検証し、渡された csvList を取得
+      ArgumentCaptor<List<DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto>> captor =
+          ArgumentCaptor.forClass((Class<List<DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto>>)(Class<?>)List.class);
+      verify(fileUtils, times(1)).downloadCsv(anyString(), captor.capture(), anyBoolean());
+      
+      // 渡された csvList を検証
       assertDtoListWithCsv(DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.class,
-          actualPath + "DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.csv", result);
+          actualPath + "DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.csv", captor.getValue());
     }
 
     /**
@@ -816,12 +834,17 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
       // --- 実行 ---
-      List<DAC2024_PurchaseFeeAllocationStatementCsvDto> result =
-          target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
 
       // --- 検証 ---
+      // fileUtils.downloadCsv の呼び出しを検証し、渡された csvList を取得
+      ArgumentCaptor<List<DAC2024_PurchaseFeeAllocationStatementCsvDto>> captor =
+          ArgumentCaptor.forClass((Class<List<DAC2024_PurchaseFeeAllocationStatementCsvDto>>)(Class<?>)List.class);
+      verify(fileUtils, times(1)).downloadCsv(anyString(), captor.capture(), anyBoolean());
+      
+      // 渡された csvList を検証
       assertDtoListWithCsv(DAC2024_PurchaseFeeAllocationStatementCsvDto.class,
-          actualPath + "DAC2024_PurchaseFeeAllocationStatementCsvDto.csv", result);
+          actualPath + "DAC2024_PurchaseFeeAllocationStatementCsvDto.csv", captor.getValue());
     }
 
     /**
