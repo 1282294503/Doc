@@ -1,5 +1,7 @@
 package jp.or.hokuren.dac.view.dac2024;
 
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -376,7 +378,7 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
     /**
      * TC09: 運用管理日異常値テスト - 日付変換例外発生
      */
-    @Test(expected = AZA_ApplicationException.class)
+    @Test
     public void case04_09() throws Exception {
       // --- 準備 ---
       String inputPath = FIXED_BASE_PATH + "test_04_09/01_input/";
@@ -389,8 +391,15 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
           loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
-      // --- 実行 ---
-      target.initMain(searchDto);
+      try {
+        // --- 実行 ---
+        target.initMain(searchDto);
+        // 例外が発生しなければテスト失敗
+        fail("運用管理日取得例外が発生すべきです");
+      } catch (AZA_ApplicationException e) {
+        // 例外が発生したことを確認
+        assertNotNull("例外が発生したこと", e);
+      }
     }
   }
 
@@ -463,7 +472,7 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
     /**
      * TC02: 未来年月チェックエラー - 基準年月=202606 > 運用管理年月=202605
      */
-    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    @Test
     public void case05_02() throws Exception {
       // --- 準備 ---
       String inputPath = FIXED_BASE_PATH + "test_05_02/01_input/";
@@ -476,14 +485,22 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
           loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
-      // --- 実行 ---
-      target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+      try {
+        // --- 実行 ---
+        target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+        // 例外が発生しなければテスト失敗
+        fail("未来年月チェックエラーの例外が発生すべきです");
+      } catch (jp.or.hokuren.daa.exception.BusinessValidationException e) {
+        // --- 検証 ---
+        logAssert("例外メッセージIDが正しいこと",
+            e.getLogInfo().getMsgKanrNum(), is(DAC_MessageNoCns.DAC00033E));
+      }
     }
 
     /**
      * TC03: 前年当月以内チェックエラー - 基準年月=202503 < 運用管理年月=202605
      */
-    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    @Test
     public void case05_03() throws Exception {
       // --- 準備 ---
       String inputPath = FIXED_BASE_PATH + "test_05_03/01_input/";
@@ -496,14 +513,22 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
           loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
-      // --- 実行 ---
-      target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+      try {
+        // --- 実行 ---
+        target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+        // 例外が発生しなければテスト失敗
+        fail("前年当月以内チェックエラーの例外が発生すべきです");
+      } catch (jp.or.hokuren.daa.exception.BusinessValidationException e) {
+        // --- 検証 ---
+        logAssert("例外メッセージIDが正しいこと",
+            e.getLogInfo().getMsgKanrNum(), is(DAC_MessageNoCns.DAC00142E));
+      }
     }
 
     /**
      * TC04: 業種コードと担当業種の関連チェックエラー - 選択可能業種リスト空
      */
-    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    @Test
     public void case05_04() throws Exception {
       // --- 準備 ---
       String inputPath = FIXED_BASE_PATH + "test_05_04/01_input/";
@@ -516,14 +541,22 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
           loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
-      // --- 実行 ---
-      target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+      try {
+        // --- 実行 ---
+        target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+        // 例外が発生しなければテスト失敗
+        fail("業種コード関連チェックエラーの例外が発生すべきです");
+      } catch (jp.or.hokuren.daa.exception.BusinessValidationException e) {
+        // --- 検証 ---
+        logAssert("例外メッセージIDが正しいこと",
+            e.getLogInfo().getMsgKanrNum(), is(DAC_MessageNoCns.DAC00008E));
+      }
     }
 
     /**
      * TC05: 業種コードと担当業種の関連チェックエラー - 業種コードがリストに含まれない
      */
-    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    @Test
     public void case05_05() throws Exception {
       // --- 準備 ---
       String inputPath = FIXED_BASE_PATH + "test_05_05/01_input/";
@@ -537,14 +570,22 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
           loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
-      // --- 実行 ---
-      target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+      try {
+        // --- 実行 ---
+        target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+        // 例外が発生しなければテスト失敗
+        fail("業種コード関連チェックエラーの例外が発生すべきです");
+      } catch (jp.or.hokuren.daa.exception.BusinessValidationException e) {
+        // --- 検証 ---
+        logAssert("例外メッセージIDが正しいこと",
+            e.getLogInfo().getMsgKanrNum(), is(DAC_MessageNoCns.DAC00008E));
+      }
     }
 
     /**
      * TC06: 業種コードチェックエラー - 業種情報が存在しない
      */
-    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    @Test
     public void case05_06() throws Exception {
       // --- 準備 ---
       String inputPath = FIXED_BASE_PATH + "test_05_06/01_input/";
@@ -558,8 +599,16 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
           loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
-      // --- 実行 ---
-      target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+      try {
+        // --- 実行 ---
+        target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+        // 例外が発生しなければテスト失敗
+        fail("業種コードチェックエラーの例外が発生すべきです");
+      } catch (jp.or.hokuren.daa.exception.BusinessValidationException e) {
+        // --- 検証 ---
+        logAssert("例外メッセージIDが正しいこと",
+            e.getLogInfo().getMsgKanrNum(), is(DAC_MessageNoCns.DAC00008E));
+      }
     }
   }
 
@@ -676,7 +725,7 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
     /**
      * TC03: 全道共計手数料配分計算書出力 - 取得件数上限超過
      */
-    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    @Test
     public void case06_03() throws Exception {
       // --- 準備 ---
       String inputPath = FIXED_BASE_PATH + "test_06_03/01_input/";
@@ -696,14 +745,27 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
           loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
-      // --- 実行 ---
-      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+      try {
+        // --- 実行 ---
+        target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+        // 例外が発生しなければテスト失敗
+        fail("取得件数上限超過の例外が発生すべきです");
+      } catch (jp.or.hokuren.daa.exception.BusinessValidationException e) {
+        // --- 検証 ---
+        logAssert("例外メッセージIDが正しいこと",
+            e.getLogInfo().getMsgKanrNum(), is(DAC_MessageNoCns.DAC00009E));
+        logAssert("埋め込み文字(上限件数)が正しいこと",
+            e.getLogInfo().getEmbedString1(), is(String.valueOf(DAA_CommonsCns.CSV_OUTPUT_MAX_CNT)));
+      }
+
+      // fileUtils.downloadCsv が呼ばれていないことを検証
+      verify(fileUtils, never()).downloadCsv(anyString(), anyList(), anyBoolean());
     }
 
     /**
      * TC04: 全道共計手数料配分計算書出力 - 取得件数0件
      */
-    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    @Test
     public void case06_04() throws Exception {
       // --- 準備 ---
       String inputPath = FIXED_BASE_PATH + "test_06_04/01_input/";
@@ -719,14 +781,25 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
           loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
-      // --- 実行 ---
-      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+      try {
+        // --- 実行 ---
+        target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+        // 例外が発生しなければテスト失敗
+        fail("取得件数0件の例外が発生すべきです");
+      } catch (jp.or.hokuren.daa.exception.BusinessValidationException e) {
+        // --- 検証 ---
+        logAssert("例外メッセージIDが正しいこと",
+            e.getLogInfo().getMsgKanrNum(), is(DAC_MessageNoCns.DAC00008E));
+      }
+
+      // fileUtils.downloadCsv が呼ばれていないことを検証
+      verify(fileUtils, never()).downloadCsv(anyString(), anyList(), anyBoolean());
     }
 
     /**
      * TC05: 購買手数料配分計算書出力 - 取得件数上限超過
      */
-    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    @Test
     public void case06_05() throws Exception {
       // --- 準備 ---
       String inputPath = FIXED_BASE_PATH + "test_06_05/01_input/";
@@ -746,14 +819,27 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
           loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
-      // --- 実行 ---
-      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+      try {
+        // --- 実行 ---
+        target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+        // 例外が発生しなければテスト失敗
+        fail("取得件数上限超過の例外が発生すべきです");
+      } catch (jp.or.hokuren.daa.exception.BusinessValidationException e) {
+        // --- 検証 ---
+        logAssert("例外メッセージIDが正しいこと",
+            e.getLogInfo().getMsgKanrNum(), is(DAC_MessageNoCns.DAC00009E));
+        logAssert("埋め込み文字(上限件数)が正しいこと",
+            e.getLogInfo().getEmbedString1(), is(String.valueOf(DAA_CommonsCns.CSV_OUTPUT_MAX_CNT)));
+      }
+
+      // fileUtils.downloadCsv が呼ばれていないことを検証
+      verify(fileUtils, never()).downloadCsv(anyString(), anyList(), anyBoolean());
     }
 
     /**
      * TC06: 購買手数料配分計算書出力 - 取得件数0件
      */
-    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    @Test
     public void case06_06() throws Exception {
       // --- 準備 ---
       String inputPath = FIXED_BASE_PATH + "test_06_06/01_input/";
@@ -769,8 +855,19 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
           loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
-      // --- 実行 ---
-      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+      try {
+        // --- 実行 ---
+        target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+        // 例外が発生しなければテスト失敗
+        fail("取得件数0件の例外が発生すべきです");
+      } catch (jp.or.hokuren.daa.exception.BusinessValidationException e) {
+        // --- 検証 ---
+        logAssert("例外メッセージIDが正しいこと",
+            e.getLogInfo().getMsgKanrNum(), is(DAC_MessageNoCns.DAC00008E));
+      }
+
+      // fileUtils.downloadCsv が呼ばれていないことを検証
+      verify(fileUtils, never()).downloadCsv(anyString(), anyList(), anyBoolean());
     }
 
     /**
@@ -850,7 +947,7 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
     /**
      * TC09: 出力帳票ID異常値テスト
      */
-    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    @Test
     public void case06_09() throws Exception {
       // --- 準備 ---
       String inputPath = FIXED_BASE_PATH + "test_06_09/01_input/";
@@ -864,8 +961,19 @@ public class DAC2024_OutputFeeAllocationStatementLgcTest {
           loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
               inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
 
-      // --- 実行 ---
-      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+      try {
+        // --- 実行 ---
+        target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+        // 例外が発生しなければテスト失敗
+        fail("出力帳票ID異常値の例外が発生すべきです");
+      } catch (jp.or.hokuren.daa.exception.BusinessValidationException e) {
+        // --- 検証 ---
+        logAssert("例外メッセージIDが正しいこと",
+            e.getLogInfo().getMsgKanrNum(), is(DAC_MessageNoCns.DAC00008E));
+      }
+
+      // fileUtils.downloadCsv が呼ばれていないことを検証
+      verify(fileUtils, never()).downloadCsv(anyString(), anyList(), anyBoolean());
     }
   }
 }
