@@ -1,8 +1,848 @@
-ROUND(
-  CASE
-    WHEN (CHOKUSOHIN_URIAGE_GEKKEI + ZAIKOHIN_URIAGE_GEKKEI) = 0 THEN 0.0
-    ELSE (CHOKUSOHIN_TESURYO_GEKKEI + ZAIKOHIN_TESURYO_GEKKEI - KYOKYUHI_GEKKEI)
-      * 100.0
-      / (CHOKUSOHIN_URIAGE_GEKKEI + ZAIKOHIN_URIAGE_GEKKEI)
-  END
-, 1) AS JUNEKIRITSU_GEKKEI
+package jp.or.hokuren.dac.view.dac2024;
+
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import jakarta.enterprise.inject.Alternative;
+import jakarta.enterprise.inject.Produces;
+import jakarta.inject.Inject;
+
+import org.jboss.weld.junit4.WeldInitiator;
+import org.junit.Before;
+import org.junit.FixMethodOrder;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
+
+import jp.or.hokuren.aza.exception.AZA_ApplicationException;
+import jp.or.hokuren.aza.session.AZA_LogonInfoDto;
+import jp.or.hokuren.daa.common.object.DAA_GyoshuJohoDto;
+import jp.or.hokuren.daa.common.object.DAA_MasterData;
+import jp.or.hokuren.daa.common.utils.DAA_DateUtils;
+import jp.or.hokuren.daa.common.utils.DAA_FileUtils;
+import jp.or.hokuren.daa.common.utils.DAA_MessageUtils;
+import jp.or.hokuren.daa.def.DAA_CommonsCns;
+import jp.or.hokuren.junit.DAA_Search_Dialog_LogicTestBase;
+
+/**
+ * 【DAC2024：手数料配分計算書出力画面】のロジックテストクラス
+ */
+@RunWith(Enclosed.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+public class DAC2024_OutputFeeAllocationStatementLgcTest {
+
+  static {
+    System.setProperty("log4j2.statusLoggerLevel", "OFF");
+    System.setProperty("org.apache.logging.log4j.simplelog.StatusLogger.level", "OFF");
+    System.setProperty("log4j2.disable.statusLogger", "true");
+  }
+
+  // テストデータベースパス
+  protected static final String FIXED_BASE_PATH =
+      "src/test/resources/testdata/DAC2024/lgc/";
+
+  public static abstract class Base extends DAA_Search_Dialog_LogicTestBase {
+
+    // テストデータ定数
+    protected static final LocalDate FIXED_UNYO_KANRIBI = LocalDate.of(2026, 5, 1);
+    protected static final String FIXED_MESSAGE_ID = "DAC00316I";
+
+    // 依存オブジェクト
+    protected static final AZA_LogonInfoDto logonInfo = mock(AZA_LogonInfoDto.class);
+    protected static final DAA_DateUtils dateUtils = mock(DAA_DateUtils.class);
+    protected static final DAA_FileUtils fileUtils = mock(DAA_FileUtils.class);
+    protected static final DAA_MessageUtils messageUtils = mock(DAA_MessageUtils.class);
+    protected static final DAA_MasterData masterData = mock(DAA_MasterData.class);
+    protected static final DAC2024_OutputFeeAllocationStatementDao dao = 
+        mock(DAC2024_OutputFeeAllocationStatementDao.class);
+
+    @Inject
+    protected DAC2024_OutputFeeAllocationStatementLgc target;
+
+    @Rule
+    public WeldInitiator weld = createWeldInitiator(this, DAC2024_OutputFeeAllocationStatementLgc.class);
+
+    @Override
+    protected WeldInitiator getWeld() {
+      return weld;
+    }
+
+    @Before
+    public void setUpEach() throws AZA_ApplicationException {
+      reset(logonInfo, dateUtils, messageUtils, masterData, dao);
+
+      when(dateUtils.getUnyoKanriDate()).thenReturn(FIXED_UNYO_KANRIBI);
+      when(messageUtils.getMessage(eq(DAC_MessageNoCns.DAC00316I), any(), any(), any()))
+          .thenReturn(FIXED_MESSAGE_ID);
+    }
+  }
+
+  /**
+   * initMain テストクラス
+   */
+  public static class Test04_InitMain extends Base {
+
+    @Produces
+    @Alternative
+    public AZA_LogonInfoDto produceLogonInfoDto() {
+      return logonInfo;
+    }
+
+    @Produces
+    public DAA_DateUtils produceDateUtils() {
+      return dateUtils;
+    }
+
+    @Produces
+    public DAA_FileUtils produceFileUtils() {
+      return fileUtils;
+    }
+
+    @Produces
+    public DAA_MessageUtils produceMessageUtils() {
+      return messageUtils;
+    }
+
+    @Produces
+    public DAA_MasterData produceMasterData() {
+      return masterData;
+    }
+
+    @Produces
+    public DAC2024_OutputFeeAllocationStatementDao produceDao() {
+      return dao;
+    }
+
+    /**
+     * TC01: 選択所属コード=4118(主計課) → 参照権限区分=1(経理部)
+     */
+    @Test
+    public void case04_01() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_04_01/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_04_01/03_actual/";
+
+      // --- モック設定 ---
+      AZA_LogonInfoDto logonDto = loadDtoListFromCsv(AZA_LogonInfoDto.class,
+          inputPath + "AZA_LogonInfoDto.csv").get(0);
+      when(logonInfo.getSelectSyozokCd()).thenReturn(logonDto.getSelectSyozokCd());
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      DAC2024_InitMainResponseRecord result = target.initMain(searchDto);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_InitMainResponseRecord.class,
+          actualPath + "DAC2024_InitMainResponseRecord.csv",
+          new ArrayList<>(Arrays.asList(result)));
+
+      assertDtoListWithCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+          actualPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv",
+          new ArrayList<>(Arrays.asList(result.searchConditionDto())));
+    }
+
+    /**
+     * TC02: 選択所属コード=4119(財務課) → 参照権限区分=1(経理部)
+     */
+    @Test
+    public void case04_02() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_04_02/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_04_02/03_actual/";
+
+      // --- モック設定 ---
+      AZA_LogonInfoDto logonDto = loadDtoListFromCsv(AZA_LogonInfoDto.class,
+          inputPath + "AZA_LogonInfoDto.csv").get(0);
+      when(logonInfo.getSelectSyozokCd()).thenReturn(logonDto.getSelectSyozokCd());
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      DAC2024_InitMainResponseRecord result = target.initMain(searchDto);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_InitMainResponseRecord.class,
+          actualPath + "DAC2024_InitMainResponseRecord.csv",
+          new ArrayList<>(Arrays.asList(result)));
+    }
+
+    /**
+     * TC03: 選択所属コード=4120(経理課) → 参照権限区分=1(経理部)
+     */
+    @Test
+    public void case04_03() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_04_03/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_04_03/03_actual/";
+
+      // --- モック設定 ---
+      AZA_LogonInfoDto logonDto = loadDtoListFromCsv(AZA_LogonInfoDto.class,
+          inputPath + "AZA_LogonInfoDto.csv").get(0);
+      when(logonInfo.getSelectSyozokCd()).thenReturn(logonDto.getSelectSyozokCd());
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      DAC2024_InitMainResponseRecord result = target.initMain(searchDto);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_InitMainResponseRecord.class,
+          actualPath + "DAC2024_InitMainResponseRecord.csv",
+          new ArrayList<>(Arrays.asList(result)));
+    }
+
+    /**
+     * TC04: 選択所属コード=4116(審査課) → 参照権限区分=1(経理部)
+     */
+    @Test
+    public void case04_04() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_04_04/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_04_04/03_actual/";
+
+      // --- モック設定 ---
+      AZA_LogonInfoDto logonDto = loadDtoListFromCsv(AZA_LogonInfoDto.class,
+          inputPath + "AZA_LogonInfoDto.csv").get(0);
+      when(logonInfo.getSelectSyozokCd()).thenReturn(logonDto.getSelectSyozokCd());
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      DAC2024_InitMainResponseRecord result = target.initMain(searchDto);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_InitMainResponseRecord.class,
+          actualPath + "DAC2024_InitMainResponseRecord.csv",
+          new ArrayList<>(Arrays.asList(result)));
+    }
+
+    /**
+     * TC05: 選択所属コード=9999(経理部以外) + 選択可能業種リスト0件 → 参照権限区分=2
+     */
+    @Test
+    public void case04_05() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_04_05/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_04_05/03_actual/";
+
+      // --- モック設定 ---
+      AZA_LogonInfoDto logonDto = loadDtoListFromCsv(AZA_LogonInfoDto.class,
+          inputPath + "AZA_LogonInfoDto.csv").get(0);
+      when(logonInfo.getSelectSyozokCd()).thenReturn(logonDto.getSelectSyozokCd());
+      when(dao.getSelectGyoshuList(any())).thenReturn(new ArrayList<>());
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      DAC2024_InitMainResponseRecord result = target.initMain(searchDto);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_InitMainResponseRecord.class,
+          actualPath + "DAC2024_InitMainResponseRecord.csv",
+          new ArrayList<>(Arrays.asList(result)));
+    }
+
+    /**
+     * TC06: 選択所属コード=9999(経理部以外) + 選択可能業種リスト1件 + 業種情報存在 → 業種名称設定
+     */
+    @Test
+    public void case04_06() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_04_06/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_04_06/03_actual/";
+
+      // --- モック設定 ---
+      AZA_LogonInfoDto logonDto = loadDtoListFromCsv(AZA_LogonInfoDto.class,
+          inputPath + "AZA_LogonInfoDto.csv").get(0);
+      when(logonInfo.getSelectSyozokCd()).thenReturn(logonDto.getSelectSyozokCd());
+      
+      List<String> gyoshuList = loadDtoListFromCsv(String.class,
+          inputPath + "GyoshuCdList.csv");
+      when(dao.getSelectGyoshuList(any())).thenReturn(gyoshuList);
+
+      DAA_GyoshuJohoDto gyoshuDto = loadDtoListFromCsv(DAA_GyoshuJohoDto.class,
+          inputPath + "DAA_GyoshuJohoDto.csv").get(0);
+      when(masterData.getGyoshuJoho(eq(gyoshuList.get(0)), eq(FIXED_UNYO_KANRIBI))).thenReturn(gyoshuDto);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      DAC2024_InitMainResponseRecord result = target.initMain(searchDto);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_InitMainResponseRecord.class,
+          actualPath + "DAC2024_InitMainResponseRecord.csv",
+          new ArrayList<>(Arrays.asList(result)));
+
+      assertDtoListWithCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+          actualPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv",
+          new ArrayList<>(Arrays.asList(result.searchConditionDto())));
+    }
+
+    /**
+     * TC07: 選択所属コード=9999(経理部以外) + 選択可能業種リスト2件以上
+     */
+    @Test
+    public void case04_07() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_04_07/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_04_07/03_actual/";
+
+      // --- モック設定 ---
+      AZA_LogonInfoDto logonDto = loadDtoListFromCsv(AZA_LogonInfoDto.class,
+          inputPath + "AZA_LogonInfoDto.csv").get(0);
+      when(logonInfo.getSelectSyozokCd()).thenReturn(logonDto.getSelectSyozokCd());
+
+      List<String> gyoshuList = loadDtoListFromCsv(String.class,
+          inputPath + "GyoshuCdList.csv");
+      when(dao.getSelectGyoshuList(any())).thenReturn(gyoshuList);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      DAC2024_InitMainResponseRecord result = target.initMain(searchDto);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_InitMainResponseRecord.class,
+          actualPath + "DAC2024_InitMainResponseRecord.csv",
+          new ArrayList<>(Arrays.asList(result)));
+    }
+
+    /**
+     * TC08: 選択所属コード=9999(経理部以外) + 選択可能業種リスト2件以上
+     */
+    @Test
+    public void case04_08() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_04_08/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_04_08/03_actual/";
+
+      // --- モック設定 ---
+      AZA_LogonInfoDto logonDto = loadDtoListFromCsv(AZA_LogonInfoDto.class,
+          inputPath + "AZA_LogonInfoDto.csv").get(0);
+      when(logonInfo.getSelectSyozokCd()).thenReturn(logonDto.getSelectSyozokCd());
+
+      List<String> gyoshuList = loadDtoListFromCsv(String.class,
+          inputPath + "GyoshuCdList.csv");
+      when(dao.getSelectGyoshuList(any())).thenReturn(gyoshuList);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      DAC2024_InitMainResponseRecord result = target.initMain(searchDto);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_InitMainResponseRecord.class,
+          actualPath + "DAC2024_InitMainResponseRecord.csv",
+          new ArrayList<>(Arrays.asList(result)));
+    }
+
+    /**
+     * TC09: 運用管理日異常値テスト - 日付変換例外発生
+     */
+    @Test(expected = AZA_ApplicationException.class)
+    public void case04_09() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_04_09/01_input/";
+
+      // --- モック設定 ---
+      when(dateUtils.getUnyoKanriDate()).thenThrow(new AZA_ApplicationException(""));
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      target.initMain(searchDto);
+    }
+  }
+
+  /**
+   * showMain テストクラス
+   */
+  public static class Test05_ShowMain extends Base {
+
+    @Produces
+    @Alternative
+    public AZA_LogonInfoDto produceLogonInfoDto() {
+      return logonInfo;
+    }
+
+    @Produces
+    public DAA_DateUtils produceDateUtils() {
+      return dateUtils;
+    }
+
+    @Produces
+    public DAA_FileUtils produceFileUtils() {
+      return fileUtils;
+    }
+
+    @Produces
+    public DAA_MessageUtils produceMessageUtils() {
+      return messageUtils;
+    }
+
+    @Produces
+    public DAA_MasterData produceMasterData() {
+      return masterData;
+    }
+
+    @Produces
+    public DAC2024_OutputFeeAllocationStatementDao produceDao() {
+      return dao;
+    }
+
+    /**
+     * TC01: 正常ケース - 基準年月=202604, 業種コード=01, 業種情報存在
+     */
+    @Test
+    public void case05_01() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_05_01/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_05_01/03_actual/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+
+      DAA_GyoshuJohoDto gyoshuDto = loadDtoListFromCsv(DAA_GyoshuJohoDto.class,
+          inputPath + "DAA_GyoshuJohoDto.csv").get(0);
+      when(masterData.getGyoshuJoho(any(), eq(FIXED_UNYO_KANRIBI))).thenReturn(gyoshuDto);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      DAC2024_ShowMainResponseRecord result = target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_ShowMainResponseRecord.class,
+          actualPath + "DAC2024_ShowMainResponseRecord.csv",
+          new ArrayList<>(Arrays.asList(result)));
+    }
+
+    /**
+     * TC02: 未来年月チェックエラー - 基準年月=202606 > 運用管理年月=202605
+     */
+    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    public void case05_02() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_05_02/01_input/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+    }
+
+    /**
+     * TC03: 前年当月以内チェックエラー - 基準年月=202503 < 運用管理年月=202605
+     */
+    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    public void case05_03() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_05_03/01_input/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+    }
+
+    /**
+     * TC04: 業種コードと担当業種の関連チェックエラー - 選択可能業種リスト空
+     */
+    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    public void case05_04() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_05_04/01_input/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+    }
+
+    /**
+     * TC05: 業種コードと担当業種の関連チェックエラー - 業種コードがリストに含まれない
+     */
+    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    public void case05_05() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_05_05/01_input/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+      when(masterData.getGyoshuJoho(any(), eq(FIXED_UNYO_KANRIBI))).thenReturn(new DAA_GyoshuJohoDto());
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+    }
+
+    /**
+     * TC06: 業種コードチェックエラー - 業種情報が存在しない
+     */
+    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    public void case05_06() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_05_06/01_input/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+      when(masterData.getGyoshuJoho(any(), eq(FIXED_UNYO_KANRIBI))).thenReturn(null);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      target.showMain(searchDto, FIXED_UNYO_KANRIBI);
+    }
+  }
+
+  /**
+   * exportCsvMain テストクラス
+   */
+  public static class Test06_ExportCsvMain extends Base {
+
+    @Produces
+    @Alternative
+    public AZA_LogonInfoDto produceLogonInfoDto() {
+      return logonInfo;
+    }
+
+    @Produces
+    public DAA_DateUtils produceDateUtils() {
+      return dateUtils;
+    }
+
+    @Produces
+    public DAA_FileUtils produceFileUtils() {
+      return fileUtils;
+    }
+
+    @Produces
+    public DAA_MessageUtils produceMessageUtils() {
+      return messageUtils;
+    }
+
+    @Produces
+    public DAA_MasterData produceMasterData() {
+      return masterData;
+    }
+
+    @Produces
+    public DAC2024_OutputFeeAllocationStatementDao produceDao() {
+      return dao;
+    }
+
+    /**
+     * TC01: 全道共計手数料配分計算書出力 - 正常ケース
+     */
+    @Test
+    public void case06_01() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_06_01/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_06_01/03_actual/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+      when(masterData.getGyoshuJoho(any(), any())).thenReturn(new DAA_GyoshuJohoDto());
+
+      List<DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto> csvList =
+          loadDtoListFromCsv(DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.class,
+              inputPath + "DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.csv");
+      when(dao.getZendoKyokeiFeeAllocationStatementList(any())).thenReturn(csvList);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      List<DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto> result =
+          target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.class,
+          actualPath + "DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.csv", result);
+    }
+
+    /**
+     * TC02: 購買手数料配分計算書出力 - 正常ケース
+     */
+    @Test
+    public void case06_02() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_06_02/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_06_02/03_actual/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+      when(masterData.getGyoshuJoho(any(), any())).thenReturn(new DAA_GyoshuJohoDto());
+
+      List<DAC2024_PurchaseFeeAllocationStatementCsvDto> csvList =
+          loadDtoListFromCsv(DAC2024_PurchaseFeeAllocationStatementCsvDto.class,
+              inputPath + "DAC2024_PurchaseFeeAllocationStatementCsvDto.csv");
+      when(dao.getPurchaseFeeAllocationStatementList(any())).thenReturn(csvList);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      List<DAC2024_PurchaseFeeAllocationStatementCsvDto> result =
+          target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_PurchaseFeeAllocationStatementCsvDto.class,
+          actualPath + "DAC2024_PurchaseFeeAllocationStatementCsvDto.csv", result);
+    }
+
+    /**
+     * TC03: 全道共計手数料配分計算書出力 - 取得件数上限超過
+     */
+    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    public void case06_03() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_06_03/01_input/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+      when(masterData.getGyoshuJoho(any(), any())).thenReturn(new DAA_GyoshuJohoDto());
+
+      List<DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto> csvList = new ArrayList<>();
+      for (int i = 0; i <= DAA_CommonsCns.CSV_OUTPUT_MAX_CNT; i++) {
+        csvList.add(new DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto());
+      }
+      when(dao.getZendoKyokeiFeeAllocationStatementList(any())).thenReturn(csvList);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+    }
+
+    /**
+     * TC04: 全道共計手数料配分計算書出力 - 取得件数0件
+     */
+    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    public void case06_04() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_06_04/01_input/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+      when(masterData.getGyoshuJoho(any(), any())).thenReturn(new DAA_GyoshuJohoDto());
+
+      when(dao.getZendoKyokeiFeeAllocationStatementList(any())).thenReturn(null);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+    }
+
+    /**
+     * TC05: 購買手数料配分計算書出力 - 取得件数上限超過
+     */
+    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    public void case06_05() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_06_05/01_input/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+      when(masterData.getGyoshuJoho(any(), any())).thenReturn(new DAA_GyoshuJohoDto());
+
+      List<DAC2024_PurchaseFeeAllocationStatementCsvDto> csvList = new ArrayList<>();
+      for (int i = 0; i <= DAA_CommonsCns.CSV_OUTPUT_MAX_CNT; i++) {
+        csvList.add(new DAC2024_PurchaseFeeAllocationStatementCsvDto());
+      }
+      when(dao.getPurchaseFeeAllocationStatementList(any())).thenReturn(csvList);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+    }
+
+    /**
+     * TC06: 購買手数料配分計算書出力 - 取得件数0件
+     */
+    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    public void case06_06() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_06_06/01_input/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+      when(masterData.getGyoshuJoho(any(), any())).thenReturn(new DAA_GyoshuJohoDto());
+
+      when(dao.getPurchaseFeeAllocationStatementList(any())).thenReturn(null);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+    }
+
+    /**
+     * TC07: 全道共計手数料配分計算書出力 - 取得件数上限と等しい
+     */
+    @Test
+    public void case06_07() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_06_07/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_06_07/03_actual/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+      when(masterData.getGyoshuJoho(any(), any())).thenReturn(new DAA_GyoshuJohoDto());
+
+      List<DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto> csvList =
+          loadDtoListFromCsv(DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.class,
+              inputPath + "DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.csv");
+      when(dao.getZendoKyokeiFeeAllocationStatementList(any())).thenReturn(csvList);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      List<DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto> result =
+          target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.class,
+          actualPath + "DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto.csv", result);
+    }
+
+    /**
+     * TC08: 購買手数料配分計算書出力 - 取得件数上限と等しい
+     */
+    @Test
+    public void case06_08() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_06_08/01_input/";
+      String actualPath = FIXED_BASE_PATH + "test_06_08/03_actual/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+      when(masterData.getGyoshuJoho(any(), any())).thenReturn(new DAA_GyoshuJohoDto());
+
+      List<DAC2024_PurchaseFeeAllocationStatementCsvDto> csvList =
+          loadDtoListFromCsv(DAC2024_PurchaseFeeAllocationStatementCsvDto.class,
+              inputPath + "DAC2024_PurchaseFeeAllocationStatementCsvDto.csv");
+      when(dao.getPurchaseFeeAllocationStatementList(any())).thenReturn(csvList);
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      List<DAC2024_PurchaseFeeAllocationStatementCsvDto> result =
+          target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+
+      // --- 検証 ---
+      assertDtoListWithCsv(DAC2024_PurchaseFeeAllocationStatementCsvDto.class,
+          actualPath + "DAC2024_PurchaseFeeAllocationStatementCsvDto.csv", result);
+    }
+
+    /**
+     * TC09: 出力帳票ID異常値テスト
+     */
+    @Test(expected = jp.or.hokuren.daa.exception.BusinessValidationException.class)
+    public void case06_09() throws Exception {
+      // --- 準備 ---
+      String inputPath = FIXED_BASE_PATH + "test_06_09/01_input/";
+
+      // --- モック設定 ---
+      when(dateUtils.convertLocalDateToInteger(any())).thenReturn(20260501);
+      when(masterData.getGyoshuJoho(any(), any())).thenReturn(new DAA_GyoshuJohoDto());
+
+      // --- インプット ---
+      DAC2024_OutputFeeAllocationStatementSearchDto searchDto =
+          loadDtoListFromCsv(DAC2024_OutputFeeAllocationStatementSearchDto.class,
+              inputPath + "DAC2024_OutputFeeAllocationStatementSearchDto.csv").get(0);
+
+      // --- 実行 ---
+      target.exportCsvMain(searchDto, FIXED_UNYO_KANRIBI);
+    }
+  }
+}
