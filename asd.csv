@@ -1,18 +1,17 @@
-1. 現象
-内部設計書に基づき、DAA_DateUtils.convertLocalDateToInteger()がAZA_ApplicationExceptionをスローするシナリオを検証するテストを作成したところ、Mockito で例外をモックする際に以下のエラーが発生し、テストが実行できません。
-plaintext
-org.mockito.exceptions.base.MockitoException: 
-Checked exception is invalid for this method!
-Invalid: jp.or.hokuren.aza.exception.AZA_ApplicationException
-2. 再現手順
-@MockでDAA_DateUtilsをモックし、@Producesで CDI コンテナに登録
-設計書通りにdoThrow(new AZA_ApplicationException("error"))で例外をモック
-JUnit テストを実行すると上記エラーが発生
-3. 原因分析
-AZA_ApplicationExceptionは受検例外であり、Java 仕様上、メソッドは自身のシグネチャにthrows句で宣言されていない受検例外をスローできません。
-Mockito はこの Java 言語仕様を厳格に遵守しており、いかなる構文でも宣言されていない受検例外を強制的にスローさせることはできません。
-内部設計書では当該メソッドがAZA_ApplicationExceptionをスローする仕様となっていますが、DAA_DateUtilsクラスの実際のメソッドシグネチャには当該throws句が存在しません。
-当該ツールクラスは顧客管理下にあり、我々の側でソースコードを修正することはできません。
-4. 影響範囲
-設計書で規定された日付変換例外発生時の異常系シナリオの単体テストが実施できず、カバレッジが不足します。
-今後同ツールクラスを使用する他のモジュールでも同様の問題が発生する可能性があります。
+<detail caption="CSV明細" class="jp.or.hokuren.dac.view.dac2024.DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto">
+  <column caption="対象年月" property="taishoNengetsu" type="java.lang.Integer"/>
+  <column caption="業種コード" property="gyoshuCd" type="java.lang.String"/>
+  <column caption="業種名称" property="gyoshuMei" type="java.lang.String"/>
+  <column caption="会計情報品目コード" property="kaikeiJohoHinmokuCd" type="java.lang.String"/>
+  <column caption="会計情報品目名称" property="kaikeiJohoHinmokuMeisho" type="java.lang.String"/>
+  <column caption="収支管理品目コード" property="shushiKanriHinmokuCd" type="java.lang.String"/>
+  <column caption="収支管理品目名称" property="shushiKanriHinmokuMeisho" type="java.lang.String"/>
+  <column caption="年産" property="nensan" type="java.lang.String"/>
+  <column caption="共計次数" property="kyokeiJisu" type="java.lang.String"/>
+  <column caption="配分箇所" property="haibunKasho" type="java.lang.String"/>
+  <column caption="配分箇所名" property="haibunKashoMei" type="java.lang.String"/>
+  <column caption="取扱高金額月計" property="toriatsukaidakaKingakuGekkei" type="java.math.BigDecimal"/>
+  <column caption="取扱高手数料月計" property="toriatsukaidakaTesuryoGekkei" type="java.math.BigDecimal"/>
+  <column caption="取扱高金額累計" property="toriatsukaidakaKingakuRuikei" type="java.math.BigDecimal"/>
+  <column caption="取扱高手数料累計" property="toriatsukaidakaTesuryoRuikei" type="java.math.BigDecimal"/>
+</detail>
