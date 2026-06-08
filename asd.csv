@@ -1,17 +1,23 @@
-<detail caption="CSV明細" class="jp.or.hokuren.dac.view.dac2024.DAC2024_ZendoKyokeiFeeAllocationStatementCsvDto">
-  <column caption="対象年月" property="taishoNengetsu" type="java.lang.Integer"/>
-  <column caption="業種コード" property="gyoshuCd" type="java.lang.String"/>
-  <column caption="業種名称" property="gyoshuMei" type="java.lang.String"/>
-  <column caption="会計情報品目コード" property="kaikeiJohoHinmokuCd" type="java.lang.String"/>
-  <column caption="会計情報品目名称" property="kaikeiJohoHinmokuMeisho" type="java.lang.String"/>
-  <column caption="収支管理品目コード" property="shushiKanriHinmokuCd" type="java.lang.String"/>
-  <column caption="収支管理品目名称" property="shushiKanriHinmokuMeisho" type="java.lang.String"/>
-  <column caption="年産" property="nensan" type="java.lang.String"/>
-  <column caption="共計次数" property="kyokeiJisu" type="java.lang.String"/>
-  <column caption="配分箇所" property="haibunKasho" type="java.lang.String"/>
-  <column caption="配分箇所名" property="haibunKashoMei" type="java.lang.String"/>
-  <column caption="取扱高金額月計" property="toriatsukaidakaKingakuGekkei" type="java.math.BigDecimal"/>
-  <column caption="取扱高手数料月計" property="toriatsukaidakaTesuryoGekkei" type="java.math.BigDecimal"/>
-  <column caption="取扱高金額累計" property="toriatsukaidakaKingakuRuikei" type="java.math.BigDecimal"/>
-  <column caption="取扱高手数料累計" property="toriatsukaidakaTesuryoRuikei" type="java.math.BigDecimal"/>
-</detail>
+<p:commandButton
+  id="exportCsvButton"
+  value="CSV出力"
+  ajax="true"
+  process="@form"
+  update="errorMessageWrapper conditionPanel"
+  style="margin:0 8px;">
+  <p:fileDownload
+    value="#{dac2024ctl.exportCsv()}"
+    contentDisposition="attachment" />
+</p:commandButton>
+
+
+<p:commandButton
+  id="exportCsvButton"
+  value="CSV出力"
+  ajax="false"
+  onclick="setTimeout(function(){ location.reload(); }, 1000);"
+  style="margin:0 8px;">
+  <p:fileDownload
+    value="#{dac2024ctl.exportCsv()}"
+    contentDisposition="attachment" />
+</p:commandButton>
