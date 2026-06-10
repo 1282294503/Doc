@@ -1,23 +1,13 @@
-<p:commandButton
-  id="exportCsvButton"
-  value="CSV出力"
-  ajax="true"
-  process="@form"
-  update="errorMessageWrapper conditionPanel"
-  style="margin:0 8px;">
-  <p:fileDownload
-    value="#{dac2024ctl.exportCsv()}"
-    contentDisposition="attachment" />
-</p:commandButton>
+こちらは QA95 の後続確認事項となります。
 
-
-<p:commandButton
-  id="exportCsvButton"
-  value="CSV出力"
-  ajax="false"
-  onclick="setTimeout(function(){ location.reload(); }, 1000);"
-  style="margin:0 8px;">
-  <p:fileDownload
-    value="#{dac2024ctl.exportCsv()}"
-    contentDisposition="attachment" />
-</p:commandButton>
+【確認依頼】CSV 出力機能の設定ファイルについて
+現在 CSV 出力機能に関して調査した結果、下記 2 つの設定ファイルが必要であることを確認いたしました。
+csv-define.xml
+file-define.xml
+開発環境の上記 2 ファイルには本機能に紐付く設定が存在しておらず、初期状態で CSV 出力が実行できない事象が発生しておりました。
+独自に 2 つの XML ファイルへ設定値を記述したところ CSV 出力自体は動作するようになりましたが、記述内容が正確ではないため下記不具合が発生しております。
+・ヘッダーの出力フォーマットが不正
+・連続で CSV 出力ボタンを押下するとエラーが発生
+つきまして、下記 2 点をご確認・ご回答をお願いいたします。
+上記 2 つの設定ファイルは開発側で作成し成果物として納品するものか、貴社よりご提供いただけるものか
+開発側で作成する場合、正しい記述サンプルをご提示いただけますでしょうか
